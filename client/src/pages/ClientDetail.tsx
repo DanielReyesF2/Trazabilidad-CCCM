@@ -298,67 +298,7 @@ export default function ClientDetail() {
                   </Card>
                 </div>
                 <div>
-                  <Card className="overflow-hidden">
-                    <CardHeader className="pb-2 relative">
-                      <CardTitle>Impacto Ambiental</CardTitle>
-                      <span className="absolute top-3 right-3 bg-lime/20 text-xs font-medium px-2 py-1 rounded-full text-navy">
-                        Certificado Econova
-                      </span>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="flex flex-col items-center justify-center py-3">
-                        <div className="text-4xl font-bold text-navy mb-2 flex items-baseline">
-                          {Math.round(totalWaste * 0.87).toLocaleString('es-ES')} 
-                          <span className="text-lg ml-1">kg CO₂</span>
-                        </div>
-                        
-                        <div className="w-full bg-gray-100 rounded-lg p-3 mt-2 mb-3">
-                          <div className="text-xs text-gray-500 mb-1">Equivalente a:</div>
-                          <div className="grid grid-cols-2 gap-2">
-                            <div className="flex items-center gap-2">
-                              <div className="w-8 h-8 rounded-full bg-lime flex items-center justify-center">
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-navy" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                  <path d="M2 22h20" /><path d="M12 2v6.36" />
-                                  <path d="M18 8c0 4.97-6 10-6 10s-6-5.03-6-10a6 6 0 0 1 12 0Z" />
-                                </svg>
-                              </div>
-                              <div>
-                                <span className="text-sm font-semibold">{Math.round(totalWaste * 0.2)} árboles</span>
-                                <div className="text-xs text-gray-500">para compensar</div>
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <div className="w-8 h-8 rounded-full bg-lime flex items-center justify-center">
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-navy" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                  <path d="M19 9h2v10H3V9h2" />
-                                  <path d="M3 13h18" />
-                                  <path d="M5 9V6a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v3" />
-                                </svg>
-                              </div>
-                              <div>
-                                <span className="text-sm font-semibold">{Math.round(totalWaste * 0.023)} viajes</span>
-                                <div className="text-xs text-gray-500">CDMX-Cancún</div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                        
-                        <div className="relative w-full mt-2">
-                          <div className="text-xs text-gray-500 mb-1">Reducción vs. promedio del sector:</div>
-                          <div className="flex items-center w-full">
-                            <div className="bg-gray-200 h-2.5 flex-grow rounded-full overflow-hidden">
-                              <div 
-                                className="bg-lime h-full transition-all duration-1000 ease-out"
-                                style={{ width: `${Math.min(75, 100)}%` }}
-                              ></div>
-                            </div>
-                            <span className="ml-2 text-sm font-semibold text-lime">-25%</span>
-                          </div>
-                          <div className="text-xs text-gray-500 mt-1 text-right">Mejor que el 75% de clientes similares</div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
+                  <EnvironmentalImpact wasteData={wasteData} />
                   
                   {/* Sustainability Badges */}
                   <div className="mt-6">
