@@ -34,6 +34,7 @@ export default function Dashboard() {
     inorganicWaste: number;
     recyclableWaste: number;
     totalWaste: number;
+    deviation: number;
     rawData: Record<string, any[]>;
   }
 
@@ -53,13 +54,21 @@ export default function Dashboard() {
   const getSummaryData = () => {
     const totalOrganic = wasteData.reduce((sum: number, item) => sum + item.organicWaste, 0);
     const totalInorganic = wasteData.reduce((sum: number, item) => sum + item.inorganicWaste, 0);
-    const total = totalOrganic + totalInorganic;
+    const totalRecyclable = wasteData.reduce((sum: number, item) => sum + (item.recyclableWaste || 0), 0);
+    const total = totalOrganic + totalInorganic + totalRecyclable;
+    
+    // Calcular el promedio de desviación de relleno sanitario
+    let avgDeviation = 0;
+    if (wasteData.length > 0) {
+      const totalDeviation = wasteData.reduce((sum: number, item) => sum + (item.deviation || 0), 0);
+      avgDeviation = totalDeviation / wasteData.length;
+    }
     
     return {
-      organicWaste: `${totalOrganic.toFixed(1)} ton`,
-      inorganicWaste: `${totalInorganic.toFixed(1)} ton`,
-      totalWaste: `${total.toFixed(1)} ton`,
-      deviation: "4.2%"  // This would be calculated based on targets in a real implementation
+      organicWaste: `${(totalOrganic/1000).toFixed(1)} ton`,
+      inorganicWaste: `${(totalInorganic/1000).toFixed(1)} ton`,
+      totalWaste: `${(total/1000).toFixed(1)} ton`,
+      deviation: `${avgDeviation.toFixed(2)}%`
     };
   };
   
@@ -70,35 +79,66 @@ export default function Dashboard() {
     if (wasteData.length === 0) {
       // Return placeholder data if no real data exists
       return [
-        { month: 'Mayo', organicWaste: 2.1, inorganicWaste: 3.2 },
-        { month: 'Junio', organicWaste: 1.9, inorganicWaste: 2.8 },
-        { month: 'Julio', organicWaste: 2.3, inorganicWaste: 2.7 },
-        { month: 'Agosto', organicWaste: 2.6, inorganicWaste: 2.5 },
-        { month: 'Sept', organicWaste: 2.9, inorganicWaste: 2.3 },
-        { month: 'Oct', organicWaste: 2.7, inorganicWaste: 2.6 },
-        { month: 'Nov', organicWaste: 3.1, inorganicWaste: 2.4 }
+        { month: 'Ene 24', organicWaste: 2.1, inorganicWaste: 3.2 },
+        { month: 'Feb 24', organicWaste: 1.9, inorganicWaste: 2.8 },
+        { month: 'Mar 24', organicWaste: 2.3, inorganicWaste: 2.7 },
+        { month: 'Abr 24', organicWaste: 2.6, inorganicWaste: 2.5 },
+        { month: 'May 24', organicWaste: 2.9, inorganicWaste: 2.3 }
       ];
     }
     
-    // Group data by month
-    const groupedData: Record<string, { organicWaste: number, inorganicWaste: number }> = {};
-    
-    wasteData.forEach((item) => {
-      const date = new Date(item.date);
-      const month = date.toLocaleString('es-ES', { month: 'short' });
-      
-      if (!groupedData[month]) {
-        groupedData[month] = { organicWaste: 0, inorganicWaste: 0 };
-      }
-      
-      groupedData[month].organicWaste += item.organicWaste;
-      groupedData[month].inorganicWaste += item.inorganicWaste;
+    // Filtrar datos desde enero 2024 hasta ahora
+    const startDate = new Date('2024-01-01');
+    const filteredData = wasteData.filter(item => {
+      const itemDate = new Date(item.date);
+      return itemDate >= startDate;
     });
     
-    return Object.entries(groupedData).map(([month, data]) => ({
-      month,
-      ...data
-    }));
+    // Convertir a array con año y mes para poder ordenarlos
+    const dataWithDates = filteredData.map(item => {
+      const date = new Date(item.date);
+      return {
+        ...item,
+        year: date.getFullYear(),
+        month: date.getMonth(),
+        // Formatear para mostrar en la gráfica: "Ene 24", "Feb 24", etc.
+        monthLabel: `${date.toLocaleString('es-ES', { month: 'short' })} ${date.getFullYear().toString().substring(2)}`
+      };
+    });
+    
+    // Ordenar por fecha
+    dataWithDates.sort((a, b) => {
+      if (a.year !== b.year) return a.year - b.year;
+      return a.month - b.month;
+    });
+    
+    // Group data by month
+    const groupedData: Record<string, { organicWaste: number, inorganicWaste: number, sortKey: number }> = {};
+    
+    dataWithDates.forEach((item) => {
+      const sortKey = item.year * 100 + item.month; // Para mantener el orden
+      
+      if (!groupedData[item.monthLabel]) {
+        groupedData[item.monthLabel] = { 
+          organicWaste: 0, 
+          inorganicWaste: 0,
+          sortKey 
+        };
+      }
+      
+      groupedData[item.monthLabel].organicWaste += item.organicWaste / 1000; // Convertir a toneladas
+      groupedData[item.monthLabel].inorganicWaste += item.inorganicWaste / 1000; // Convertir a toneladas
+    });
+    
+    // Convertir a array y ordenar cronológicamente
+    return Object.entries(groupedData)
+      .map(([month, data]) => ({
+        month,
+        organicWaste: Number(data.organicWaste.toFixed(1)),
+        inorganicWaste: Number(data.inorganicWaste.toFixed(1)),
+        sortKey: data.sortKey
+      }))
+      .sort((a, b) => a.sortKey - b.sortKey);
   };
   
   const chartData = getChartData();
