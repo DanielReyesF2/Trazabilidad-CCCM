@@ -64,7 +64,7 @@ export default function TrendChart({ data }: TrendChartProps) {
             />
             <YAxis 
               tick={{ fontSize: 12, fill: '#64748b' }}
-              unit=" ton"
+              unit=" kg"
             />
             <Tooltip 
               contentStyle={{ 
@@ -73,7 +73,7 @@ export default function TrendChart({ data }: TrendChartProps) {
                 borderRadius: '0.375rem',
                 boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)' 
               }}
-              formatter={(value) => [`${value} ton`, undefined]}
+              formatter={(value) => [`${value.toLocaleString('es-ES')} kg`, undefined]}
             />
             <Legend 
               verticalAlign="top" 

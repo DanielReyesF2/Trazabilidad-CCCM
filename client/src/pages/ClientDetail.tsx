@@ -588,9 +588,9 @@ function processWasteDataForChart(wasteData: WasteData[]): any[] {
       };
     }
     
-    groupedData[item.monthLabel].organicWaste += (item.organicWaste || 0) / 1000; // Convertir a toneladas
-    groupedData[item.monthLabel].inorganicWaste += (item.inorganicWaste || 0) / 1000; // Convertir a toneladas
-    groupedData[item.monthLabel].recyclableWaste += (item.recyclableWaste || 0) / 1000; // Convertir a toneladas
+    groupedData[item.monthLabel].organicWaste += (item.organicWaste || 0); // Mantener en kilogramos
+    groupedData[item.monthLabel].inorganicWaste += (item.inorganicWaste || 0); // Mantener en kilogramos
+    groupedData[item.monthLabel].recyclableWaste += (item.recyclableWaste || 0); // Mantener en kilogramos
   });
   
   // Convertir a array y ordenar cronológicamente
