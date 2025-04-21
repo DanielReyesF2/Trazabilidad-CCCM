@@ -65,9 +65,9 @@ export default function Dashboard() {
     }
     
     return {
-      organicWaste: `${(totalOrganic/1000).toFixed(1)} ton`,
-      inorganicWaste: `${(totalInorganic/1000).toFixed(1)} ton`,
-      totalWaste: `${(total/1000).toFixed(1)} ton`,
+      organicWaste: `${totalOrganic.toLocaleString('es-ES')} kg`,
+      inorganicWaste: `${totalInorganic.toLocaleString('es-ES')} kg`,
+      totalWaste: `${total.toLocaleString('es-ES')} kg`,
       deviation: `${deviation.toFixed(2)}%`
     };
   };
@@ -94,15 +94,26 @@ export default function Dashboard() {
       return itemDate >= startDate;
     });
     
+    // Mapeo de números de mes a abreviaturas en español
+    const monthNames = [
+      'Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun',
+      'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'
+    ];
+    
     // Convertir a array con año y mes para poder ordenarlos
     const dataWithDates = filteredData.map(item => {
       const date = new Date(item.date);
+      const monthIndex = date.getMonth();
+      const yearShort = date.getFullYear().toString().substring(2);
+      
+      // Usar un formato consistente "Ene 24", "Feb 24", etc.
+      const monthLabel = `${monthNames[monthIndex]} ${yearShort}`;
+      
       return {
         ...item,
         year: date.getFullYear(),
         month: date.getMonth(),
-        // Formatear para mostrar en la gráfica: "Ene 24", "Feb 24", etc.
-        monthLabel: `${date.toLocaleString('es-ES', { month: 'short' })} ${date.getFullYear().toString().substring(2)}`
+        monthLabel
       };
     });
     
@@ -113,7 +124,12 @@ export default function Dashboard() {
     });
     
     // Group data by month
-    const groupedData: Record<string, { organicWaste: number, inorganicWaste: number, sortKey: number }> = {};
+    const groupedData: Record<string, { 
+      organicWaste: number, 
+      inorganicWaste: number, 
+      recyclableWaste: number,
+      sortKey: number 
+    }> = {};
     
     dataWithDates.forEach((item) => {
       const sortKey = item.year * 100 + item.month; // Para mantener el orden
@@ -122,12 +138,14 @@ export default function Dashboard() {
         groupedData[item.monthLabel] = { 
           organicWaste: 0, 
           inorganicWaste: 0,
+          recyclableWaste: 0,
           sortKey 
         };
       }
       
-      groupedData[item.monthLabel].organicWaste += item.organicWaste / 1000; // Convertir a toneladas
-      groupedData[item.monthLabel].inorganicWaste += item.inorganicWaste / 1000; // Convertir a toneladas
+      groupedData[item.monthLabel].organicWaste += item.organicWaste; // Mantener en kilogramos
+      groupedData[item.monthLabel].inorganicWaste += item.inorganicWaste; // Mantener en kilogramos
+      groupedData[item.monthLabel].recyclableWaste += (item.recyclableWaste || 0); // Mantener en kilogramos
     });
     
     // Convertir a array y ordenar cronológicamente
@@ -136,6 +154,7 @@ export default function Dashboard() {
         month,
         organicWaste: Number(data.organicWaste.toFixed(1)),
         inorganicWaste: Number(data.inorganicWaste.toFixed(1)),
+        recyclableWaste: Number(data.recyclableWaste.toFixed(1)),
         sortKey: data.sortKey
       }))
       .sort((a, b) => a.sortKey - b.sortKey);

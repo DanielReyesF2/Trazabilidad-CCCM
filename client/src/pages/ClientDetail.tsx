@@ -555,14 +555,20 @@ function processWasteDataForChart(wasteData: WasteData[]): any[] {
     return itemDate >= startDate;
   });
   
+  // Mapeo de números de mes a abreviaturas en español
+  const monthNames = [
+    'Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun',
+    'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'
+  ];
+  
   // Convertir a array con año y mes para poder ordenarlos
   const dataWithDates = filteredData.map(item => {
     const date = new Date(item.date);
-    const monthAbbr = date.toLocaleString('es-ES', { month: 'short' });
+    const monthIndex = date.getMonth();
     const yearShort = date.getFullYear().toString().substring(2);
     
-    // Formatear correctamente "Ene 24", "Feb 24", etc.
-    const monthLabel = `${monthAbbr.charAt(0).toUpperCase() + monthAbbr.slice(1)} ${yearShort}`;
+    // Usar un formato consistente "Ene 24", "Feb 24", etc.
+    const monthLabel = `${monthNames[monthIndex]} ${yearShort}`;
     
     return {
       ...item,
