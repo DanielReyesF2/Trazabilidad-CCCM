@@ -64,10 +64,10 @@ async function processRecuperaPDFs() {
     console.log('Iniciando procesamiento de reportes RECUPERA...');
     
     // Verificar si Club Campestre existe
-    const [client] = await db.select().from(clients).where(eq(clients.name, 'Club Campestre'));
+    const [client] = await db.select().from(clients).where(eq(clients.name, 'Club Campestre de la Ciudad de México'));
     
     if (!client) {
-      console.error('Cliente "Club Campestre" no encontrado');
+      console.error('Cliente "Club Campestre de la Ciudad de México" no encontrado');
       return;
     }
     
@@ -77,7 +77,8 @@ async function processRecuperaPDFs() {
     // Procesar cada archivo
     for (const file of recuperaFiles) {
       // Determinar qué conjunto de datos usar
-      const dataKey = `${file.year}-${file.month.padStart(2, '0')}`.substring(0, 7);
+      const month = file.month === 'Enero' ? '01' : file.month === 'Marzo' ? '03' : '';
+      const dataKey = `${file.year}-${month}`;
       const data = recuperaData[dataKey];
       
       if (!data) {
