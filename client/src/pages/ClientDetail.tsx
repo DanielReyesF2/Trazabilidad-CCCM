@@ -173,7 +173,7 @@ export default function ClientDetail() {
           {/* Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
             {/* Tarjeta principal con desviación de relleno sanitario */}
-            <Card className="md:col-span-2 bg-gradient-to-r from-navy to-navy-light text-white">
+            <Card className="md:col-span-2 bg-gradient-to-r from-navy to-navy-light">
               <CardHeader className="pb-2">
                 <CardTitle className="flex items-center text-white">
                   <Percent className="h-5 w-5 mr-2" />
@@ -183,12 +183,12 @@ export default function ClientDetail() {
               <CardContent>
                 <div className="flex items-center justify-between">
                   <div>
-                    <div className="text-4xl font-bold text-white">
+                    <div className="text-4xl font-bold text-lime">
                       {latestDeviation !== null 
                         ? `${latestDeviation}%` 
                         : 'No disponible'}
                     </div>
-                    <p className="text-sm text-gray-200 mt-1">
+                    <p className="text-sm text-white mt-1">
                       Porcentaje de residuos desviados del relleno sanitario
                     </p>
                   </div>

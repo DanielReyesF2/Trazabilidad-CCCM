@@ -46,7 +46,7 @@ export default function Sidebar() {
       <div className="flex items-center justify-center h-24 px-4 border-b border-navy-light">
         <div className="flex items-center">
           <img 
-            src="/assets/Logo-ECONOVA-OF_Blanco.png" 
+            src="/assets/logo.png" 
             alt="Logo ECONOVA" 
             className="h-16 w-auto" 
           />

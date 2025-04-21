@@ -156,7 +156,7 @@ export default function ClientsGrid({ selectedCategory, selectedPeriod }: Client
                   <Percent className="h-5 w-5 mr-2 text-lime-500" />
                   <div>
                     <p className="text-xs text-gray-500">Desviación de relleno sanitario</p>
-                    <p className="font-semibold text-navy">
+                    <p className="font-semibold text-lime-600">
                       {deviation !== null 
                         ? `${deviation}%` 
                         : 'Sin datos'}
