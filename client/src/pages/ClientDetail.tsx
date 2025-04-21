@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { User, FileText, BarChart2, AlertTriangle, ChevronLeft, Download, Edit, Trash2 } from 'lucide-react';
+import { User, FileText, BarChart2, AlertTriangle, ChevronLeft, Download, Edit, Trash2, Percent, RecycleIcon } from 'lucide-react';
 import FileUploader from '@/components/FileUploader';
 import TrendChart from '@/components/dashboard/TrendChart';
 import { Client, Document, WasteData } from '@shared/schema';
@@ -128,6 +128,18 @@ export default function ClientDetail() {
   const totalRecyclable = wasteData.reduce((sum, item) => sum + (item.recyclableWaste || 0), 0);
   const totalWaste = wasteData.reduce((sum, item) => sum + (item.totalWaste || 0), 0);
   
+  // Get the latest waste data entry's deviation
+  const getLatestDeviation = () => {
+    if (wasteData.length === 0) return null;
+    
+    const sortedData = [...wasteData].sort((a, b) => 
+      new Date(b.date).getTime() - new Date(a.date).getTime()
+    );
+    
+    return sortedData[0].deviation;
+  };
+  
+  const latestDeviation = getLatestDeviation();
   const pendingAlerts = alerts.filter(alert => !alert.resolved).length;
   
   return (
@@ -160,13 +172,30 @@ export default function ClientDetail() {
           
           {/* Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-            <Card>
+            {/* Tarjeta principal con desviación de relleno sanitario */}
+            <Card className="md:col-span-2 bg-gradient-to-r from-navy to-navy-light text-white">
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm text-gray-500 uppercase">Documentos</CardTitle>
+                <CardTitle className="flex items-center text-white">
+                  <Percent className="h-5 w-5 mr-2" />
+                  <span className="uppercase">Desviación de Relleno Sanitario</span>
+                </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-3xl font-bold">{documents.length}</div>
-                <p className="text-sm text-gray-500 mt-1">Archivos procesados</p>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="text-4xl font-bold">
+                      {latestDeviation !== null 
+                        ? `${latestDeviation}%` 
+                        : 'No disponible'}
+                    </div>
+                    <p className="text-sm text-gray-200 mt-1">
+                      Porcentaje de residuos desviados del relleno sanitario
+                    </p>
+                  </div>
+                  <div className="hidden md:block">
+                    <RecycleIcon className="h-16 w-16 text-lime opacity-75" />
+                  </div>
+                </div>
               </CardContent>
             </Card>
             
@@ -182,28 +211,11 @@ export default function ClientDetail() {
             
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm text-gray-500 uppercase">Orgánicos</CardTitle>
+                <CardTitle className="text-sm text-gray-500 uppercase">Documentos</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-3xl font-bold">{formatNumber(totalOrganic)} kg</div>
-                <p className="text-sm text-gray-500 mt-1">
-                  {totalWaste > 0 ? Math.round((totalOrganic / totalWaste) * 100) : 0}% del total
-                </p>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm text-gray-500 uppercase">Alertas</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center">
-                  <div className="text-3xl font-bold mr-2">{pendingAlerts}</div>
-                  {pendingAlerts > 0 && (
-                    <Badge variant="destructive">Pendientes</Badge>
-                  )}
-                </div>
-                <p className="text-sm text-gray-500 mt-1">Por resolver</p>
+                <div className="text-3xl font-bold">{documents.length}</div>
+                <p className="text-sm text-gray-500 mt-1">Archivos procesados</p>
               </CardContent>
             </Card>
           </div>
