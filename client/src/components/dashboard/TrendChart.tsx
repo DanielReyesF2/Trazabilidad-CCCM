@@ -128,7 +128,11 @@ export default function TrendChart({ data }: TrendChartProps) {
     }
   };
   
+  // Agregar depuración para ver qué datos se están procesando
+  console.log("Datos originales recibidos:", data);
+  
   const displayData = getDisplayData();
+  console.log("Datos procesados para mostrar:", displayData, "Periodo:", period);
   
   return (
     <div className="bg-white shadow rounded-lg p-5">
@@ -168,7 +172,7 @@ export default function TrendChart({ data }: TrendChartProps) {
         </div>
       </div>
       
-      <div className="h-[300px]">
+      <div className="h-[400px]">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart
             data={displayData}

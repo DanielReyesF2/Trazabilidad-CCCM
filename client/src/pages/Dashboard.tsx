@@ -160,7 +160,9 @@ export default function Dashboard() {
       .sort((a, b) => a.sortKey - b.sortKey);
   };
   
+  // Logging para depuración
   const chartData = getChartData();
+  console.log("Datos procesados para el gráfico:", chartData);
   
   return (
     <AppLayout>
