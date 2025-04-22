@@ -285,7 +285,7 @@ export default function ClientDetail() {
                 />
               </div>
               <div className="text-xs text-gray-400 mt-1">
-                Objetivo: 25%
+                Objetivo: 90%
               </div>
             </div>
           </div>
