@@ -114,10 +114,10 @@ export default function TrendChart({ data }: TrendChartProps) {
     return Object.entries(years)
       .map(([year, data]) => ({
         month: year,  // Usamos el mismo campo "month" para mantener compatibilidad
-        organicWaste: Number(data.organicWaste.toFixed(1)),
-        podaWaste: Number(data.podaWaste.toFixed(1)),
-        inorganicWaste: Number(data.inorganicWaste.toFixed(1)),
-        recyclableWaste: Number(data.recyclableWaste.toFixed(1)),
+        organicWaste: Number((data.organicWaste / 1000).toFixed(2)),
+        podaWaste: Number((data.podaWaste / 1000).toFixed(2)),
+        inorganicWaste: Number((data.inorganicWaste / 1000).toFixed(2)),
+        recyclableWaste: Number((data.recyclableWaste / 1000).toFixed(2)),
         sortKey: data.sortKey
       }))
       .sort((a, b) => a.sortKey - b.sortKey);
@@ -125,7 +125,7 @@ export default function TrendChart({ data }: TrendChartProps) {
   
   // Función que se usará con los datos filtrados
   
-  // Filtrar datos para mostrar solo desde enero 2024 en adelante
+  // Filtrar datos para mostrar solo desde enero 2024 en adelante y convertir a toneladas
   const filteredData = data.filter(item => {
     const parts = item.month.split(' ');
     const year = parseInt('20' + parts[1], 10);
@@ -133,7 +133,13 @@ export default function TrendChart({ data }: TrendChartProps) {
     
     // Solo fechas de enero 2024 en adelante
     return !(year === 2023 || (year === 2024 && month === 'Dic'));
-  });
+  }).map(item => ({
+    ...item,
+    organicWaste: Number((item.organicWaste / 1000).toFixed(2)),
+    podaWaste: Number((item.podaWaste / 1000).toFixed(2)),
+    inorganicWaste: Number((item.inorganicWaste / 1000).toFixed(2)),
+    recyclableWaste: Number(((item.recyclableWaste || 0) / 1000).toFixed(2))
+  }));
   
   console.log("Datos originales filtrados:", filteredData);
   
@@ -270,7 +276,7 @@ export default function TrendChart({ data }: TrendChartProps) {
             />
             <YAxis 
               tick={{ fontSize: 11, fill: '#64748b' }}
-              unit=" kg"
+              unit=" ton"
               axisLine={false}
               tickLine={false}
               tickCount={6}
@@ -286,7 +292,7 @@ export default function TrendChart({ data }: TrendChartProps) {
                 fontSize: '12px',
                 border: 'none',
               }}
-              formatter={(value) => [`${value.toLocaleString('es-ES')} kg`, undefined]}
+              formatter={(value) => [`${value.toLocaleString('es-ES', {minimumFractionDigits: 2, maximumFractionDigits: 2})} ton`, undefined]}
               labelFormatter={(label) => `<span style="font-weight: 600;">${label}</span>`}
               itemStyle={{ padding: '3px 0' }}
             />
@@ -365,7 +371,7 @@ export default function TrendChart({ data }: TrendChartProps) {
               strokeDasharray="3 3" 
               strokeWidth={2}
               label={{ 
-                value: `Promedio: ${Math.round(avgOrganicWaste).toLocaleString('es-ES')} kg`, 
+                value: `Promedio: ${avgOrganicWaste.toLocaleString('es-ES', {minimumFractionDigits: 2, maximumFractionDigits: 2})} ton`, 
                 position: 'insideBottomRight',
                 fill: '#3a5a14',
                 fontSize: 10,
@@ -379,7 +385,7 @@ export default function TrendChart({ data }: TrendChartProps) {
               strokeDasharray="3 3" 
               strokeWidth={2}
               label={{ 
-                value: `Promedio: ${Math.round(avgPodaWaste).toLocaleString('es-ES')} kg`, 
+                value: `Promedio: ${avgPodaWaste.toLocaleString('es-ES', {minimumFractionDigits: 2, maximumFractionDigits: 2})} ton`, 
                 position: 'insideBottomLeft',
                 fill: '#20b2aa',
                 fontSize: 10,
@@ -393,7 +399,7 @@ export default function TrendChart({ data }: TrendChartProps) {
               strokeDasharray="3 3" 
               strokeWidth={2}
               label={{ 
-                value: `Promedio: ${Math.round(avgInorganicWaste).toLocaleString('es-ES')} kg`, 
+                value: `Promedio: ${avgInorganicWaste.toLocaleString('es-ES', {minimumFractionDigits: 2, maximumFractionDigits: 2})} ton`, 
                 position: 'insideBottomLeft',
                 fill: '#273949',
                 fontSize: 10,
@@ -407,7 +413,7 @@ export default function TrendChart({ data }: TrendChartProps) {
               strokeDasharray="3 3" 
               strokeWidth={2}
               label={{ 
-                value: `Promedio: ${Math.round(avgRecyclableWaste).toLocaleString('es-ES')} kg`, 
+                value: `Promedio: ${avgRecyclableWaste.toLocaleString('es-ES', {minimumFractionDigits: 2, maximumFractionDigits: 2})} ton`, 
                 position: 'insideTopRight',
                 fill: '#b25a0c',
                 fontSize: 10,
