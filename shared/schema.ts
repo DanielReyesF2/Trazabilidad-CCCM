@@ -37,7 +37,8 @@ export const wasteData = pgTable("waste_data", {
   documentId: integer("document_id").references(() => documents.id),
   clientId: integer("client_id").references(() => clients.id),
   date: timestamp("date").notNull(),
-  organicWaste: real("organic_waste"), // in kg
+  organicWaste: real("organic_waste"), // in kg - Residuos orgánicos de comedor
+  podaWaste: real("poda_waste"), // in kg - Residuos orgánicos de PODA
   inorganicWaste: real("inorganic_waste"), // in kg
   recyclableWaste: real("recyclable_waste"), // in kg
   totalWaste: real("total_waste"), // in kg
@@ -58,6 +59,7 @@ export const insertWasteDataSchema = createInsertSchema(wasteData).pick({
   clientId: true,
   date: true,
   organicWaste: true,
+  podaWaste: true,
   inorganicWaste: true,
   recyclableWaste: true,
   totalWaste: true,

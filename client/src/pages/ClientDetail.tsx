@@ -142,10 +142,10 @@ export default function ClientDetail() {
   const chartData = processWasteDataForChart(wasteData);
   
   // Calcular detalladamente los totales, mes por mes, para Club Campestre de la Ciudad de México (ID 4)
-  let monthlyData: Record<string, { organic: number, inorganic: number, recyclable: number }> = {};
-  let totalsByYear: Record<string, { organic: number, inorganic: number, recyclable: number }> = {
-    "2024": { organic: 0, inorganic: 0, recyclable: 0 },
-    "2025": { organic: 0, inorganic: 0, recyclable: 0 }
+  let monthlyData: Record<string, { organic: number, poda: number, inorganic: number, recyclable: number }> = {};
+  let totalsByYear: Record<string, { organic: number, poda: number, inorganic: number, recyclable: number }> = {
+    "2024": { organic: 0, poda: 0, inorganic: 0, recyclable: 0 },
+    "2025": { organic: 0, poda: 0, inorganic: 0, recyclable: 0 }
   };
   
   // Agrupar por mes y año
@@ -156,17 +156,19 @@ export default function ClientDetail() {
     const key = `${year}-${month.toString().padStart(2, '0')}`;
     
     if (!monthlyData[key]) {
-      monthlyData[key] = { organic: 0, inorganic: 0, recyclable: 0 };
+      monthlyData[key] = { organic: 0, poda: 0, inorganic: 0, recyclable: 0 };
     }
     
     // Sumar valores para este mes
     monthlyData[key].organic += (item.organicWaste || 0);
+    monthlyData[key].poda += (item.podaWaste || 0);
     monthlyData[key].inorganic += (item.inorganicWaste || 0);
     monthlyData[key].recyclable += (item.recyclableWaste || 0);
     
     // Sumar al total anual
     if (totalsByYear[year.toString()]) {
       totalsByYear[year.toString()].organic += (item.organicWaste || 0);
+      totalsByYear[year.toString()].poda += (item.podaWaste || 0);
       totalsByYear[year.toString()].inorganic += (item.inorganicWaste || 0);
       totalsByYear[year.toString()].recyclable += (item.recyclableWaste || 0);
     }
