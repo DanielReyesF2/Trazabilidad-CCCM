@@ -5,7 +5,7 @@ import AppLayout from '@/components/layout/AppLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, FilePdf } from 'lucide-react';
+import { ChevronLeft, FileDown } from 'lucide-react';
 import { Client, WasteData } from '@shared/schema';
 import { generateAndDownloadPDFReport } from '@/lib/jsPdfGenerator';
 
@@ -112,7 +112,7 @@ export default function ReportGenerator() {
               <Card className="md:col-span-2">
                 <CardHeader className="bg-gradient-to-r from-blue-600 to-blue-800">
                   <CardTitle className="text-white flex items-center">
-                    <FilePdf className="mr-2 h-5 w-5" />
+                    <FileDown className="mr-2 h-5 w-5" />
                     Reportes por Período
                   </CardTitle>
                   <CardDescription className="text-white/80">

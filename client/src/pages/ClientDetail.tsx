@@ -294,8 +294,14 @@ export default function ClientDetail() {
                 onClick={() => generateAndDownloadPDFReport(client, wasteData)}
               >
                 <FileDown className="h-4 w-4 mr-2" />
-                Descargar PDF
+                Descargar PDF Completo
               </Button>
+              <Link href={`/reports/${clientId}`}>
+                <Button variant="outline" size="sm" className="text-blue-600 border-blue-200 hover:bg-blue-50">
+                  <FileDown className="h-4 w-4 mr-2" />
+                  Reportes por Período
+                </Button>
+              </Link>
               <Button variant="outline" size="sm">
                 <Edit className="h-4 w-4 mr-2" />
                 Editar

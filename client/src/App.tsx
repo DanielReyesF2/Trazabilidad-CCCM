@@ -11,6 +11,7 @@ import Reports from "@/pages/reports";
 import Clients from "@/pages/clients";
 import Settings from "@/pages/settings";
 import ClientDetail from "@/pages/ClientDetail";
+import ReportGenerator from "@/pages/ReportGenerator";
 
 function Router() {
   return (
@@ -21,6 +22,7 @@ function Router() {
       <Route path="/reports" component={Reports} />
       <Route path="/clients" component={Clients} />
       <Route path="/clients/:id" component={ClientDetail} />
+      <Route path="/reports/:id" component={ReportGenerator} />
       <Route path="/settings" component={Settings} />
       <Route component={NotFound} />
     </Switch>
