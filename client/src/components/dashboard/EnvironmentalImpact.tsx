@@ -22,7 +22,7 @@ export default function EnvironmentalImpact({ wasteData }: EnvironmentalImpactPr
   const totalWaterSaved = wasteData.reduce((sum, data) => sum + (data.waterSaved || 0), 0);
   const totalEnergySaved = wasteData.reduce((sum, data) => sum + (data.energySaved || 0), 0);
   
-  // Si los valores no son suficientes, podemos calcularlos basados en la cantidad de materiales reciclados
+  // Si los valores no son suficientes, calculamos basados en la cantidad de materiales reciclados y PODA
   const totalPaperCardboard = wasteData.reduce((sum, data) => {
     if (data.rawData && data.rawData.recyclableDetails && data.rawData.recyclableDetails.paperCardboard) {
       return sum + data.rawData.recyclableDetails.paperCardboard;
@@ -30,11 +30,21 @@ export default function EnvironmentalImpact({ wasteData }: EnvironmentalImpactPr
     return sum;
   }, 0);
   
-  // Factor de conversión: 17 árboles por tonelada de papel
-  const calculatedTreesSaved = totalTreesSaved || Math.round(totalPaperCardboard / 1000 * 17);
+  // Calcular el total de residuos de PODA para considerarlo en el impacto ambiental
+  const totalPodaWaste = wasteData.reduce((sum, data) => sum + (data.podaWaste || 0), 0);
+  const totalRecyclableWaste = wasteData.reduce((sum, data) => sum + (data.recyclableWaste || 0), 0);
   
-  // Factor de conversión: 26,000 litros de agua por tonelada de papel
-  const calculatedWaterSaved = totalWaterSaved || Math.round(totalPaperCardboard / 1000 * 26000);
+  // Residuos reciclables totales (incluye los reciclables convencionales + 50% de PODA)
+  const effectiveRecyclableWaste = totalRecyclableWaste + (totalPodaWaste * 0.5);
+  
+  // Factor de conversión: 17 árboles por tonelada de papel + contribución de PODA (estimación: 2 árboles por tonelada)
+  const calculatedTreesSaved = totalTreesSaved || Math.round((totalPaperCardboard / 1000 * 17) + (totalPodaWaste / 1000 * 2));
+  
+  // Factor de conversión: 26,000 litros de agua por tonelada de papel + contribución de PODA
+  const calculatedWaterSaved = totalWaterSaved || Math.round((totalPaperCardboard / 1000 * 26000) + (totalPodaWaste / 1000 * 5000));
+  
+  // Energía conservada: calculamos en base al total efectivo de reciclables
+  const calculatedEnergySaved = totalEnergySaved || Math.round(effectiveRecyclableWaste / 1000 * 500);
   
   // Métricas de impacto ambiental
   const impactMetrics: ImpactMetric[] = [
@@ -57,7 +67,7 @@ export default function EnvironmentalImpact({ wasteData }: EnvironmentalImpactPr
     {
       title: 'Energía',
       icon: <Zap className="h-5 w-5 text-yellow-600" />,
-      value: totalEnergySaved,
+      value: calculatedEnergySaved,
       unit: 'kW conservados',
       description: 'Ahorrada en procesos',
       color: 'yellow'
@@ -112,7 +122,7 @@ export default function EnvironmentalImpact({ wasteData }: EnvironmentalImpactPr
         </div>
         
         <div className="mt-4 text-xs text-center text-gray-500 border-t pt-3">
-          El reciclaje de 1 tonelada de papel salva 17 árboles y ahorra 26,000 litros de agua
+          El reciclaje y compostaje de residuos contribuyen significativamente a la preservación ambiental
         </div>
       </CardContent>
     </Card>
