@@ -224,7 +224,7 @@ export default function ClientsGrid({ selectedCategory, selectedPeriod }: Client
               <div className="grid grid-cols-2 gap-px bg-gray-200">
                 {/* Organic Waste */}
                 <div className="bg-white p-4">
-                  <div className="text-gray-500 text-xs uppercase">Residuos Orgánicos</div>
+                  <div className="text-gray-500 text-xs uppercase">Residuos Orgánicos (Comedor)</div>
                   <div className="flex items-baseline mt-1">
                     <div className="text-xl font-bold">
                       {organicWaste ? 

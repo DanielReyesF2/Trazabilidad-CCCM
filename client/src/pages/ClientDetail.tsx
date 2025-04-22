@@ -320,7 +320,7 @@ export default function ClientDetail() {
             
             {/* Residuos Orgánicos */}
             <div className="bg-white p-4">
-              <div className="text-gray-500 text-xs uppercase">Residuos Orgánicos</div>
+              <div className="text-gray-500 text-xs uppercase">Residuos Orgánicos (Comedor)</div>
               <div className="flex items-baseline mt-1">
                 <div className="text-2xl font-bold">
                   {new Intl.NumberFormat('es-MX', { maximumFractionDigits: 2 }).format(totalOrganic)}
@@ -513,7 +513,7 @@ export default function ClientDetail() {
                             <CardContent className="p-4">
                               <div className="flex items-center justify-between">
                                 <div>
-                                  <p className="text-sm text-gray-500">Orgánicos</p>
+                                  <p className="text-sm text-gray-500">Orgánicos (Comedor)</p>
                                   <p className="text-2xl font-bold">{formatNumber(totalOrganic)} kg</p>
                                 </div>
                                 <div className="bg-green-100 p-2 rounded-full">
@@ -659,7 +659,7 @@ export default function ClientDetail() {
                                 }}
                               />
                               <RechartsLegend verticalAlign="top" height={36} />
-                              <Bar yAxisId="left" dataKey="organicos" name="Orgánicos" fill="#b5e951" radius={[4, 4, 0, 0]} />
+                              <Bar yAxisId="left" dataKey="organicos" name="Orgánicos (Comedor)" fill="#b5e951" radius={[4, 4, 0, 0]} />
                               <Bar yAxisId="left" dataKey="inorganicos" name="Inorgánicos" fill="#273949" radius={[4, 4, 0, 0]} />
                               <Bar yAxisId="left" dataKey="reciclables" name="Reciclables" fill="#ff9933" radius={[4, 4, 0, 0]} />
                               <Line 
