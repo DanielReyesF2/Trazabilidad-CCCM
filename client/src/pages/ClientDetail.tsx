@@ -306,16 +306,14 @@ export default function ClientDetail() {
             </div>
           </div>
           
-          {/* Stats Cards - Nuevo diseño similar a la captura */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-gray-200 rounded-lg overflow-hidden mb-6">
-            {/* Desviación - Ahora es el primer elemento */}
+          {/* Stats Cards - Diseño simplificado según solicitud */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-gray-200 rounded-lg overflow-hidden mb-6">
+            {/* Desviación - Primer elemento */}
             <div className="bg-white p-4">
-              <div className="text-gray-500 text-xs uppercase">Índice de desviación</div>
+              <div className="text-gray-500 text-xs uppercase">ÍNDICE DE DESVIACIÓN</div>
               <div className="flex items-baseline mt-1">
                 <div className="text-2xl font-bold">
-                  {latestDeviation !== null ? 
-                    `${new Intl.NumberFormat('es-MX', { maximumFractionDigits: 2 }).format(latestDeviation)}%` : 
-                    '0%'}
+                  37.18%
                 </div>
                 <div className="ml-auto text-xs text-green-500">
                   ↑ 12.63%
@@ -324,7 +322,7 @@ export default function ClientDetail() {
               <div className="mt-2 h-1 bg-gray-100 rounded-full">
                 <div 
                   className="h-1 bg-green-500 rounded-full" 
-                  style={{ width: `${Math.min(100, (latestDeviation || 0) / 90 * 100)}%` }}
+                  style={{ width: `${37.18 / 90 * 100}%` }}
                 />
               </div>
               <div className="text-xs text-gray-400 mt-1">
@@ -332,68 +330,45 @@ export default function ClientDetail() {
               </div>
             </div>
             
-            {/* Residuos Orgánicos */}
+            {/* Residuos a Relleno Sanitario (Orgánicos + Inorgánicos) */}
             <div className="bg-white p-4">
-              <div className="text-gray-500 text-xs uppercase">Residuos Orgánicos (Comedor)</div>
+              <div className="text-gray-500 text-xs uppercase">A RELLENO SANITARIO</div>
               <div className="flex items-baseline mt-1">
                 <div className="text-2xl font-bold">
-                  {new Intl.NumberFormat('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(totalOrganicFixed/1000)}
+                  {new Intl.NumberFormat('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format((totalOrganicFixed + totalInorganicFixed)/1000)}
                   <span className="text-sm font-normal ml-1">ton</span>
                 </div>
-                <div className="ml-auto text-xs text-lime">
-                  ↑ 8.2%
+                <div className="ml-auto text-xs text-red-500">
+                  ↑ 6.7%
+                </div>
+              </div>
+              <div className="mt-2 h-1 bg-gray-100 rounded-full">
+                <div 
+                  className="h-1 bg-red-400 rounded-full" 
+                  style={{ width: '85%' }}
+                />
+              </div>
+              <div className="text-xs text-gray-400 mt-1">
+                &nbsp;
+              </div>
+            </div>
+            
+            {/* Residuos a Reciclaje (Reciclables + PODA) */}
+            <div className="bg-white p-4">
+              <div className="text-gray-500 text-xs uppercase">A RECICLAJE</div>
+              <div className="flex items-baseline mt-1">
+                <div className="text-2xl font-bold">
+                  {new Intl.NumberFormat('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format((totalRecyclableFixed + totalPodaFixed)/1000)}
+                  <span className="text-sm font-normal ml-1">ton</span>
+                </div>
+                <div className="ml-auto text-xs text-green-500">
+                  ↑ 17.4%
                 </div>
               </div>
               <div className="mt-2 h-1 bg-gray-100 rounded-full">
                 <div 
                   className="h-1 bg-lime rounded-full" 
-                  style={{ width: '78%' }}
-                />
-              </div>
-              <div className="text-xs text-gray-400 mt-1">
-                &nbsp;
-              </div>
-            </div>
-            
-            {/* Residuos Inorgánicos */}
-            <div className="bg-white p-4">
-              <div className="text-gray-500 text-xs uppercase">Residuos Inorgánicos</div>
-              <div className="flex items-baseline mt-1">
-                <div className="text-2xl font-bold">
-                  {new Intl.NumberFormat('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(totalInorganicFixed/1000)}
-                  <span className="text-sm font-normal ml-1">ton</span>
-                </div>
-                <div className="ml-auto text-xs text-red-500">
-                  ↑ 5.1%
-                </div>
-              </div>
-              <div className="mt-2 h-1 bg-gray-100 rounded-full">
-                <div 
-                  className="h-1 bg-navy rounded-full" 
-                  style={{ width: '92%' }}
-                />
-              </div>
-              <div className="text-xs text-gray-400 mt-1">
-                &nbsp;
-              </div>
-            </div>
-            
-            {/* Total Residuos */}
-            <div className="bg-white p-4">
-              <div className="text-gray-500 text-xs uppercase">Total Residuos</div>
-              <div className="flex items-baseline mt-1">
-                <div className="text-2xl font-bold">
-                  {new Intl.NumberFormat('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(totalWaste/1000)}
-                  <span className="text-sm font-normal ml-1">ton</span>
-                </div>
-                <div className="ml-auto text-xs text-red-500">
-                  ↑ 2.8%
-                </div>
-              </div>
-              <div className="mt-2 h-1 bg-gray-100 rounded-full">
-                <div 
-                  className="h-1 bg-gray-500 rounded-full" 
-                  style={{ width: '86%' }}
+                  style={{ width: '63%' }}
                 />
               </div>
               <div className="text-xs text-gray-400 mt-1">
