@@ -16,6 +16,7 @@ import TrendChart from '@/components/dashboard/TrendChart';
 import SustainabilityBadges from '@/components/dashboard/SustainabilityBadges';
 import EnvironmentalImpact from '@/components/dashboard/EnvironmentalImpact';
 import QuartingAnalysis from '@/components/dashboard/QuartingAnalysis';
+import ReportPeriodSelector from '@/components/dashboard/ReportPeriodSelector';
 import { Client, Document, WasteData, Alert as AlertType } from '@shared/schema';
 import { 
   ResponsiveContainer, 
