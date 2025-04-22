@@ -184,7 +184,7 @@ export default function ClientDetail() {
         'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
       ];
       const monthName = monthNames[parseInt(month) - 1];
-      const total = data.organic + data.inorganic + data.recyclable;
+      const total = data.organic + data.poda + data.inorganic + data.recyclable;
       
       return {
         key,
@@ -216,6 +216,7 @@ export default function ClientDetail() {
   console.log("======= TOTALES FINALES =======");
   console.table({
     totalOrganic,
+    totalPoda,
     totalInorganic,
     totalRecyclable,
     calculatedTotalWaste,
@@ -705,7 +706,7 @@ export default function ClientDetail() {
                         </div>
                         
                         <div className="mt-3 text-xs text-gray-500 italic text-center">
-                          Índice de desviación: porcentaje de residuos reciclables respecto al total de residuos a relleno sanitario
+                          Índice de desviación: porcentaje de residuos reciclables y PODA respecto al total de residuos generados
                         </div>
                       </div>
                     </div>
@@ -787,14 +788,15 @@ function processWasteDataForChart(wasteData: WasteData[]): any[] {
   });
   
   // Group data by month
-  const groupedData: Record<string, { organicWaste: number, inorganicWaste: number, recyclableWaste: number, sortKey: number }> = {};
+  const groupedData: Record<string, { organicWaste: number, podaWaste: number, inorganicWaste: number, recyclableWaste: number, sortKey: number }> = {};
   
   dataWithDates.forEach((item) => {
     const sortKey = item.year * 100 + item.month; // Para mantener el orden
     
     if (!groupedData[item.monthLabel]) {
       groupedData[item.monthLabel] = { 
-        organicWaste: 0, 
+        organicWaste: 0,
+        podaWaste: 0, 
         inorganicWaste: 0,
         recyclableWaste: 0,
         sortKey
@@ -802,26 +804,30 @@ function processWasteDataForChart(wasteData: WasteData[]): any[] {
     }
     
     groupedData[item.monthLabel].organicWaste += (item.organicWaste || 0); // Mantener en kilogramos
+    groupedData[item.monthLabel].podaWaste += (item.podaWaste || 0); // Mantener en kilogramos
     groupedData[item.monthLabel].inorganicWaste += (item.inorganicWaste || 0); // Mantener en kilogramos
     groupedData[item.monthLabel].recyclableWaste += (item.recyclableWaste || 0); // Mantener en kilogramos
   });
   
   // Calcular el total de todos los valores para debugging
   let totalOrganicChart = 0;
+  let totalPodaChart = 0;
   let totalInorganicChart = 0;
   let totalRecyclableChart = 0;
   
   for (const month in groupedData) {
     totalOrganicChart += groupedData[month].organicWaste;
+    totalPodaChart += groupedData[month].podaWaste;
     totalInorganicChart += groupedData[month].inorganicWaste;
     totalRecyclableChart += groupedData[month].recyclableWaste;
   }
   
   console.log("Datos de totales de gráfica:", {
     totalOrganicChart,
+    totalPodaChart,
     totalInorganicChart,
     totalRecyclableChart,
-    totalChart: totalOrganicChart + totalInorganicChart + totalRecyclableChart
+    totalChart: totalOrganicChart + totalPodaChart + totalInorganicChart + totalRecyclableChart
   });
   
   // Convertir a array y ordenar cronológicamente
@@ -829,6 +835,7 @@ function processWasteDataForChart(wasteData: WasteData[]): any[] {
     .map(([month, data]) => ({
       month,
       organicWaste: Number(data.organicWaste.toFixed(1)),
+      podaWaste: Number(data.podaWaste.toFixed(1)),
       inorganicWaste: Number(data.inorganicWaste.toFixed(1)),
       recyclableWaste: Number(data.recyclableWaste.toFixed(1)),
       sortKey: data.sortKey

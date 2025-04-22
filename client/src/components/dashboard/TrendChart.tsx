@@ -5,6 +5,7 @@ interface TrendChartProps {
   data: Array<{
     month: string;
     organicWaste: number;
+    podaWaste: number;
     inorganicWaste: number;
     recyclableWaste?: number;
   }>;
@@ -16,6 +17,7 @@ export default function TrendChart({ data }: TrendChartProps) {
   const groupByQuarter = (data: any[]): any[] => {
     const quarters: Record<string, { 
       organicWaste: number,
+      podaWaste: number,
       inorganicWaste: number,
       recyclableWaste: number,
       sortKey: number
@@ -50,6 +52,7 @@ export default function TrendChart({ data }: TrendChartProps) {
       if (!quarters[quarterLabel]) {
         quarters[quarterLabel] = {
           organicWaste: 0,
+          podaWaste: 0,
           inorganicWaste: 0,
           recyclableWaste: 0,
           sortKey
@@ -57,6 +60,7 @@ export default function TrendChart({ data }: TrendChartProps) {
       }
       
       quarters[quarterLabel].organicWaste += item.organicWaste;
+      quarters[quarterLabel].podaWaste += item.podaWaste;
       quarters[quarterLabel].inorganicWaste += item.inorganicWaste;
       quarters[quarterLabel].recyclableWaste += item.recyclableWaste;
     });
@@ -66,6 +70,7 @@ export default function TrendChart({ data }: TrendChartProps) {
       .map(([quarter, data]) => ({
         month: quarter,  // Usamos el mismo campo "month" para mantener compatibilidad
         organicWaste: Number(data.organicWaste.toFixed(1)),
+        podaWaste: Number(data.podaWaste.toFixed(1)),
         inorganicWaste: Number(data.inorganicWaste.toFixed(1)),
         recyclableWaste: Number(data.recyclableWaste.toFixed(1)),
         sortKey: data.sortKey
