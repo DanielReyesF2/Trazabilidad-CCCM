@@ -207,7 +207,9 @@ export default function ClientDetail() {
   // Valores en kg que se muestran directamente en toneladas en la UI
   const totalOrganicFixed = 83771.30; // 83.77 ton
   const totalInorganicFixed = 61281.33; // 61.28 ton
-  const totalWaste = 166918.28; // 166.92 ton
+  const totalPodaFixed = 64000.00; // 64.00 ton
+  const totalRecyclableFixed = 21865.65; // 21.87 ton
+  const totalWaste = totalOrganicFixed + totalInorganicFixed + totalPodaFixed + totalRecyclableFixed; // 230.92 ton
   
   // Mostrar detalle en la consola
   console.log("======= DETALLE DE RESIDUOS POR MES =======");
