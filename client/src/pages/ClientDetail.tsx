@@ -13,7 +13,7 @@ import FileUploader from '@/components/FileUploader';
 import TrendChart from '@/components/dashboard/TrendChart';
 import SustainabilityBadges from '@/components/dashboard/SustainabilityBadges';
 import EnvironmentalImpact from '@/components/dashboard/EnvironmentalImpact';
-import { Client, Document, WasteData } from '@shared/schema';
+import { Client, Document, WasteData, Alert as AlertType } from '@shared/schema';
 
 export default function ClientDetail() {
   const [_, params] = useRoute<{ id: string }>('/clients/:id');
@@ -130,19 +130,35 @@ export default function ClientDetail() {
   const totalRecyclable = wasteData.reduce((sum, item) => sum + (item.recyclableWaste || 0), 0);
   const totalWaste = wasteData.reduce((sum, item) => sum + (item.totalWaste || 0), 0);
   
-  // Get the latest waste data entry's deviation
-  const getLatestDeviation = () => {
+  // Calcular promedio de desviación para todo el año 2024
+  const calculate2024Deviation = () => {
     if (wasteData.length === 0) return null;
     
-    const sortedData = [...wasteData].sort((a, b) => 
-      new Date(b.date).getTime() - new Date(a.date).getTime()
-    );
+    // Filtrar datos solo de 2024
+    const data2024 = wasteData.filter(item => {
+      const date = new Date(item.date);
+      return date.getFullYear() === 2024;
+    });
     
-    return sortedData[0].deviation;
+    if (data2024.length === 0) return null;
+    
+    // Calcular la desviación basada en los totales de 2024
+    const totalOrganic2024 = data2024.reduce((sum, item) => sum + (item.organicWaste || 0), 0);
+    const totalInorganic2024 = data2024.reduce((sum, item) => sum + (item.inorganicWaste || 0), 0);
+    const totalRecyclable2024 = data2024.reduce((sum, item) => sum + (item.recyclableWaste || 0), 0);
+    
+    // Total de residuos que van al relleno sanitario (orgánicos + inorgánicos)
+    const totalToLandfill = totalOrganic2024 + totalInorganic2024;
+    
+    // Calcular desviación utilizando la fórmula correcta
+    const deviation = totalToLandfill > 0 ? (totalRecyclable2024 / totalToLandfill) * 100 : 0;
+    
+    // Redondear a 2 decimales
+    return Math.round(deviation * 100) / 100;
   };
   
-  const latestDeviation = getLatestDeviation();
-  const pendingAlerts = alerts.filter(alert => !alert.resolved).length;
+  const latestDeviation = calculate2024Deviation();
+  const pendingAlerts = alerts.filter((alert: any) => !alert.resolved).length;
   
   return (
     <AppLayout>
@@ -486,7 +502,7 @@ export default function ClientDetail() {
                     </div>
                   ) : (
                     <div className="space-y-4">
-                      {alerts.map((alert) => (
+                      {alerts.map((alert: any) => (
                         <Alert 
                           key={alert.id} 
                           variant={
