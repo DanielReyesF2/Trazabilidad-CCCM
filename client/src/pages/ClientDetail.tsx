@@ -454,39 +454,123 @@ export default function ClientDetail() {
                         </div>
                       </div>
                       
-                      {/* Waste Data Table */}
+                      {/* Waste Data Table - Versión mejorada */}
                       <div>
-                        <h3 className="text-lg font-semibold mb-4">Detalle de Registros</h3>
+                        <h3 className="text-lg font-semibold mb-4">Detalle de Registros Mensuales</h3>
                         <div className="overflow-x-auto">
-                          <table className="w-full text-sm text-left">
-                            <thead className="text-xs text-gray-700 uppercase bg-gray-50">
+                          <table className="w-full text-sm">
+                            <thead className="text-xs text-white uppercase bg-navy rounded-t-lg">
                               <tr>
-                                <th className="px-4 py-3">Fecha</th>
-                                <th className="px-4 py-3">Orgánicos (kg)</th>
-                                <th className="px-4 py-3">Inorgánicos (kg)</th>
-                                <th className="px-4 py-3">Reciclables (kg)</th>
-                                <th className="px-4 py-3">Total (kg)</th>
-                                <th className="px-4 py-3 text-right">Documento</th>
+                                <th className="px-4 py-3 rounded-tl-lg">Periodo</th>
+                                <th className="px-4 py-3 text-center">
+                                  <div className="flex flex-col items-center">
+                                    <span>Orgánicos</span>
+                                    <span className="text-xs font-normal opacity-80">kg</span>
+                                  </div>
+                                </th>
+                                <th className="px-4 py-3 text-center">
+                                  <div className="flex flex-col items-center">
+                                    <span>Inorgánicos</span>
+                                    <span className="text-xs font-normal opacity-80">kg</span>
+                                  </div>
+                                </th>
+                                <th className="px-4 py-3 text-center">
+                                  <div className="flex flex-col items-center">
+                                    <span>Reciclables</span>
+                                    <span className="text-xs font-normal opacity-80">kg</span>
+                                  </div>
+                                </th>
+                                <th className="px-4 py-3 text-center">
+                                  <div className="flex flex-col items-center">
+                                    <span>Total</span>
+                                    <span className="text-xs font-normal opacity-80">kg</span>
+                                  </div>
+                                </th>
+                                <th className="px-4 py-3 text-center rounded-tr-lg">
+                                  <div className="flex flex-col items-center">
+                                    <span>Índice Desviación</span>
+                                    <span className="text-xs font-normal opacity-80">%</span>
+                                  </div>
+                                </th>
                               </tr>
                             </thead>
                             <tbody>
-                              {wasteData.map((data) => {
-                                const doc = documents.find(d => d.id === data.documentId);
-                                return (
-                                  <tr key={data.id} className="border-b hover:bg-gray-50">
-                                    <td className="px-4 py-3">{formatDate(new Date(data.date))}</td>
-                                    <td className="px-4 py-3">{formatNumber(data.organicWaste || 0)}</td>
-                                    <td className="px-4 py-3">{formatNumber(data.inorganicWaste || 0)}</td>
-                                    <td className="px-4 py-3">{formatNumber(data.recyclableWaste || 0)}</td>
-                                    <td className="px-4 py-3 font-medium">{formatNumber(data.totalWaste || 0)}</td>
-                                    <td className="px-4 py-3 text-right">
-                                      {doc ? doc.fileName : 'N/A'}
-                                    </td>
-                                  </tr>
-                                );
-                              })}
+                              {/* Ordenar datos por fecha descendente (más reciente primero) */}
+                              {[...wasteData]
+                                .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+                                .map((data) => {
+                                  const date = new Date(data.date);
+                                  
+                                  // Calcular porcentaje para barras visuales
+                                  const maxValue = Math.max(
+                                    data.organicWaste || 0,
+                                    data.inorganicWaste || 0,
+                                    data.recyclableWaste || 0
+                                  );
+                                  
+                                  const organicPercent = maxValue ? (data.organicWaste || 0) / maxValue * 100 : 0;
+                                  const inorganicPercent = maxValue ? (data.inorganicWaste || 0) / maxValue * 100 : 0;
+                                  const recyclablePercent = maxValue ? (data.recyclableWaste || 0) / maxValue * 100 : 0;
+                                  
+                                  return (
+                                    <tr key={data.id} className="border-b hover:bg-gray-50">
+                                      <td className="px-4 py-3 font-medium">
+                                        <div className="flex flex-col">
+                                          <span>{formatDate(date)}</span>
+                                          <span className="text-xs text-gray-500">{getMonthName(date)} {date.getFullYear()}</span>
+                                        </div>
+                                      </td>
+                                      
+                                      <td className="px-4 py-3">
+                                        <div className="flex flex-col">
+                                          <span className="font-medium text-right mb-1">{formatNumber(data.organicWaste || 0)}</span>
+                                          <div className="w-full bg-gray-200 rounded-full h-1.5">
+                                            <div className="bg-lime h-1.5 rounded-full" style={{ width: `${organicPercent}%` }}></div>
+                                          </div>
+                                        </div>
+                                      </td>
+                                      
+                                      <td className="px-4 py-3">
+                                        <div className="flex flex-col">
+                                          <span className="font-medium text-right mb-1">{formatNumber(data.inorganicWaste || 0)}</span>
+                                          <div className="w-full bg-gray-200 rounded-full h-1.5">
+                                            <div className="bg-navy h-1.5 rounded-full" style={{ width: `${inorganicPercent}%` }}></div>
+                                          </div>
+                                        </div>
+                                      </td>
+                                      
+                                      <td className="px-4 py-3">
+                                        <div className="flex flex-col">
+                                          <span className="font-medium text-right mb-1">{formatNumber(data.recyclableWaste || 0)}</span>
+                                          <div className="w-full bg-gray-200 rounded-full h-1.5">
+                                            <div className="bg-yellow-500 h-1.5 rounded-full" style={{ width: `${recyclablePercent}%` }}></div>
+                                          </div>
+                                        </div>
+                                      </td>
+                                      
+                                      <td className="px-4 py-3">
+                                        <div className="flex justify-center font-bold">
+                                          {formatNumber(data.totalWaste || 0)}
+                                        </div>
+                                      </td>
+                                      
+                                      <td className="px-4 py-3">
+                                        <div className="flex justify-center">
+                                          <div className="bg-green-100 px-2 py-1 rounded-lg font-bold text-green-800">
+                                            {data.deviation ? data.deviation.toFixed(1) : 0}%
+                                          </div>
+                                        </div>
+                                      </td>
+                                    </tr>
+                                  );
+                                })
+                              }
                             </tbody>
                           </table>
+                        </div>
+                        
+                        <div className="mt-3 text-xs text-gray-500 italic text-center">
+                          Índice de desviación: porcentaje de residuos reciclables respecto al total de residuos a relleno sanitario
                         </div>
                       </div>
                     </div>
@@ -563,6 +647,10 @@ function formatDate(date: Date): string {
     month: 'short',
     year: 'numeric'
   });
+}
+
+function getMonthName(date: Date): string {
+  return date.toLocaleDateString('es-ES', { month: 'long' });
 }
 
 function formatFileSize(bytes: number): string {
