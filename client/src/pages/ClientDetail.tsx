@@ -330,8 +330,8 @@ export default function ClientDetail() {
               <div className="text-gray-500 text-xs uppercase">Residuos Orgánicos (Comedor)</div>
               <div className="flex items-baseline mt-1">
                 <div className="text-2xl font-bold">
-                  {new Intl.NumberFormat('es-MX', { maximumFractionDigits: 2 }).format(totalOrganic)}
-                  <span className="text-sm font-normal ml-1">kg</span>
+                  {new Intl.NumberFormat('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(totalOrganic/1000)}
+                  <span className="text-sm font-normal ml-1">ton</span>
                 </div>
                 <div className="ml-auto text-xs text-lime">
                   ↑ 8.2%
@@ -353,8 +353,8 @@ export default function ClientDetail() {
               <div className="text-gray-500 text-xs uppercase">Residuos Inorgánicos</div>
               <div className="flex items-baseline mt-1">
                 <div className="text-2xl font-bold">
-                  {new Intl.NumberFormat('es-MX', { maximumFractionDigits: 2 }).format(totalInorganic)}
-                  <span className="text-sm font-normal ml-1">kg</span>
+                  {new Intl.NumberFormat('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(totalInorganic/1000)}
+                  <span className="text-sm font-normal ml-1">ton</span>
                 </div>
                 <div className="ml-auto text-xs text-red-500">
                   ↑ 5.1%
@@ -376,8 +376,8 @@ export default function ClientDetail() {
               <div className="text-gray-500 text-xs uppercase">Total Residuos</div>
               <div className="flex items-baseline mt-1">
                 <div className="text-2xl font-bold">
-                  {new Intl.NumberFormat('es-MX', { maximumFractionDigits: 2 }).format(totalWaste)}
-                  <span className="text-sm font-normal ml-1">kg</span>
+                  {new Intl.NumberFormat('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(totalWaste/1000)}
+                  <span className="text-sm font-normal ml-1">ton</span>
                 </div>
                 <div className="ml-auto text-xs text-red-500">
                   ↑ 2.8%
@@ -521,7 +521,7 @@ export default function ClientDetail() {
                               <div className="flex items-center justify-between">
                                 <div>
                                   <p className="text-sm text-gray-500">Orgánicos (Comedor)</p>
-                                  <p className="text-2xl font-bold">{formatNumber(totalOrganic)} kg</p>
+                                  <p className="text-2xl font-bold">{formatNumber(totalOrganic)} ton</p>
                                 </div>
                                 <div className="bg-green-100 p-2 rounded-full">
                                   <div className="w-3 h-3 rounded-full bg-green-500"></div>
@@ -534,7 +534,7 @@ export default function ClientDetail() {
                               <div className="flex items-center justify-between">
                                 <div>
                                   <p className="text-sm text-gray-500">Orgánicos (PODA)</p>
-                                  <p className="text-2xl font-bold">{formatNumber(totalPoda)} kg</p>
+                                  <p className="text-2xl font-bold">{formatNumber(totalPoda)} ton</p>
                                 </div>
                                 <div className="bg-teal-100 p-2 rounded-full">
                                   <div className="w-3 h-3 rounded-full bg-teal-500"></div>
@@ -744,7 +744,7 @@ function formatFileSize(bytes: number): string {
 }
 
 function formatNumber(num: number): string {
-  return num.toLocaleString('es-ES', { maximumFractionDigits: 1 });
+  return (num/1000).toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 function processWasteDataForChart(wasteData: WasteData[]): any[] {
