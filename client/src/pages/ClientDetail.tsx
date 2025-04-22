@@ -245,25 +245,25 @@ export default function ClientDetail() {
             
             {/* Desviación */}
             <div className="bg-white p-4">
-              <div className="text-gray-500 text-xs uppercase">Desviación</div>
+              <div className="text-gray-500 text-xs uppercase">Desviación de Relleno Sanitario</div>
               <div className="flex items-baseline mt-1">
                 <div className="text-2xl font-bold">
                   {latestDeviation !== null ? 
                     `${new Intl.NumberFormat('es-MX', { maximumFractionDigits: 2 }).format(latestDeviation)}%` : 
                     '0%'}
                 </div>
-                <div className="ml-auto text-xs text-lime">
-                  ↑ 1.5%
+                <div className="ml-auto text-xs text-green-500">
+                  ↑ 12.63%
                 </div>
               </div>
               <div className="mt-2 h-1 bg-gray-100 rounded-full">
                 <div 
-                  className="h-1 bg-orange-500 rounded-full" 
-                  style={{ width: `${Math.min(100, (latestDeviation || 0) * 2)}%` }}
+                  className="h-1 bg-green-500 rounded-full" 
+                  style={{ width: `${Math.min(100, latestDeviation || 0)}%` }}
                 />
               </div>
               <div className="text-xs text-gray-400 mt-1">
-                {Math.round((latestDeviation || 0) * 2)}% del máximo permitido
+                Meta anual: 25%
               </div>
             </div>
           </div>
