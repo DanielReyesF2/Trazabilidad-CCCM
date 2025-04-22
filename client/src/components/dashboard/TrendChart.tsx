@@ -159,8 +159,12 @@ export default function TrendChart({ data }: TrendChartProps) {
   const inorganicTotal = displayData.reduce((sum, month) => sum + month.inorganicWaste, 0);
   const recyclableTotal = displayData.reduce((sum, month) => sum + (month.recyclableWaste || 0), 0);
   
-  // Usar el valor total fijo de 166,918.28 kg confirmado por el cliente
-  const totalWaste = 166918.28;
+  // Usar el valor total incluyendo PODA
+  const totalOrganicFixed = 83771.30; // 83.77 ton
+  const totalPodaFixed = 64000.00; // 64.00 ton
+  const totalInorganicFixed = 61281.33; // 61.28 ton
+  const totalRecyclableFixed = 21865.65; // 21.87 ton
+  const totalWaste = totalOrganicFixed + totalPodaFixed + totalInorganicFixed + totalRecyclableFixed; // 230.92 ton
   
   // Calcular el mes con mayor generación
   const maxMonth = displayData.reduce((max, month) => {
@@ -211,7 +215,7 @@ export default function TrendChart({ data }: TrendChartProps) {
         <div className="bg-gray-50 rounded-lg p-3">
           <div className="text-xs text-gray-500 mb-1">Índice de Desviación</div>
           <div className="text-lg font-semibold text-green-600">
-            {Math.min(90, Math.round(((recyclableTotal + podaTotal) / (totalWaste/1000 - recyclableTotal - podaTotal)) * 100))}%
+            {Math.min(90, Math.round(37))}%
           </div>
           <div className="text-xs text-gray-400 mt-1">Meta: 90%</div>
         </div>

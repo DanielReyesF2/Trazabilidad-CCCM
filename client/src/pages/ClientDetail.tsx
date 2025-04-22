@@ -230,9 +230,11 @@ export default function ClientDetail() {
   
   // Usar el valor calculado de 2024 de 22.16% que es el valor real verificado
   const calculate2024Deviation = () => {
-    // Para Club Campestre (ID 4), mostrar el valor correcto de 22.16%
+    // Para Club Campestre (ID 4), calcular el valor actual con PODA incluido
     if (clientId === 4) {
-      return 22.16;
+      // Calculamos el índice de desviación incluyendo PODA
+      const recyclablePercent = (totalRecyclableFixed + totalPodaFixed) / totalWaste * 100;
+      return parseFloat(recyclablePercent.toFixed(2));
     }
     
     if (wasteData.length === 0) return null;
