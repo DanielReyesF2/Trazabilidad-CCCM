@@ -283,7 +283,6 @@ export default function ClientDetail() {
                 </Link>
               </div>
               <h1 className="text-2xl font-anton text-gray-800 uppercase tracking-wider">{client.name}</h1>
-              <p className="mt-1 text-sm text-gray-500">{client.description}</p>
             </div>
             <div className="mt-4 flex gap-2 md:mt-0">
               <Button 
