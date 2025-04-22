@@ -73,27 +73,8 @@ interface SustainabilityBadgesProps {
 }
 
 const SustainabilityBadges: React.FC<SustainabilityBadgesProps> = ({ clientId }) => {
-  // Simulated achievements based on client ID 
-  // In a real app, these would come from a database
+  // Reconocimientos ambientales basados en el cliente
   const achievements = [
-    {
-      icon: (
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M21.3 15.3a2.4 2.4 0 0 1-4.8 0"/>
-          <path d="M15.3 15.3a2.4 2.4 0 0 1-4.8 0"/>
-          <path d="M9.3 15.3a2.4 2.4 0 0 1-4.8 0"/>
-          <path d="M21 5v4.5"/>
-          <path d="M15 5v4.5"/>
-          <path d="M9 5v4.5"/>
-          <path d="M3 5v4.5"/>
-          <path d="M3 12h18"/>
-        </svg>
-      ),
-      name: "ISO 14001",
-      description: "Certificación en gestión ambiental que demuestra el compromiso con la reducción de impacto ambiental.",
-      isActive: true,
-      progress: 100,
-    },
     {
       icon: (
         <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -116,10 +97,10 @@ const SustainabilityBadges: React.FC<SustainabilityBadgesProps> = ({ clientId })
           <path d="M12 2a10 10 0 1 0 10 10 10 10 0 0 0-10-10Z"/>
         </svg>
       ),
-      name: "Zero Waste",
-      description: "En progreso para lograr el objetivo de enviar cero residuos a vertederos mediante reciclaje y compostaje.",
+      name: "PRE Certificado True Zero Waste",
+      description: "Certificación que reconoce el compromiso de reducir los residuos enviados a rellenos sanitarios a través de estrategias de reciclaje y compostaje.",
       isActive: clientId === 4, // Solo Club Campestre tiene este logro
-      progress: 55,
+      progress: 75,
     },
     {
       icon: (
@@ -137,14 +118,27 @@ const SustainabilityBadges: React.FC<SustainabilityBadgesProps> = ({ clientId })
     {
       icon: (
         <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M5 6a6 6 0 0 1 3.8-5.6c2-.7 4.3-.4 6 .8 1.9-1.3 4.1-1.6 6.2-.8a6 6 0 0 1 3.8 5.6c0 6.1-3.8 8.5-7.8 9.5V22h-4v-6.7C9.1 14.5 5 12.3 5 6Z"/>
-          <path d="M9 12c1 0 1-1 2.80-1s1.89 1 2.9 1 1.8-1 2.4-1"/>
+          <path d="M16.75 2A4.29 4.29 0 0 1 21 6.25C21 12.5 12 18 12 18s-9-5.5-9-11.75A4.29 4.29 0 0 1 7.25 2a4.14 4.14 0 0 1 3.34 1.66h0a4.14 4.14 0 0 1 3.09-1.45"/> 
+          <path d="m12 7 2 5h-4l2 4"/>
         </svg>
       ),
-      name: "Eco-Friendly",
-      description: "Reconocimiento por implementar prácticas sustentables en toda la cadena de valor.",
-      isActive: true,
-      progress: 100,
+      name: "Ecología Regenerativa",
+      description: "Implementación de prácticas que no solo reducen impacto, sino que contribuyen positivamente al medio ambiente.",
+      isActive: clientId === 4, // Solo Club Campestre tiene este logro
+      progress: 50,
+    },
+    {
+      icon: (
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M14.5 2v17.5c0 1.4-1.1 2.5-2.5 2.5h0c-1.4 0-2.5-1.1-2.5-2.5V2"/>
+          <path d="M8.5 2h7"/>
+          <path d="M14.5 16h-5"/>
+        </svg>
+      ),
+      name: "Economía Circular",
+      description: "Programa de gestión de residuos que implementa principios de economía circular para maximizar el aprovechamiento de recursos.",
+      isActive: clientId === 4, // Club Campestre tiene este logro
+      progress: 85,
     },
   ];
 
