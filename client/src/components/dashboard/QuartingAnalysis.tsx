@@ -20,34 +20,12 @@ export default function QuartingAnalysis({ wasteData, clientId }: QuartingAnalys
     { name: 'No reciclable', value: 3.8, color: '#c8d6e5' }
   ];
   
-  // Datos de lo que va a relleno sanitario pero es aprovechable (78%)
-  const contaminationData = [
-    { name: 'Residuos aprovechables', value: 78, color: '#10ac84' },
-    { name: 'No aprovechable', value: 22, color: '#ee5253' }
-  ];
-  
-  // Potencial reciclable según análisis (valor fijo)
-  const recyclablePotential = 78;
+  // Calcular potencial reciclable (100% - porcentaje no reciclable)
+  const nonRecyclableValue = quartingResults.find(item => item.name === 'No reciclable')?.value || 0;
+  const recyclablePotential = 100 - nonRecyclableValue;
   
   // Fecha de la última auditoría
   const lastAuditDate = new Date(2025, 2, 15);  // 15 de marzo de 2025
-  
-  // Custom Legend renderizado con los porcentajes ya incluidos
-  const CustomLegend = ({ payload }: any) => {
-    return (
-      <ul className="text-xs">
-        {payload.map((entry: any, index: number) => (
-          <li key={`item-${index}`} className="flex items-center mb-1">
-            <div 
-              className="w-3 h-3 mr-2" 
-              style={{ backgroundColor: entry.color }} 
-            />
-            <span>{entry.value}</span>
-          </li>
-        ))}
-      </ul>
-    );
-  };
   
   return (
     <Card>
@@ -61,115 +39,61 @@ export default function QuartingAnalysis({ wasteData, clientId }: QuartingAnalys
       </CardHeader>
       
       <CardContent className="pt-5">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Composición detallada de residuos */}
-          <div className="flex flex-col">
-            <h3 className="text-sm font-semibold mb-3 text-gray-700">Composición de Residuos</h3>
-            <div className="grid grid-cols-8 h-[230px]">
-              <div className="col-span-5">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
-                    <Pie 
-                      data={quartingResults} 
-                      cx="50%" 
-                      cy="50%" 
-                      innerRadius={0}
-                      outerRadius={85} 
-                      paddingAngle={1} 
-                      dataKey="value"
-                      startAngle={180}
-                      endAngle={-180}
-                    >
-                      {quartingResults.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                    </Pie>
-                    <Tooltip 
-                      formatter={(value) => [`${value}%`, 'Proporción']}
-                      contentStyle={{
-                        backgroundColor: 'white', 
-                        borderRadius: '0.5rem',
-                        boxShadow: '0 10px 15px -5px rgba(0, 0, 0, 0.1)',
-                        border: 'none',
-                        padding: '6px 8px',
-                      }}
-                    />
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
-              <div className="col-span-3 flex items-center">
-                <div className="w-full">
-                  {quartingResults.map((item, index) => (
-                    <div key={index} className="flex items-center mb-1 text-xs">
-                      <div className="w-3 h-3 mr-2" style={{ backgroundColor: item.color }} />
-                      <span>{item.name} {item.value}%</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
+        <div className="flex flex-col">
+          <h3 className="text-sm font-semibold mb-3 text-gray-700">Composición de Residuos</h3>
+          <div className="grid grid-cols-12 h-[260px]">
+            <div className="col-span-7">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
+                  <Pie 
+                    data={quartingResults} 
+                    cx="50%" 
+                    cy="50%" 
+                    innerRadius={0}
+                    outerRadius={100} 
+                    paddingAngle={1} 
+                    dataKey="value"
+                    startAngle={180}
+                    endAngle={-180}
+                  >
+                    {quartingResults.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip 
+                    formatter={(value) => [`${value}%`, 'Proporción']}
+                    contentStyle={{
+                      backgroundColor: 'white', 
+                      borderRadius: '0.5rem',
+                      boxShadow: '0 10px 15px -5px rgba(0, 0, 0, 0.1)',
+                      border: 'none',
+                      padding: '6px 8px',
+                    }}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
             </div>
-            
-            <div className="mt-2 flex justify-center">
-              <div className="bg-gray-50 px-5 py-2 rounded-lg text-center">
-                <div className="text-xs text-gray-500">Potencial Reciclable</div>
-                <div className="text-2xl font-bold text-navy">{recyclablePotential}%</div>
+            <div className="col-span-5 flex items-center">
+              <div className="w-full">
+                {quartingResults.map((item, index) => (
+                  <div key={index} className="flex items-center mb-1 text-xs">
+                    <div className="w-3 h-3 mr-2" style={{ backgroundColor: item.color }} />
+                    <span>{item.name} {item.value}%</span>
+                  </div>
+                ))}
+                <div className="mt-4 bg-gray-50 px-4 py-2 rounded-lg">
+                  <div className="text-xs text-gray-500">Potencial Reciclable</div>
+                  <div className="text-2xl font-bold text-navy">{recyclablePotential.toFixed(1)}%</div>
+                </div>
               </div>
             </div>
           </div>
           
-          {/* Análisis de lo enviado a relleno sanitario */}
-          <div className="flex flex-col">
-            <h3 className="text-sm font-semibold mb-3 text-gray-700">Análisis de Residuos a Relleno Sanitario</h3>
-            <div className="grid grid-cols-8 h-[230px]">
-              <div className="col-span-5">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
-                    <Pie 
-                      data={contaminationData} 
-                      cx="50%" 
-                      cy="50%" 
-                      innerRadius={0}
-                      outerRadius={85} 
-                      paddingAngle={0} 
-                      dataKey="value"
-                      startAngle={0}
-                      endAngle={360}
-                    >
-                      {contaminationData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                    </Pie>
-                    <Tooltip 
-                      formatter={(value) => [`${value}%`, 'Proporción']}
-                      contentStyle={{
-                        backgroundColor: 'white', 
-                        borderRadius: '0.5rem',
-                        boxShadow: '0 10px 15px -5px rgba(0, 0, 0, 0.1)',
-                        border: 'none',
-                        padding: '6px 8px',
-                      }}
-                    />
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
-              <div className="col-span-3 flex items-center">
-                <div className="w-full">
-                  {contaminationData.map((item, index) => (
-                    <div key={index} className="flex items-center mb-1 text-xs">
-                      <div className="w-3 h-3 mr-2" style={{ backgroundColor: item.color }} />
-                      <span>{item.name} {item.value}%</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-            
-            <div className="bg-gray-50 p-3 rounded-lg mt-2">
-              <div className="text-xs text-gray-500 mb-1">Observaciones</div>
-              <div className="text-sm text-gray-700">
-                <p className="mb-1">Se siguen encontrando residuos reciclables dentro de lo que va a relleno sanitario debido a un mal manejo interno.</p>
-                <p>Aproximadamente el 78% de lo que va a relleno sanitario es realmente aprovechable con una correcta separación en origen.</p>
-              </div>
+          <div className="mt-6 bg-gray-50 p-4 rounded-lg">
+            <h3 className="text-sm font-semibold mb-2 text-gray-700">Observaciones</h3>
+            <div className="text-sm text-gray-700">
+              <p className="mb-2">Se siguen encontrando residuos reciclables dentro de lo que va a relleno sanitario debido a un mal manejo interno.</p>
+              <p>Aproximadamente el 78% de lo que va a relleno sanitario es realmente aprovechable con una correcta separación en origen.</p>
             </div>
           </div>
         </div>
@@ -178,7 +102,7 @@ export default function QuartingAnalysis({ wasteData, clientId }: QuartingAnalys
           <h3 className="text-sm font-semibold mb-2 text-gray-700">Hallazgos principales</h3>
           <ul className="text-sm text-gray-600 space-y-1 list-disc pl-4">
             <li>El 70% de la composición corresponde a residuos orgánicos de comedor</li>
-            <li>El 78% de los residuos que actualmente van a relleno sanitario son potencialmente aprovechables</li>
+            <li>El {recyclablePotential.toFixed(1)}% de los residuos son potencialmente aprovechables</li>
             <li>Existe una oportunidad de incrementar el índice de desviación actual (37.18%) significativamente</li>
             <li>Se requiere mejorar la capacitación del personal y la señalización de contenedores para reducir la contaminación</li>
             <li>Los residuos de Papel y Cartón (13.9% combinado) representan una importante oportunidad de captura</li>
