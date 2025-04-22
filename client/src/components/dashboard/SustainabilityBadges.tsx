@@ -168,20 +168,6 @@ const SustainabilityBadges: React.FC<SustainabilityBadgesProps> = ({ clientId })
             />
           ))}
         </div>
-        
-        <div className="mt-4 pt-4 border-t border-gray-200">
-          <div className="flex justify-between items-center mb-2">
-            <div className="text-sm font-medium text-navy">ODS alineados:</div>
-            <div className="text-xs text-gray-500">4 de 17</div>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="bg-green-600 text-white text-xs font-bold w-7 h-7 rounded-full flex items-center justify-center">3</div>
-            <div className="bg-red-600 text-white text-xs font-bold w-7 h-7 rounded-full flex items-center justify-center">6</div>
-            <div className="bg-orange-500 text-white text-xs font-bold w-7 h-7 rounded-full flex items-center justify-center">7</div>
-            <div className="bg-lime text-navy text-xs font-bold w-7 h-7 rounded-full flex items-center justify-center">12</div>
-            <div className="border border-dashed border-gray-300 text-gray-400 text-xs font-bold w-7 h-7 rounded-full flex items-center justify-center">+</div>
-          </div>
-        </div>
       </CardContent>
     </Card>
   );
