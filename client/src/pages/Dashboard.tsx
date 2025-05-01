@@ -248,6 +248,28 @@ export default function Dashboard() {
             </div>
           </div>
 
+          {/* Tarjeta destacada para registro de residuos */}
+          <div className="mb-6">
+            <Link href="/clients/4?tab=wastedata">
+              <div className="rounded-lg bg-gradient-to-r from-lime-500/80 to-lime p-1 shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between bg-white rounded-md p-5">
+                  <div className="flex items-center mb-4 md:mb-0">
+                    <div className="bg-lime rounded-full p-4">
+                      <PlusCircle className="h-8 w-8 text-white" />
+                    </div>
+                    <div className="ml-4">
+                      <h3 className="text-2xl font-bold text-gray-800">Registrar Residuos</h3>
+                      <p className="text-gray-600 text-lg">Ingresa los datos de generación de residuos del día</p>
+                    </div>
+                  </div>
+                  <Button className="bg-lime hover:bg-lime/90 text-black font-bold text-lg px-6 py-3 w-full md:w-auto">
+                    Ingresar ahora
+                  </Button>
+                </div>
+              </div>
+            </Link>
+          </div>
+
           {/* Clients Grid */}
           <div className="mb-8">
             <h2 className="text-lg font-anton text-gray-800 uppercase tracking-wider mb-4">Clientes</h2>
