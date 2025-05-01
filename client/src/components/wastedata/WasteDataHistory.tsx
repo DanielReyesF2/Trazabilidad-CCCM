@@ -1,7 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import { WasteData } from '@shared/schema';
 import { Badge } from '@/components/ui/badge';
-import { FileText, BarChart2 } from 'lucide-react';
+import { FileText, BarChart2, Calendar } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
 
 interface WasteDataHistoryProps {
   clientId?: number;
@@ -31,7 +32,7 @@ export default function WasteDataHistory({ clientId, limit = 5 }: WasteDataHisto
     const date = typeof dateString === 'string' ? new Date(dateString) : dateString;
     return date.toLocaleDateString('es-MX', {
       day: 'numeric',
-      month: 'short',
+      month: 'long',
       year: 'numeric'
     });
   };
@@ -39,8 +40,8 @@ export default function WasteDataHistory({ clientId, limit = 5 }: WasteDataHisto
   // Format number as kg
   const formatKg = (value: number): string => {
     return new Intl.NumberFormat('es-MX', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
+      minimumFractionDigits: 1,
+      maximumFractionDigits: 1
     }).format(value) + ' kg';
   };
   
@@ -48,13 +49,13 @@ export default function WasteDataHistory({ clientId, limit = 5 }: WasteDataHisto
   const getWasteSource = (data: WasteData): { text: string, badge: React.ReactNode } => {
     if (data.documentId) {
       return { 
-        text: 'Documento', 
-        badge: <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">Documento</Badge>
+        text: 'PDF', 
+        badge: <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 px-3 py-1">PDF</Badge>
       };
     } else {
       return { 
         text: 'Manual', 
-        badge: <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">Manual</Badge>
+        badge: <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 px-3 py-1">Manual</Badge>
       };
     }
   };
@@ -70,16 +71,13 @@ export default function WasteDataHistory({ clientId, limit = 5 }: WasteDataHisto
   
   if (isLoading) {
     return (
-      <div className="animate-pulse">
-        <div className="h-6 bg-gray-200 rounded mb-4 w-1/4"></div>
-        <div className="space-y-3">
+      <div className="animate-pulse bg-white p-6 rounded-lg border">
+        <div className="h-8 bg-gray-200 rounded mb-6 w-1/3"></div>
+        <div className="space-y-4">
           {[...Array(3)].map((_, i) => (
-            <div key={i} className="grid grid-cols-6 gap-2">
-              <div className="col-span-2 h-4 bg-gray-200 rounded"></div>
-              <div className="col-span-1 h-4 bg-gray-200 rounded"></div>
-              <div className="col-span-1 h-4 bg-gray-200 rounded"></div>
-              <div className="col-span-1 h-4 bg-gray-200 rounded"></div>
-              <div className="col-span-1 h-4 bg-gray-200 rounded"></div>
+            <div key={i} className="p-4 border rounded-lg">
+              <div className="h-6 bg-gray-200 rounded w-1/4 mb-3"></div>
+              <div className="h-4 bg-gray-200 rounded w-full"></div>
             </div>
           ))}
         </div>
@@ -89,45 +87,65 @@ export default function WasteDataHistory({ clientId, limit = 5 }: WasteDataHisto
   
   if (sortedData.length === 0) {
     return (
-      <div className="text-center py-10 text-gray-500">
-        <BarChart2 className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-        <p>No hay registros de residuos disponibles</p>
-        <p className="text-sm mt-2">Usa el formulario para agregar datos manualmente</p>
+      <div className="text-center py-10 text-gray-500 bg-white p-6 rounded-lg border">
+        <Calendar className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+        <p className="text-lg font-medium">No hay registros de residuos</p>
+        <p className="text-sm mt-2">Usa el formulario para agregar tus primeros datos de residuos</p>
       </div>
     );
   }
   
   return (
-    <div className="space-y-4">
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead className="text-xs uppercase bg-gray-50">
-            <tr>
-              <th className="px-3 py-2 text-left">Fecha</th>
-              <th className="px-3 py-2 text-right">Orgánicos</th>
-              <th className="px-3 py-2 text-right">PODA</th>
-              <th className="px-3 py-2 text-right">Inorgánicos</th>
-              <th className="px-3 py-2 text-right">Reciclables</th>
-              <th className="px-3 py-2 text-center">Origen</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-100">
-            {sortedData.map((data) => {
-              const source = getWasteSource(data);
-              
-              return (
-                <tr key={data.id} className="hover:bg-gray-50">
-                  <td className="px-3 py-2 font-medium">{formatDate(data.date)}</td>
-                  <td className="px-3 py-2 text-right">{formatKg(data.organicWaste || 0)}</td>
-                  <td className="px-3 py-2 text-right">{formatKg(data.podaWaste || 0)}</td>
-                  <td className="px-3 py-2 text-right">{formatKg(data.inorganicWaste || 0)}</td>
-                  <td className="px-3 py-2 text-right">{formatKg(data.recyclableWaste || 0)}</td>
-                  <td className="px-3 py-2 text-center">{source.badge}</td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+    <div className="space-y-6 bg-white p-6 rounded-lg border">
+      <h3 className="text-lg font-medium mb-4">Últimos registros</h3>
+      
+      <div className="space-y-4">
+        {sortedData.map((data) => {
+          const source = getWasteSource(data);
+          const totalWaste = (data.organicWaste || 0) + (data.podaWaste || 0) + 
+                            (data.inorganicWaste || 0) + (data.recyclableWaste || 0);
+          
+          return (
+            <Card key={data.id} className="overflow-hidden">
+              <CardContent className="p-4">
+                <div className="flex justify-between items-center mb-3">
+                  <div className="flex items-center gap-2">
+                    <Calendar className="h-5 w-5 text-gray-400" />
+                    <span className="text-base font-medium">{formatDate(data.date)}</span>
+                  </div>
+                  {source.badge}
+                </div>
+                
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-center">
+                  <div className="p-2 bg-green-50 rounded-lg">
+                    <p className="text-xs text-gray-500 mb-1">Orgánicos</p>
+                    <p className="font-medium">{formatKg(data.organicWaste || 0)}</p>
+                  </div>
+                  
+                  <div className="p-2 bg-teal-50 rounded-lg">
+                    <p className="text-xs text-gray-500 mb-1">PODA</p>
+                    <p className="font-medium">{formatKg(data.podaWaste || 0)}</p>
+                  </div>
+                  
+                  <div className="p-2 bg-red-50 rounded-lg">
+                    <p className="text-xs text-gray-500 mb-1">Inorgánicos</p>
+                    <p className="font-medium">{formatKg(data.inorganicWaste || 0)}</p>
+                  </div>
+                  
+                  <div className="p-2 bg-yellow-50 rounded-lg">
+                    <p className="text-xs text-gray-500 mb-1">Reciclables</p>
+                    <p className="font-medium">{formatKg(data.recyclableWaste || 0)}</p>
+                  </div>
+                </div>
+                
+                <div className="mt-3 pt-3 border-t border-gray-100 flex justify-between items-center">
+                  <span className="text-sm text-gray-500">Total:</span>
+                  <span className="font-medium">{formatKg(totalWaste)}</span>
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
     </div>
   );

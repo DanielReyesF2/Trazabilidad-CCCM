@@ -44,6 +44,17 @@ export const wasteData = pgTable("waste_data", {
   recyclableWaste: real("recyclable_waste"), // in kg
   totalWaste: real("total_waste"), // in kg
   deviation: real("deviation"), // percentage deviation
+  
+  // Desglose de reciclables
+  cardboard: real("cardboard"), // Cartón
+  paper: real("paper"), // Papel
+  newspaper: real("newspaper"), // Periódico
+  plasticPET: real("plastic_pet"), // Plástico PET
+  plasticOther: real("plastic_other"), // Otros plásticos
+  metalAluminum: real("metal_aluminum"), // Aluminio
+  glass: real("glass"), // Vidrio
+  hasDetailedRecyclables: boolean("has_detailed_recyclables").default(false),
+  
   // Impacto ambiental
   treesSaved: real("trees_saved"), // árboles salvados
   waterSaved: real("water_saved"), // litros de agua ahorrados
@@ -65,7 +76,16 @@ export const insertWasteDataSchema = createInsertSchema(wasteData).pick({
   recyclableWaste: true,
   totalWaste: true,
   deviation: true,
-  // Nuevos campos de impacto ambiental
+  // Desglose de reciclables
+  cardboard: true,
+  paper: true,
+  newspaper: true,
+  plasticPET: true,
+  plasticOther: true,
+  metalAluminum: true,
+  glass: true,
+  hasDetailedRecyclables: true,
+  // Campos de impacto ambiental
   treesSaved: true,
   waterSaved: true,
   energySaved: true,
