@@ -1,12 +1,16 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Helmet } from "react-helmet";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import WasteDataForm from "@/components/wastedata/WasteDataForm";
 import WasteDataHistory from "@/components/wastedata/WasteDataHistory";
 
 export default function WasteDataEntry() {
   const [activeTab, setActiveTab] = useState("form");
+  
+  // Actualizar título de la página
+  useEffect(() => {
+    document.title = "Registro de Residuos | Econova";
+  }, []);
   
   // Obtener lista de clientes para el formulario
   const { data: clients = [] } = useQuery({
@@ -21,10 +25,6 @@ export default function WasteDataEntry() {
   
   return (
     <>
-      <Helmet>
-        <title>Registro de Residuos | Econova</title>
-      </Helmet>
-      
       <div className="container mx-auto py-6">
         <h1 className="text-3xl font-bold mb-6">Registro de Residuos</h1>
         

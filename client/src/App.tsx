@@ -12,6 +12,7 @@ import Clients from "@/pages/clients";
 import Settings from "@/pages/settings";
 import ClientDetail from "@/pages/ClientDetail";
 import ReportGenerator from "@/pages/ReportGenerator";
+import WasteDataEntry from "@/pages/WasteDataEntry";
 
 function Router() {
   return (
@@ -23,6 +24,7 @@ function Router() {
       <Route path="/clients" component={Clients} />
       <Route path="/clients/:id" component={ClientDetail} />
       <Route path="/reports/:id" component={ReportGenerator} />
+      <Route path="/data-entry" component={WasteDataEntry} />
       <Route path="/settings" component={Settings} />
       <Route component={NotFound} />
     </Switch>

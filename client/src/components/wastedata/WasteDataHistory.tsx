@@ -13,7 +13,24 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { WasteData } from '@shared/schema';
+
+// Definición de tipos
+interface Client {
+  id: number;
+  name: string;
+}
+
+interface WasteData {
+  id: number;
+  clientId: number;
+  date: string | Date;
+  organicWaste: number;
+  inorganicWaste: number;
+  recyclableWaste: number;
+  podaWaste: number;
+  totalWaste: number;
+  deviation: number;
+}
 
 interface WasteDataHistoryProps {
   clientId?: number;
@@ -24,22 +41,22 @@ export default function WasteDataHistory({ clientId, limit = 10 }: WasteDataHist
   const [selectedClientId, setSelectedClientId] = useState<string>(clientId?.toString() || "");
   
   // Obtener lista de clientes
-  const { data: clients } = useQuery({
+  const { data: clients = [] } = useQuery<Client[]>({
     queryKey: ['/api/clients'],
     staleTime: 60 * 1000, // 1 minuto
   });
   
   // Obtener datos de residuos filtrados por cliente
-  const { data: wasteData, isLoading } = useQuery({
+  const { data: wasteData = [], isLoading } = useQuery<WasteData[]>({
     queryKey: ['/api/waste-data', selectedClientId],
     enabled: !clientId || !!selectedClientId,
   });
   
   // Filtrar y ordenar datos por fecha descendente (más recientes primero)
   const filteredData = wasteData
-    ?.filter(data => !selectedClientId || data.clientId === parseInt(selectedClientId))
-    ?.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-    ?.slice(0, limit);
+    .filter((data: WasteData) => !selectedClientId || data.clientId === parseInt(selectedClientId))
+    .sort((a: WasteData, b: WasteData) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    .slice(0, limit);
   
   // Formatear número con 2 decimales
   const formatNumber = (num: number) => (num / 1000).toFixed(2);
@@ -63,7 +80,7 @@ export default function WasteDataHistory({ clientId, limit = 10 }: WasteDataHist
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="">Todos los clientes</SelectItem>
-                {clients?.map(client => (
+                {clients.map((client: Client) => (
                   <SelectItem key={client.id} value={client.id.toString()}>
                     {client.name}
                   </SelectItem>
@@ -101,7 +118,7 @@ export default function WasteDataHistory({ clientId, limit = 10 }: WasteDataHist
               </TableRow>
             ) : filteredData?.length ? (
               filteredData.map((data: WasteData) => {
-                const client = clients?.find(c => c.id === data.clientId);
+                const client = clients.find((c: Client) => c.id === data.clientId);
                 return (
                   <TableRow key={data.id}>
                     <TableCell>
