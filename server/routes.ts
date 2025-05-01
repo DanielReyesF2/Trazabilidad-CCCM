@@ -224,6 +224,64 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to update alert" });
     }
   });
+  
+  // Add a new waste data entry manually (for client operators)
+  app.post("/api/waste-data/manual", async (req: Request, res: Response) => {
+    try {
+      // Validate request body
+      const validatedData = insertWasteDataSchema.parse({
+        ...req.body,
+        date: new Date(req.body.date)
+      });
+      
+      // Calculate total waste
+      const totalWaste = 
+        (validatedData.organicWaste || 0) + 
+        (validatedData.inorganicWaste || 0) + 
+        (validatedData.recyclableWaste || 0) + 
+        (validatedData.podaWaste || 0);
+      
+      // Calculate deviation
+      const sanitaryLandfillTotal = 
+        (validatedData.organicWaste || 0) + 
+        (validatedData.inorganicWaste || 0);
+      
+      const recyclableTotal = 
+        (validatedData.recyclableWaste || 0) + 
+        (validatedData.podaWaste || 0);
+      
+      const deviation = sanitaryLandfillTotal > 0 
+        ? (recyclableTotal / (sanitaryLandfillTotal + recyclableTotal)) * 100 
+        : 0;
+      
+      // Create a document record for reference
+      const document = await storage.createDocument({
+        fileName: `Registro manual - ${new Date(validatedData.date).toLocaleDateString('es-MX')}`,
+        fileSize: 0,
+        clientId: validatedData.clientId,
+        processed: true
+      });
+      
+      // Create waste data record
+      const newWasteData = await storage.createWasteData({
+        ...validatedData,
+        documentId: document.id,
+        totalWaste,
+        deviation: parseFloat(deviation.toFixed(2))
+      });
+      
+      res.status(201).json(newWasteData);
+    } catch (error) {
+      console.error("Error creating waste data:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          message: "Invalid data format", 
+          errors: error.format() 
+        });
+      }
+      res.status(500).json({ message: "Failed to create waste data" });
+    }
+  });
 
   const httpServer = createServer(app);
   return httpServer;
