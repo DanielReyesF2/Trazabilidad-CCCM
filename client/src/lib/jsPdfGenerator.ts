@@ -13,15 +13,27 @@ const MARGINS = {
   right: 15
 };
 
-// Colores corporativos de Econova
+// Colores corporativos de Econova - Paleta extendida y mejorada para mejor diseño
 const COLORS = {
-  navy: '#273949',      // Azul marino corporativo
-  lime: '#b5e951',      // Verde lima corporativo
+  navy: '#273949',      // Azul marino corporativo principal
+  navyLight: '#3a556f', // Azul marino más claro para variaciones
+  navyDark: '#1e2d3b',  // Azul marino más oscuro para sombras y detalles
+  lime: '#b5e951',      // Verde lima corporativo principal
+  limeLight: '#c7ef7a', // Verde lima más claro para hover y destacados
+  limeDark: '#9aca45',  // Verde lima más oscuro para bordes y detalles
   lightGray: '#f8f9fa', // Fondo claro
+  mediumGray: '#e9ecef', // Fondo medio para paneles
   darkGray: '#495057',  // Texto secundario
   green: '#74c278',     // Verde para orgánicos
+  greenLight: '#a3dcaa', // Verde claro para fondos de orgánicos
   blue: '#3e8cbe',      // Azul para elementos decorativos
+  blueLight: '#70b0dc', // Azul claro para fondos y decoraciones
   accent: '#e9f5d8',    // Color de acento suave
+  accentDark: '#d8edbd', // Acento más oscuro para bordes
+  water: '#63c5da',     // Azul agua para indicadores hídricos
+  energy: '#ffd166',    // Amarillo para energía
+  teal: '#20b2aa',      // Verde azulado para PODA
+  coral: '#ff7f50',     // Coral para elementos destacados
 };
 
 // Función para formatear números con separador de miles
@@ -224,65 +236,72 @@ export async function generateClientPDF(data: ReportData): Promise<Blob> {
   doc.setFillColor(255, 255, 255);
   doc.rect(0, 0, 210, 297, 'F');
   
-  // Barra superior con color corporativo - más compacta
-  doc.setFillColor(parseInt(COLORS.navy.slice(1, 3), 16), parseInt(COLORS.navy.slice(3, 5), 16), parseInt(COLORS.navy.slice(5, 7), 16));
-  doc.rect(0, 0, 210, 50, 'F');
+  // Cabecera con estilo moderno y minimalista - Gradiente de azul marino
+  createGradientPattern(doc, 0, 0, 210, 60, COLORS.navyDark, COLORS.navy, 'vertical');
   
-  // Línea decorativa verde
-  doc.setFillColor(parseInt(COLORS.lime.slice(1, 3), 16), parseInt(COLORS.lime.slice(3, 5), 16), parseInt(COLORS.lime.slice(5, 7), 16));
-  doc.rect(0, 50, 210, 3, 'F');
+  // Banda decorativa en el costado con degradado de lima a blanco
+  createGradientPattern(doc, 0, 60, 210, 4, COLORS.limeDark, COLORS.limeLight, 'horizontal');
   
-  // Añadir imagen del logo centrado
+  // Añadir imagen del logo centrado con más impacto
   try {
-    doc.addImage(logoPath, 'PNG', 70, 8, 70, 35, undefined, 'FAST');
+    doc.addImage(logoPath, 'PNG', 65, 10, 80, 40, undefined, 'FAST');
   } catch (error) {
     console.error('Error al añadir el logo:', error);
   }
   
-  // Título del reporte con aspecto minimalista
+  // Efecto visual: líneas decorativas laterales con estilo minimalista
+  doc.setDrawColor(255, 255, 255, 0.3); // Blanco semitransparente
+  doc.setLineWidth(0.5);
+  doc.line(30, 10, 30, 50);
+  doc.line(180, 10, 180, 50);
+  
+  // Título del reporte con aspecto moderno y minimalista
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(parseInt(COLORS.navy.slice(1, 3), 16), parseInt(COLORS.navy.slice(3, 5), 16), parseInt(COLORS.navy.slice(5, 7), 16));
-  doc.setFontSize(22);
-  doc.text('REPORTE DE GESTIÓN DE RESIDUOS', 105, 70, { align: 'center' });
+  doc.setFontSize(24);
+  doc.text('REPORTE DE GESTIÓN DE RESIDUOS', 105, 78, { align: 'center' });
   
-  // Línea decorativa para separar el título
+  // Líneas decorativas para enmarcar el título, estilo moderno
+  doc.setDrawColor(parseInt(COLORS.limeDark.slice(1, 3), 16), parseInt(COLORS.limeDark.slice(3, 5), 16), parseInt(COLORS.limeDark.slice(5, 7), 16));
+  doc.setLineWidth(1.5);
+  doc.line(50, 83, 90, 83);
   doc.setDrawColor(parseInt(COLORS.lime.slice(1, 3), 16), parseInt(COLORS.lime.slice(3, 5), 16), parseInt(COLORS.lime.slice(5, 7), 16));
-  doc.setLineWidth(1);
-  doc.line(60, 75, 150, 75);
+  doc.line(120, 83, 160, 83);
   
-  // Cliente
+  // Cliente con estilo tipográfico más elegante
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(16);
-  doc.text(data.client.name, 105, 90, { align: 'center' });
+  doc.setFontSize(18);
+  doc.setTextColor(parseInt(COLORS.navyDark.slice(1, 3), 16), parseInt(COLORS.navyDark.slice(3, 5), 16), parseInt(COLORS.navyDark.slice(5, 7), 16));
+  doc.text(data.client.name, 105, 100, { align: 'center' });
   
-  // Información del periodo
+  // Información del periodo con estilo sutil
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(14);
-  doc.text(data.period, 105, 105, { align: 'center' });
+  doc.setTextColor(60, 60, 60);
+  doc.text(data.period, 105, 115, { align: 'center' });
   
-  // INDICADORES CLAVE - Panel más compacto
-  doc.setFillColor(245, 247, 250);
-  doc.roundedRect(15, 115, 180, 40, 3, 3, 'F');
+  // Panel principal para indicadores clave - mejor integración con el diseño
+  // Fondo con degradado suave para resaltar los indicadores clave
+  createGradientPattern(doc, 15, 125, 180, 50, COLORS.lightGray, COLORS.mediumGray, 'diagonal');
+  doc.roundedRect(15, 125, 180, 50, 6, 6, 'F');
   
-  // Título de la métrica clave
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(12);
-  doc.setTextColor(parseInt(COLORS.navy.slice(1, 3), 16), parseInt(COLORS.navy.slice(3, 5), 16), parseInt(COLORS.navy.slice(5, 7), 16));
-  doc.text('INDICADORES CLAVE', 105, 125, { align: 'center' });
+  // Borde sutil para el panel
+  doc.setDrawColor(parseInt(COLORS.lime.slice(1, 3), 16), parseInt(COLORS.lime.slice(3, 5), 16), parseInt(COLORS.lime.slice(5, 7), 16), 0.5);
+  doc.setLineWidth(0.8);
+  doc.roundedRect(15, 125, 180, 50, 6, 6, 'S');
   
-  // Mostrar tres indicadores clave en línea
-  // 1. Desviación
-  doc.setFillColor(parseInt(COLORS.lime.slice(1, 3), 16), parseInt(COLORS.lime.slice(3, 5), 16), parseInt(COLORS.lime.slice(5, 7), 16));
-  doc.circle(45, 140, 12, 'F');
-  
+  // Título de los indicadores con diseño elegante
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(14);
   doc.setTextColor(parseInt(COLORS.navy.slice(1, 3), 16), parseInt(COLORS.navy.slice(3, 5), 16), parseInt(COLORS.navy.slice(5, 7), 16));
-  doc.text(`${data.deviation.toFixed(1)}%`, 45, 143, { align: 'center' });
   
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(8);
-  doc.text('ÍNDICE DE DESVIACIÓN', 45, 155, { align: 'center' });
+  // Banner para el título de los indicadores
+  doc.setFillColor(parseInt(COLORS.navyLight.slice(1, 3), 16), parseInt(COLORS.navyLight.slice(3, 5), 16), parseInt(COLORS.navyLight.slice(5, 7), 16));
+  doc.roundedRect(55, 125, 100, 8, 0, 0, 'F');
+  
+  // Texto para el título de las métricas
+  doc.setTextColor(255, 255, 255);
+  doc.text('INDICADORES CLAVE', 105, 130.5, { align: 'center' });
   
   // Calcular valores en toneladas
   const organicTons = data.organicTotal / 1000;
@@ -291,48 +310,102 @@ export async function generateClientPDF(data: ReportData): Promise<Blob> {
   const totalTons = data.totalWaste / 1000;
   const landfillTons = organicTons + inorganicTons;
   
-  // 2. Total toneladas
-  doc.setFillColor(parseInt(COLORS.blue.slice(1, 3), 16), parseInt(COLORS.blue.slice(3, 5), 16), parseInt(COLORS.blue.slice(5, 7), 16), 0.8);
-  doc.circle(105, 140, 12, 'F');
+  // Crear indicadores visuales más atractivos y modernos
   
+  // 1. Índice de Desviación - Concepto principal
+  // Círculo de fondo con "aura" para efecto de profundidad
+  doc.setFillColor(parseInt(COLORS.lime.slice(1, 3), 16), parseInt(COLORS.lime.slice(3, 5), 16), parseInt(COLORS.lime.slice(5, 7), 16), 0.2);
+  doc.circle(45, 150, 15.5, 'F');
+  
+  // Círculo principal con color corporativo
+  doc.setFillColor(parseInt(COLORS.lime.slice(1, 3), 16), parseInt(COLORS.lime.slice(3, 5), 16), parseInt(COLORS.lime.slice(5, 7), 16));
+  doc.circle(45, 150, 14, 'F');
+  
+  // Valor del índice con mejor tipografía
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(14);
-  doc.setTextColor(255, 255, 255);
-  doc.text(formatNumber(totalTons), 105, 143, { align: 'center' });
+  doc.setFontSize(16);
+  doc.setTextColor(parseInt(COLORS.navyDark.slice(1, 3), 16), parseInt(COLORS.navyDark.slice(3, 5), 16), parseInt(COLORS.navyDark.slice(5, 7), 16));
+  doc.text(`${data.deviation.toFixed(1)}%`, 45, 153, { align: 'center' });
   
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(8);
-  doc.setTextColor(parseInt(COLORS.darkGray.slice(1, 3), 16), parseInt(COLORS.darkGray.slice(3, 5), 16), parseInt(COLORS.darkGray.slice(5, 7), 16));
-  doc.text('TONELADAS TOTALES', 105, 155, { align: 'center' });
-  
-  // 3. Reciclaje
-  doc.setFillColor(parseInt(COLORS.green.slice(1, 3), 16), parseInt(COLORS.green.slice(3, 5), 16), parseInt(COLORS.green.slice(5, 7), 16), 0.8);
-  doc.circle(165, 140, 12, 'F');
-  
+  // Etiqueta del índice con estilo más profesional
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(14);
-  doc.setTextColor(255, 255, 255);
-  doc.text(formatNumber(recyclableTons), 165, 143, { align: 'center' });
-  
-  doc.setFont('helvetica', 'normal');
   doc.setFontSize(8);
-  doc.setTextColor(parseInt(COLORS.darkGray.slice(1, 3), 16), parseInt(COLORS.darkGray.slice(3, 5), 16), parseInt(COLORS.darkGray.slice(5, 7), 16));
-  doc.text('TONELADAS RECICLADAS', 165, 155, { align: 'center' });
+  doc.setTextColor(parseInt(COLORS.navyDark.slice(1, 3), 16), parseInt(COLORS.navyDark.slice(3, 5), 16), parseInt(COLORS.navyDark.slice(5, 7), 16));
+  doc.text('ÍNDICE DE DESVIACIÓN', 45, 170, { align: 'center' });
+  
+  // 2. Total toneladas - Con efecto de profundidad
+  // Círculo de fondo con "aura" para efecto de profundidad
+  doc.setFillColor(parseInt(COLORS.blue.slice(1, 3), 16), parseInt(COLORS.blue.slice(3, 5), 16), parseInt(COLORS.blue.slice(5, 7), 16), 0.2);
+  doc.circle(105, 150, 15.5, 'F');
+  
+  // Círculo principal con color corporativo y efecto de volumen
+  doc.setFillColor(parseInt(COLORS.blue.slice(1, 3), 16), parseInt(COLORS.blue.slice(3, 5), 16), parseInt(COLORS.blue.slice(5, 7), 16));
+  doc.circle(105, 150, 14, 'F');
+  
+  // Agregar un brillo para efecto 3D
+  doc.setFillColor(parseInt(COLORS.blueLight.slice(1, 3), 16), parseInt(COLORS.blueLight.slice(3, 5), 16), parseInt(COLORS.blueLight.slice(5, 7), 16));
+  doc.circle(102, 147, 5, 'F');
+  
+  // Valor de toneladas totales
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(16);
+  doc.setTextColor(255, 255, 255);
+  doc.text(formatNumber(totalTons), 105, 153, { align: 'center' });
+  
+  // Etiqueta de toneladas
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(8);
+  doc.setTextColor(parseInt(COLORS.navyDark.slice(1, 3), 16), parseInt(COLORS.navyDark.slice(3, 5), 16), parseInt(COLORS.navyDark.slice(5, 7), 16));
+  doc.text('TONELADAS TOTALES', 105, 170, { align: 'center' });
+  
+  // 3. Reciclaje - Con efecto moderno
+  // Círculo de fondo con "aura" para efecto de profundidad
+  doc.setFillColor(parseInt(COLORS.green.slice(1, 3), 16), parseInt(COLORS.green.slice(3, 5), 16), parseInt(COLORS.green.slice(5, 7), 16), 0.2);
+  doc.circle(165, 150, 15.5, 'F');
+  
+  // Círculo principal con color corporativo
+  doc.setFillColor(parseInt(COLORS.green.slice(1, 3), 16), parseInt(COLORS.green.slice(3, 5), 16), parseInt(COLORS.green.slice(5, 7), 16));
+  doc.circle(165, 150, 14, 'F');
+  
+  // Agregar un brillo para efecto 3D
+  doc.setFillColor(parseInt(COLORS.greenLight.slice(1, 3), 16), parseInt(COLORS.greenLight.slice(3, 5), 16), parseInt(COLORS.greenLight.slice(5, 7), 16));
+  doc.circle(162, 147, 5, 'F');
+  
+  // Valor de toneladas recicladas
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(16);
+  doc.setTextColor(255, 255, 255);
+  doc.text(formatNumber(recyclableTons), 165, 153, { align: 'center' });
+  
+  // Etiqueta de reciclaje
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(8);
+  doc.setTextColor(parseInt(COLORS.navyDark.slice(1, 3), 16), parseInt(COLORS.navyDark.slice(3, 5), 16), parseInt(COLORS.navyDark.slice(5, 7), 16));
+  doc.text('TONELADAS RECICLADAS', 165, 170, { align: 'center' });
 
   // ==== RESUMEN EJECUTIVO ====
+  // Título con diseño moderno
+  // Encabezado con degradado para destacar el resumen ejecutivo
+  createGradientPattern(doc, 15, 180, 180, 10, COLORS.navyLight, COLORS.navy, 'horizontal');
+  doc.roundedRect(15, 180, 180, 10, 3, 3, 'F');
+  
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(14);
-  doc.setTextColor(parseInt(COLORS.navy.slice(1, 3), 16), parseInt(COLORS.navy.slice(3, 5), 16), parseInt(COLORS.navy.slice(5, 7), 16));
-  doc.text('RESUMEN EJECUTIVO', 105, 175, { align: 'center' });
+  doc.setTextColor(255, 255, 255);
+  doc.text('RESUMEN EJECUTIVO', 105, 187, { align: 'center' });
   
-  // Línea decorativa
-  doc.setDrawColor(parseInt(COLORS.lime.slice(1, 3), 16), parseInt(COLORS.lime.slice(3, 5), 16), parseInt(COLORS.lime.slice(5, 7), 16));
-  doc.setLineWidth(1);
-  doc.line(65, 178, 145, 178);
+  // Panel principal para el resumen con diseño mejorado
+  // Fondo con degradado suave para mejor lectura
+  createGradientPattern(doc, 15, 190, 180, 68, COLORS.accent, COLORS.accentDark, 'vertical');
+  doc.roundedRect(15, 190, 180, 68, 4, 4, 'F');
   
-  // Panel minimalista para el resumen
-  doc.setFillColor(parseInt(COLORS.accent.slice(1, 3), 16), parseInt(COLORS.accent.slice(3, 5), 16), parseInt(COLORS.accent.slice(5, 7), 16));
-  doc.roundedRect(15, 185, 180, 65, 2, 2, 'F');
+  // Borde sutil con efecto de profundidad
+  doc.setDrawColor(parseInt(COLORS.limeDark.slice(1, 3), 16), parseInt(COLORS.limeDark.slice(3, 5), 16), parseInt(COLORS.limeDark.slice(5, 7), 16), 0.4);
+  doc.setLineWidth(0.7);
+  doc.roundedRect(15, 190, 180, 68, 4, 4, 'S');
+  
+  // Elemento decorativo: pequeño icono ecológico en la esquina
+  drawLeafIcon(doc, 25, 200, 0.5);
   
   // Calcular tendencia (comparando primera mitad con segunda mitad del período)
   const sortedData = [...data.wasteData].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
@@ -349,28 +422,60 @@ export async function generateClientPDF(data: ReportData): Promise<Blob> {
   const percentChange = firstHalfAvg > 0 ? ((secondHalfAvg - firstHalfAvg) / firstHalfAvg * 100) : 0;
   const trendDescription = percentChange > 5 ? 'aumento' : percentChange < -5 ? 'reducción' : 'estabilidad';
   
-  // Crear texto del resumen ejecutivo con líneas más cortas para evitar que se salgan
-  const summaryText = [
-    `• Durante el período ${data.period}, ${data.client.name}`,
-    `  generó un total de ${formatNumber(totalTons)} toneladas de residuos.`,
-    `• El Índice de Desviación de Relleno Sanitario fue de ${data.deviation.toFixed(1)}%.`,
-    `• Del total de residuos, ${formatNumber(landfillTons)} toneladas fueron enviadas a `,
-    `  relleno sanitario y ${formatNumber(recyclableTons)} a reciclaje.`,
-    `• Se observa una ${trendDescription} en la generación de residuos`,
-    `  del ${Math.abs(percentChange).toFixed(1)}% durante el período.`,
-    `• El impacto ambiental positivo equivale a`,
-    `  ${formatNumber((recyclableTons * 0.3) * 17)} árboles salvados.`
+  // Formato mejorado para los puntos del resumen ejecutivo
+  const summaryPoints = [
+    {
+      title: 'GENERACIÓN TOTAL',
+      value: `${formatNumber(totalTons)} ton.`,
+      description: `Durante el período ${data.period}` 
+    },
+    {
+      title: 'DESVIACIÓN',
+      value: `${data.deviation.toFixed(1)}%`,
+      description: 'Índice de Desviación de Relleno Sanitario'
+    },
+    {
+      title: 'DESTINO FINAL',
+      value: `${formatNumber(landfillTons)} ton. a relleno, ${formatNumber(recyclableTons)} ton. a reciclaje`,
+      description: ''
+    },
+    {
+      title: 'TENDENCIA',
+      value: `${trendDescription} de ${Math.abs(percentChange).toFixed(1)}%`,
+      description: 'En la generación de residuos durante el período'
+    },
+    {
+      title: 'IMPACTO AMBIENTAL',
+      value: `${formatNumber((recyclableTons * 0.3) * 17)} árboles salvados`,
+      description: 'Por reciclaje de papel y cartón'
+    }
   ];
   
-  // Posicionar el texto del resumen con mayor espacio vertical
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(9); // Fuente más pequeña para mayor legibilidad
+  // Posicionamiento y estilo para cada punto del resumen
   doc.setTextColor(parseInt(COLORS.darkGray.slice(1, 3), 16), parseInt(COLORS.darkGray.slice(3, 5), 16), parseInt(COLORS.darkGray.slice(5, 7), 16));
   
-  let yPos = 193;
-  summaryText.forEach(line => {
-    doc.text(line, 20, yPos);
-    yPos += 8; // Menor espaciado entre líneas pero más líneas
+  let yPos = 205;
+  summaryPoints.forEach((point, index) => {
+    // Título del punto
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(9);
+    doc.setTextColor(parseInt(COLORS.navyDark.slice(1, 3), 16), parseInt(COLORS.navyDark.slice(3, 5), 16), parseInt(COLORS.navyDark.slice(5, 7), 16));
+    doc.text(`• ${point.title}:`, 35, yPos);
+    
+    // Valor con énfasis
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(parseInt(COLORS.navy.slice(1, 3), 16), parseInt(COLORS.navy.slice(3, 5), 16), parseInt(COLORS.navy.slice(5, 7), 16));
+    doc.text(point.value, 135, yPos);
+    
+    // Descripción adicional si existe
+    if (point.description) {
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8);
+      doc.setTextColor(parseInt(COLORS.darkGray.slice(1, 3), 16), parseInt(COLORS.darkGray.slice(3, 5), 16), parseInt(COLORS.darkGray.slice(5, 7), 16));
+      doc.text(point.description, 45, yPos + 5);
+    }
+    
+    yPos += (point.description ? 15 : 10);
   });
   
   // Pie de página minimalista
@@ -552,23 +657,29 @@ export async function generateClientPDF(data: ReportData): Promise<Blob> {
   // Usar la función auxiliar para crear el encabezado
   addMinimalistHeader(doc);
 
-  // Banner del impacto ambiental con degradado atractivo (más compacto)
-  createGradientPattern(doc, 0, 28, 210, 20, COLORS.lime, COLORS.navy, 'horizontal');
+  // Banner del impacto ambiental con degradado más elegante y moderno
+  createGradientPattern(doc, 0, 22, 210, 30, COLORS.navyDark, COLORS.navy, 'radial');
   
-  // Título con mayor impacto visual
+  // Título con mayor elegancia y contraste
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(16);
+  doc.setFontSize(18);
   doc.setTextColor(255, 255, 255);
-  doc.text('IMPACTO AMBIENTAL POSITIVO', 105, 42, { align: 'center' });
+  doc.text('IMPACTO AMBIENTAL POSITIVO', 105, 40, { align: 'center' });
   
-  // Fondo para los indicadores visuales (más compacto)
-  doc.setFillColor(250, 252, 255);
-  doc.rect(0, 48, 210, 70, 'F');
+  // Líneas decorativas para dar énfasis al título
+  doc.setDrawColor(255, 255, 255, 0.5);
+  doc.setLineWidth(0.5);
+  doc.line(50, 45, 70, 45);
+  doc.line(140, 45, 160, 45);
   
-  // Marco para los indicadores
-  doc.setDrawColor(181, 233, 81); // Verde lima
+  // Fondo para los indicadores visuales con efecto degradado sutil
+  createGradientPattern(doc, 15, 55, 180, 70, COLORS.accent, '#ffffff', 'vertical');
+  doc.roundedRect(15, 55, 180, 70, 6, 6, 'F');
+  
+  // Marco con diseño más moderno para los indicadores
+  doc.setDrawColor(parseInt(COLORS.limeDark.slice(1, 3), 16), parseInt(COLORS.limeDark.slice(3, 5), 16), parseInt(COLORS.limeDark.slice(5, 7), 16));
   doc.setLineWidth(0.8);
-  doc.roundedRect(15, 53, 180, 60, 3, 3, 'S');
+  doc.roundedRect(15, 55, 180, 70, 6, 6, 'S');
   
   // Calcular impacto ambiental
   const paperRecycled = data.recyclableTotal * 0.3; // Asumiendo que el 30% de los reciclables es papel
@@ -577,96 +688,113 @@ export async function generateClientPDF(data: ReportData): Promise<Blob> {
   const energySaved = data.recyclableTotal * 5.3; // 5.3 kWh por kg de reciclables
   const co2Reduced = data.recyclableTotal * 2.5; // 2.5 kg de CO2 por kg de residuos
   
-  // PANEL DE IMPACTO AMBIENTAL CON 4 INDICADORES EN FORMATO 2x2 MÁS COMPACTO
+  // PANEL DE IMPACTO AMBIENTAL CON 4 INDICADORES EN DISEÑO MEJORADO
   
-  // Reducir tamaño de paneles e iconos para ocupar menos espacio
+  // Tamaños para un diseño más equilibrado
   const panelWidth = 80;
-  const panelHeight = 25;
-  const iconSize = 0.5;
+  const panelHeight = 28;
+  const iconSize = 0.6;
   
-  // Fila superior - Árboles y Agua
-  // Panel de árboles
-  doc.setFillColor(240, 248, 240);
-  doc.roundedRect(25, 58, panelWidth, panelHeight, 2, 2, 'F');
+  // PRIMERA FILA - Árboles y Agua
+  // Panel de árboles con efecto de profundidad
+  createGradientPattern(doc, 25, 62, panelWidth, panelHeight, COLORS.greenLight, '#ffffff', 'diagonal');
+  doc.roundedRect(25, 62, panelWidth, panelHeight, 4, 4, 'F');
+  doc.setDrawColor(parseInt(COLORS.green.slice(1, 3), 16), parseInt(COLORS.green.slice(3, 5), 16), parseInt(COLORS.green.slice(5, 7), 16), 0.4);
+  doc.roundedRect(25, 62, panelWidth, panelHeight, 4, 4, 'S');
   
   // Icono de árbol
-  drawTreeIcon(doc, 35, 70, iconSize);
+  drawTreeIcon(doc, 35, 76, iconSize);
   
-  // Valor y etiqueta - más compacto
+  // Valor y etiqueta con mejor tipografía y contraste
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(13);
-  doc.setTextColor(60, 60, 60);
-  doc.text(formatNumber(Math.round(treesSaved)), 95, 66, { align: 'right' });
+  doc.setFontSize(14);
+  doc.setTextColor(parseInt(COLORS.navyDark.slice(1, 3), 16), parseInt(COLORS.navyDark.slice(3, 5), 16), parseInt(COLORS.navyDark.slice(5, 7), 16));
+  doc.text(formatNumber(Math.round(treesSaved)), 95, 73, { align: 'right' });
   
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(8);
-  doc.text('ÁRBOLES SALVADOS', 95, 74, { align: 'right' });
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(9);
+  doc.setTextColor(parseInt(COLORS.darkGray.slice(1, 3), 16), parseInt(COLORS.darkGray.slice(3, 5), 16), parseInt(COLORS.darkGray.slice(5, 7), 16));
+  doc.text('ÁRBOLES SALVADOS', 95, 83, { align: 'right' });
   
-  // Panel de agua
-  doc.setFillColor(235, 245, 255);
-  doc.roundedRect(115, 58, panelWidth, panelHeight, 2, 2, 'F');
+  // Panel de agua con efecto visual moderno
+  createGradientPattern(doc, 115, 62, panelWidth, panelHeight, COLORS.blueLight, '#ffffff', 'diagonal');
+  doc.roundedRect(115, 62, panelWidth, panelHeight, 4, 4, 'F');
+  doc.setDrawColor(parseInt(COLORS.water.slice(1, 3), 16), parseInt(COLORS.water.slice(3, 5), 16), parseInt(COLORS.water.slice(5, 7), 16), 0.4);
+  doc.roundedRect(115, 62, panelWidth, panelHeight, 4, 4, 'S');
   
   // Icono de agua
-  drawWaterDropIcon(doc, 125, 70, iconSize);
+  drawWaterDropIcon(doc, 125, 76, iconSize);
   
   // Valor y etiqueta
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(13);
-  doc.setTextColor(60, 60, 60);
+  doc.setFontSize(14);
+  doc.setTextColor(parseInt(COLORS.navyDark.slice(1, 3), 16), parseInt(COLORS.navyDark.slice(3, 5), 16), parseInt(COLORS.navyDark.slice(5, 7), 16));
   const waterKL = Math.round(waterSaved / 1000);
-  doc.text(formatNumber(waterKL), 185, 66, { align: 'right' });
+  doc.text(formatNumber(waterKL), 185, 73, { align: 'right' });
   
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(8);
-  doc.text('MILES LITROS AHORRADOS', 185, 74, { align: 'right' });
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(9);
+  doc.setTextColor(parseInt(COLORS.darkGray.slice(1, 3), 16), parseInt(COLORS.darkGray.slice(3, 5), 16), parseInt(COLORS.darkGray.slice(5, 7), 16));
+  doc.text('MILES LITROS AHORRADOS', 185, 83, { align: 'right' });
   
-  // Fila inferior - Energía y CO2
-  // Panel de energía
-  doc.setFillColor(255, 248, 230);
-  doc.roundedRect(25, 87, panelWidth, panelHeight, 2, 2, 'F');
+  // SEGUNDA FILA - Energía y CO2
+  // Panel de energía con diseño moderno
+  createGradientPattern(doc, 25, 95, panelWidth, panelHeight, '#fff8e1', COLORS.energy, 'diagonal');
+  doc.roundedRect(25, 95, panelWidth, panelHeight, 4, 4, 'F');
+  doc.setDrawColor(parseInt(COLORS.energy.slice(1, 3), 16), parseInt(COLORS.energy.slice(3, 5), 16), parseInt(COLORS.energy.slice(5, 7), 16), 0.4);
+  doc.roundedRect(25, 95, panelWidth, panelHeight, 4, 4, 'S');
   
   // Icono de rayo
-  drawLightningIcon(doc, 35, 99, iconSize);
+  drawLightningIcon(doc, 35, 109, iconSize);
   
   // Valor y etiqueta
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(13);
-  doc.setTextColor(60, 60, 60);
+  doc.setFontSize(14);
+  doc.setTextColor(parseInt(COLORS.navyDark.slice(1, 3), 16), parseInt(COLORS.navyDark.slice(3, 5), 16), parseInt(COLORS.navyDark.slice(5, 7), 16));
   const energyMWh = Math.round(energySaved / 1000);
-  doc.text(formatNumber(energyMWh), 95, 95, { align: 'right' });
+  doc.text(formatNumber(energyMWh), 95, 106, { align: 'right' });
   
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(8);
-  doc.text('MWh ENERGÍA AHORRADOS', 95, 103, { align: 'right' });
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(9);
+  doc.setTextColor(parseInt(COLORS.darkGray.slice(1, 3), 16), parseInt(COLORS.darkGray.slice(3, 5), 16), parseInt(COLORS.darkGray.slice(5, 7), 16));
+  doc.text('MWh ENERGÍA AHORRADOS', 95, 116, { align: 'right' });
   
-  // Panel de CO2
-  doc.setFillColor(235, 250, 240);
-  doc.roundedRect(115, 87, panelWidth, panelHeight, 2, 2, 'F');
+  // Panel de CO2 con estética contemporánea
+  createGradientPattern(doc, 115, 95, panelWidth, panelHeight, '#e8f5e9', COLORS.greenLight, 'diagonal');
+  doc.roundedRect(115, 95, panelWidth, panelHeight, 4, 4, 'F');
+  doc.setDrawColor(parseInt(COLORS.greenLight.slice(1, 3), 16), parseInt(COLORS.greenLight.slice(3, 5), 16), parseInt(COLORS.greenLight.slice(5, 7), 16), 0.4);
+  doc.roundedRect(115, 95, panelWidth, panelHeight, 4, 4, 'S');
   
   // Icono de hoja
-  drawLeafIcon(doc, 125, 99, iconSize);
+  drawLeafIcon(doc, 125, 109, iconSize);
   
   // Valor y etiqueta
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(13);
-  doc.setTextColor(60, 60, 60);
+  doc.setFontSize(14);
+  doc.setTextColor(parseInt(COLORS.navyDark.slice(1, 3), 16), parseInt(COLORS.navyDark.slice(3, 5), 16), parseInt(COLORS.navyDark.slice(5, 7), 16));
   const co2Tons = Math.round(co2Reduced / 1000);
-  doc.text(formatNumber(co2Tons), 185, 95, { align: 'right' });
+  doc.text(formatNumber(co2Tons), 185, 106, { align: 'right' });
   
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(8);
-  doc.text('TON CO₂ NO EMITIDAS', 185, 103, { align: 'right' });
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(9);
+  doc.setTextColor(parseInt(COLORS.darkGray.slice(1, 3), 16), parseInt(COLORS.darkGray.slice(3, 5), 16), parseInt(COLORS.darkGray.slice(5, 7), 16));
+  doc.text('TON CO₂ NO EMITIDAS', 185, 116, { align: 'right' });
 
   // ==== DETALLE MENSUAL ====
+  // Sección de tabla con diseño más atractivo
+  createGradientPattern(doc, 0, 135, 210, 25, COLORS.lightGray, COLORS.mediumGray, 'horizontal');
+  
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(14);
   doc.setTextColor(parseInt(COLORS.navy.slice(1, 3), 16), parseInt(COLORS.navy.slice(3, 5), 16), parseInt(COLORS.navy.slice(5, 7), 16));
-  doc.text('TABLA DE GENERACIÓN MENSUAL', 105, 130, { align: 'center' });
+  doc.text('TABLA DE GENERACIÓN MENSUAL', 105, 150, { align: 'center' });
   
-  // Línea decorativa
+  // Línea decorativa estilizada
   doc.setDrawColor(parseInt(COLORS.lime.slice(1, 3), 16), parseInt(COLORS.lime.slice(3, 5), 16), parseInt(COLORS.lime.slice(5, 7), 16));
   doc.setLineWidth(1);
-  doc.line(60, 133, 150, 133);
+  doc.line(60, 153, 105, 153);
+  doc.setDrawColor(parseInt(COLORS.navy.slice(1, 3), 16), parseInt(COLORS.navy.slice(3, 5), 16), parseInt(COLORS.navy.slice(5, 7), 16));
+  doc.line(105, 153, 150, 153);
   
   // Agrupar datos por mes y año
   const monthlyData: Record<string, { 
@@ -718,15 +846,16 @@ export async function generateClientPDF(data: ReportData): Promise<Blob> {
       ];
     });
   
-  // Añadir la tabla de detalle mensual - más compacta para ahorrar espacio
+  // Añadir la tabla de detalle mensual - más moderna y profesional
   autoTable(doc, {
-    startY: 138,
+    startY: 160,
     head: [['Mes/Año', 'Orgánico', 'Inorgánico', 'Reciclable', 'Total', 'Desviación']],
     body: monthlyRows,
     headStyles: {
-      fillColor: [39, 57, 73], // Navy
+      fillColor: [parseInt(COLORS.navy.slice(1, 3), 16), parseInt(COLORS.navy.slice(3, 5), 16), parseInt(COLORS.navy.slice(5, 7), 16)],
       textColor: [255, 255, 255],
       fontStyle: 'bold',
+      cellPadding: 3,
     },
     alternateRowStyles: {
       fillColor: [245, 247, 250], // Light gray
@@ -742,67 +871,109 @@ export async function generateClientPDF(data: ReportData): Promise<Blob> {
       2: { halign: 'right' },
       3: { halign: 'right' },
       4: { halign: 'right' },
-      5: { halign: 'right', fontStyle: 'bold' },
+      5: { 
+        halign: 'right', 
+        fontStyle: 'bold',
+        fillColor: (rowData, rowIndex) => {
+          // Valor de desviación
+          const deviationStr = rowData[5];
+          const deviationValue = parseFloat(deviationStr.replace('%', ''));
+          
+          // Color basado en la desviación
+          if (deviationValue > 30) {
+            return [parseInt(COLORS.lime.slice(1, 3), 16), parseInt(COLORS.lime.slice(3, 5), 16), parseInt(COLORS.lime.slice(5, 7), 16), 0.3];
+          } else if (deviationValue > 10) {
+            return [parseInt(COLORS.limeLight.slice(1, 3), 16), parseInt(COLORS.limeLight.slice(3, 5), 16), parseInt(COLORS.limeLight.slice(5, 7), 16), 0.2];
+          }
+          return null; // Color por defecto
+        }
+      },
     },
     margin: { left: 15, right: 15 }, // Márgenes más estrechos
   });
   
   // ==== GRÁFICO DE GENERACIÓN MENSUAL ====
-  // Tamaño y posición dependen de la altura final de la tabla
-  // Posicionamos el gráfico justo debajo de la tabla
-  // Calculamos la altura aproximada de la tabla: rows * height + header
+  // Posicionamiento inteligente basado en el espacio disponible
   const tableRowHeight = 8; // Altura aproximada por fila
   const tableHeight = monthlyRows.length * tableRowHeight + 15; // +15 para el encabezado
-  const graphStartY = 138 + tableHeight + 10; // 10px de margen después de la tabla
+  const graphStartY = 160 + tableHeight + 10; // 10px de margen después de la tabla
   
-  // Sólo añadimos el gráfico si hay suficiente espacio
-  if (graphStartY < 240) { // Asegurar que hay espacio suficiente (290 - 50 para pie de página)
+  // Sólo añadimos el gráfico si hay suficiente espacio - Cálculo dinámico para mantener 3 páginas
+  if (graphStartY < 240) {
+    // Banner con degradado para la sección del gráfico
+    createGradientPattern(doc, 15, graphStartY, 180, 5, COLORS.navyLight, COLORS.navy, 'horizontal');
+    doc.roundedRect(15, graphStartY, 180, 5, 0, 0, 'F');
+    
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(14);
-    doc.setTextColor(parseInt(COLORS.navy.slice(1, 3), 16), parseInt(COLORS.navy.slice(3, 5), 16), parseInt(COLORS.navy.slice(5, 7), 16));
-    doc.text('GRÁFICO DE GENERACIÓN', 105, graphStartY, { align: 'center' });
+    doc.setFontSize(12);
+    doc.setTextColor(255, 255, 255);
+    doc.text('GRÁFICO DE GENERACIÓN MENSUAL', 105, graphStartY + 3.5, { align: 'center' });
     
-    // Línea decorativa
-    doc.setDrawColor(parseInt(COLORS.lime.slice(1, 3), 16), parseInt(COLORS.lime.slice(3, 5), 16), parseInt(COLORS.lime.slice(5, 7), 16));
-    doc.setLineWidth(1);
-    doc.line(70, graphStartY + 3, 140, graphStartY + 3);
+    // Marco para el gráfico
+    doc.setFillColor(250, 252, 255);
+    doc.roundedRect(15, graphStartY + 8, 180, 42, 3, 3, 'F');
     
-    // Crear un gráfico simple de barras horizontales mostrando el total de residuos por mes
-    const graphStartX = 25;
-    const graphWidth = 160;
-    const barHeight = 8;
+    doc.setDrawColor(parseInt(COLORS.navy.slice(1, 3), 16), parseInt(COLORS.navy.slice(3, 5), 16), parseInt(COLORS.navy.slice(5, 7), 16), 0.2);
+    doc.setLineWidth(0.5);
+    doc.roundedRect(15, graphStartY + 8, 180, 42, 3, 3, 'S');
+    
+    // Crear un gráfico de barras más visualmente atractivo
+    const graphStartX = 35;
+    const graphWidth = 140;
+    const barHeight = 5;
     const maxValue = Math.max(...monthlyRows.map(row => parseFloat(row[4].replace(',', ''))));
     
+    // Línea base para el gráfico
+    doc.setDrawColor(200, 200, 200);
+    doc.setLineWidth(0.5);
+    doc.line(graphStartX, graphStartY + 46, graphStartX + graphWidth, graphStartY + 46);
+    
+    // Mostrar los meses más recientes primero (hasta 6)
+    const recentMonths = [...monthlyRows].slice(-6).reverse();
+    
     let yPos = graphStartY + 15;
-    monthlyRows.forEach((row, index) => {
-      if (index < 6) { // Limitar a 6 meses para no sobrecargar
-        const monthLabel = row[0];
-        const totalValue = parseFloat(row[4].replace(',', ''));
-        const barWidth = (totalValue / maxValue) * graphWidth;
-        
-        // Etiqueta del mes
-        doc.setFont('helvetica', 'normal');
-        doc.setFontSize(7);
-        doc.setTextColor(60, 60, 60);
-        doc.text(monthLabel, graphStartX - 2, yPos + 3, { align: 'right' });
-        
-        // Barra de total
-        doc.setFillColor(parseInt(COLORS.navy.slice(1, 3), 16), parseInt(COLORS.navy.slice(3, 5), 16), parseInt(COLORS.navy.slice(5, 7), 16), 0.7);
-        doc.rect(graphStartX, yPos, barWidth, barHeight, 'F');
-        
-        // Valor a la derecha de la barra
-        doc.text(`${row[4]} ton`, graphStartX + barWidth + 3, yPos + 4);
-        
-        yPos += barHeight + 4; // Espacio entre barras
-      }
+    recentMonths.forEach((row, index) => {
+      const monthLabel = row[0];
+      const totalValue = parseFloat(row[4].replace(',', ''));
+      const barWidth = (totalValue / maxValue) * graphWidth;
+      
+      // Etiqueta del mes
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(7);
+      doc.setTextColor(60, 60, 60);
+      doc.text(monthLabel, graphStartX - 5, yPos + 3, { align: 'right' });
+      
+      // Barra con degradado para mejor visualización
+      createGradientPattern(doc, graphStartX, yPos, barWidth, barHeight, COLORS.navy, COLORS.navyLight, 'horizontal');
+      doc.rect(graphStartX, yPos, barWidth, barHeight, 'F');
+      
+      // Borde para la barra
+      doc.setDrawColor(parseInt(COLORS.navyDark.slice(1, 3), 16), parseInt(COLORS.navyDark.slice(3, 5), 16), parseInt(COLORS.navyDark.slice(5, 7), 16));
+      doc.setLineWidth(0.2);
+      doc.rect(graphStartX, yPos, barWidth, barHeight, 'S');
+      
+      // Valor a la derecha de la barra
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(7);
+      doc.setTextColor(parseInt(COLORS.navy.slice(1, 3), 16), parseInt(COLORS.navy.slice(3, 5), 16), parseInt(COLORS.navy.slice(5, 7), 16));
+      doc.text(`${row[4]} ton`, graphStartX + barWidth + 3, yPos + 3.5);
+      
+      yPos += barHeight + 4; // Espacio entre barras
     });
   }
   
-  // Pie de página
+  // Pie de página con estilo corporativo
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(9);
   doc.setTextColor(100, 100, 100);
-  doc.text('Página 3 de 3', 185, 290, { align: 'right' });
+  
+  // Línea decorativa para el pie de página
+  doc.setDrawColor(parseInt(COLORS.lime.slice(1, 3), 16), parseInt(COLORS.lime.slice(3, 5), 16), parseInt(COLORS.lime.slice(5, 7), 16), 0.5);
+  doc.setLineWidth(0.5);
+  doc.line(15, 280, 195, 280);
+  
+  doc.text('ECONOVA © 2025 | Innovando en Gestión Ambiental', 105, 286, { align: 'center' });
+  doc.text('Página 3 de 3', 185, 286, { align: 'right' });
   
   // Devolver como blob
   return doc.output('blob');
