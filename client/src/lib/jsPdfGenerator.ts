@@ -546,29 +546,29 @@ export async function generateClientPDF(data: ReportData): Promise<Blob> {
   doc.setFontSize(9);
   doc.text('Página 2 de 3', 185, 290, { align: 'right' });
 
-  // ===== PÁGINA 3: IMPACTO AMBIENTAL + DATOS MENSUALES =====
+  // ===== PÁGINA 3: IMPACTO AMBIENTAL + TABLA DE GENERACIÓN + GRÁFICO DE GENERACIÓN MENSUAL =====
   doc.addPage();
   
   // Usar la función auxiliar para crear el encabezado
   addMinimalistHeader(doc);
 
-  // Banner del impacto ambiental con degradado atractivo
-  createGradientPattern(doc, 0, 30, 210, 25, COLORS.lime, COLORS.navy, 'horizontal');
+  // Banner del impacto ambiental con degradado atractivo (más compacto)
+  createGradientPattern(doc, 0, 28, 210, 20, COLORS.lime, COLORS.navy, 'horizontal');
   
   // Título con mayor impacto visual
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(18);
+  doc.setFontSize(16);
   doc.setTextColor(255, 255, 255);
-  doc.text('IMPACTO AMBIENTAL POSITIVO', 105, 47, { align: 'center' });
+  doc.text('IMPACTO AMBIENTAL POSITIVO', 105, 42, { align: 'center' });
   
-  // Fondo para los indicadores visuales
+  // Fondo para los indicadores visuales (más compacto)
   doc.setFillColor(250, 252, 255);
-  doc.rect(0, 55, 210, 120, 'F');
+  doc.rect(0, 48, 210, 70, 'F');
   
   // Marco para los indicadores
   doc.setDrawColor(181, 233, 81); // Verde lima
-  doc.setLineWidth(1);
-  doc.roundedRect(15, 65, 180, 100, 4, 4, 'S');
+  doc.setLineWidth(0.8);
+  doc.roundedRect(15, 53, 180, 60, 3, 3, 'S');
   
   // Calcular impacto ambiental
   const paperRecycled = data.recyclableTotal * 0.3; // Asumiendo que el 30% de los reciclables es papel
@@ -577,91 +577,96 @@ export async function generateClientPDF(data: ReportData): Promise<Blob> {
   const energySaved = data.recyclableTotal * 5.3; // 5.3 kWh por kg de reciclables
   const co2Reduced = data.recyclableTotal * 2.5; // 2.5 kg de CO2 por kg de residuos
   
-  // PANEL DE IMPACTO AMBIENTAL CON 4 INDICADORES EN CUADRÍCULA 2x2
+  // PANEL DE IMPACTO AMBIENTAL CON 4 INDICADORES EN FORMATO 2x2 MÁS COMPACTO
+  
+  // Reducir tamaño de paneles e iconos para ocupar menos espacio
+  const panelWidth = 80;
+  const panelHeight = 25;
+  const iconSize = 0.5;
   
   // Fila superior - Árboles y Agua
   // Panel de árboles
   doc.setFillColor(240, 248, 240);
-  doc.roundedRect(25, 75, 75, 35, 3, 3, 'F');
+  doc.roundedRect(25, 58, panelWidth, panelHeight, 2, 2, 'F');
   
   // Icono de árbol
-  drawTreeIcon(doc, 40, 93, 0.7);
+  drawTreeIcon(doc, 35, 70, iconSize);
   
-  // Valor y etiqueta
+  // Valor y etiqueta - más compacto
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(15);
+  doc.setFontSize(13);
   doc.setTextColor(60, 60, 60);
-  doc.text(formatNumber(Math.round(treesSaved)), 85, 90, { align: 'right' });
+  doc.text(formatNumber(Math.round(treesSaved)), 95, 66, { align: 'right' });
   
   doc.setFont('helvetica', 'normal');
-  doc.setFontSize(10);
-  doc.text('ÁRBOLES SALVADOS', 85, 100, { align: 'right' });
+  doc.setFontSize(8);
+  doc.text('ÁRBOLES SALVADOS', 95, 74, { align: 'right' });
   
   // Panel de agua
   doc.setFillColor(235, 245, 255);
-  doc.roundedRect(110, 75, 75, 35, 3, 3, 'F');
+  doc.roundedRect(115, 58, panelWidth, panelHeight, 2, 2, 'F');
   
   // Icono de agua
-  drawWaterDropIcon(doc, 125, 93, 0.7);
+  drawWaterDropIcon(doc, 125, 70, iconSize);
   
   // Valor y etiqueta
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(15);
+  doc.setFontSize(13);
   doc.setTextColor(60, 60, 60);
   const waterKL = Math.round(waterSaved / 1000);
-  doc.text(formatNumber(waterKL), 170, 90, { align: 'right' });
+  doc.text(formatNumber(waterKL), 185, 66, { align: 'right' });
   
   doc.setFont('helvetica', 'normal');
-  doc.setFontSize(10);
-  doc.text('MILES LITROS AHORRADOS', 170, 100, { align: 'right' });
+  doc.setFontSize(8);
+  doc.text('MILES LITROS AHORRADOS', 185, 74, { align: 'right' });
   
   // Fila inferior - Energía y CO2
   // Panel de energía
   doc.setFillColor(255, 248, 230);
-  doc.roundedRect(25, 120, 75, 35, 3, 3, 'F');
+  doc.roundedRect(25, 87, panelWidth, panelHeight, 2, 2, 'F');
   
   // Icono de rayo
-  drawLightningIcon(doc, 40, 138, 0.7);
+  drawLightningIcon(doc, 35, 99, iconSize);
   
   // Valor y etiqueta
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(15);
+  doc.setFontSize(13);
   doc.setTextColor(60, 60, 60);
   const energyMWh = Math.round(energySaved / 1000);
-  doc.text(formatNumber(energyMWh), 85, 135, { align: 'right' });
+  doc.text(formatNumber(energyMWh), 95, 95, { align: 'right' });
   
   doc.setFont('helvetica', 'normal');
-  doc.setFontSize(10);
-  doc.text('MWh ENERGÍA AHORRADOS', 85, 145, { align: 'right' });
+  doc.setFontSize(8);
+  doc.text('MWh ENERGÍA AHORRADOS', 95, 103, { align: 'right' });
   
   // Panel de CO2
   doc.setFillColor(235, 250, 240);
-  doc.roundedRect(110, 120, 75, 35, 3, 3, 'F');
+  doc.roundedRect(115, 87, panelWidth, panelHeight, 2, 2, 'F');
   
   // Icono de hoja
-  drawLeafIcon(doc, 125, 138, 0.7);
+  drawLeafIcon(doc, 125, 99, iconSize);
   
   // Valor y etiqueta
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(15);
+  doc.setFontSize(13);
   doc.setTextColor(60, 60, 60);
   const co2Tons = Math.round(co2Reduced / 1000);
-  doc.text(formatNumber(co2Tons), 170, 135, { align: 'right' });
+  doc.text(formatNumber(co2Tons), 185, 95, { align: 'right' });
   
   doc.setFont('helvetica', 'normal');
-  doc.setFontSize(10);
-  doc.text('TON CO₂ NO EMITIDAS', 170, 145, { align: 'right' });
+  doc.setFontSize(8);
+  doc.text('TON CO₂ NO EMITIDAS', 185, 103, { align: 'right' });
 
   // ==== DETALLE MENSUAL ====
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(14);
   doc.setTextColor(parseInt(COLORS.navy.slice(1, 3), 16), parseInt(COLORS.navy.slice(3, 5), 16), parseInt(COLORS.navy.slice(5, 7), 16));
-  doc.text('DETALLE MENSUAL', 105, 175, { align: 'center' });
+  doc.text('TABLA DE GENERACIÓN MENSUAL', 105, 130, { align: 'center' });
   
   // Línea decorativa
   doc.setDrawColor(parseInt(COLORS.lime.slice(1, 3), 16), parseInt(COLORS.lime.slice(3, 5), 16), parseInt(COLORS.lime.slice(5, 7), 16));
   doc.setLineWidth(1);
-  doc.line(75, 178, 135, 178);
+  doc.line(60, 133, 150, 133);
   
   // Agrupar datos por mes y año
   const monthlyData: Record<string, { 
@@ -713,9 +718,9 @@ export async function generateClientPDF(data: ReportData): Promise<Blob> {
       ];
     });
   
-  // Añadir la tabla de detalle mensual
+  // Añadir la tabla de detalle mensual - más compacta para ahorrar espacio
   autoTable(doc, {
-    startY: 185,
+    startY: 138,
     head: [['Mes/Año', 'Orgánico', 'Inorgánico', 'Reciclable', 'Total', 'Desviación']],
     body: monthlyRows,
     headStyles: {
@@ -727,8 +732,9 @@ export async function generateClientPDF(data: ReportData): Promise<Blob> {
       fillColor: [245, 247, 250], // Light gray
     },
     styles: {
-      cellPadding: 3,
-      fontSize: 8,
+      cellPadding: 2, // Reducido para mayor compacidad
+      fontSize: 7, // Tamaño más pequeño pero legible
+      lineWidth: 0.1,
     },
     columnStyles: {
       0: { fontStyle: 'bold' },
@@ -738,7 +744,59 @@ export async function generateClientPDF(data: ReportData): Promise<Blob> {
       4: { halign: 'right' },
       5: { halign: 'right', fontStyle: 'bold' },
     },
+    margin: { left: 15, right: 15 }, // Márgenes más estrechos
   });
+  
+  // ==== GRÁFICO DE GENERACIÓN MENSUAL ====
+  // Tamaño y posición dependen de la altura final de la tabla
+  // Posicionamos el gráfico justo debajo de la tabla
+  // Calculamos la altura aproximada de la tabla: rows * height + header
+  const tableRowHeight = 8; // Altura aproximada por fila
+  const tableHeight = monthlyRows.length * tableRowHeight + 15; // +15 para el encabezado
+  const graphStartY = 138 + tableHeight + 10; // 10px de margen después de la tabla
+  
+  // Sólo añadimos el gráfico si hay suficiente espacio
+  if (graphStartY < 240) { // Asegurar que hay espacio suficiente (290 - 50 para pie de página)
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(14);
+    doc.setTextColor(parseInt(COLORS.navy.slice(1, 3), 16), parseInt(COLORS.navy.slice(3, 5), 16), parseInt(COLORS.navy.slice(5, 7), 16));
+    doc.text('GRÁFICO DE GENERACIÓN', 105, graphStartY, { align: 'center' });
+    
+    // Línea decorativa
+    doc.setDrawColor(parseInt(COLORS.lime.slice(1, 3), 16), parseInt(COLORS.lime.slice(3, 5), 16), parseInt(COLORS.lime.slice(5, 7), 16));
+    doc.setLineWidth(1);
+    doc.line(70, graphStartY + 3, 140, graphStartY + 3);
+    
+    // Crear un gráfico simple de barras horizontales mostrando el total de residuos por mes
+    const graphStartX = 25;
+    const graphWidth = 160;
+    const barHeight = 8;
+    const maxValue = Math.max(...monthlyRows.map(row => parseFloat(row[4].replace(',', ''))));
+    
+    let yPos = graphStartY + 15;
+    monthlyRows.forEach((row, index) => {
+      if (index < 6) { // Limitar a 6 meses para no sobrecargar
+        const monthLabel = row[0];
+        const totalValue = parseFloat(row[4].replace(',', ''));
+        const barWidth = (totalValue / maxValue) * graphWidth;
+        
+        // Etiqueta del mes
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(7);
+        doc.setTextColor(60, 60, 60);
+        doc.text(monthLabel, graphStartX - 2, yPos + 3, { align: 'right' });
+        
+        // Barra de total
+        doc.setFillColor(parseInt(COLORS.navy.slice(1, 3), 16), parseInt(COLORS.navy.slice(3, 5), 16), parseInt(COLORS.navy.slice(5, 7), 16), 0.7);
+        doc.rect(graphStartX, yPos, barWidth, barHeight, 'F');
+        
+        // Valor a la derecha de la barra
+        doc.text(`${row[4]} ton`, graphStartX + barWidth + 3, yPos + 4);
+        
+        yPos += barHeight + 4; // Espacio entre barras
+      }
+    });
+  }
   
   // Pie de página
   doc.setFont('helvetica', 'normal');
