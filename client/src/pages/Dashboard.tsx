@@ -187,9 +187,16 @@ export default function Dashboard() {
                 </Button>
               </Link>
               <Link href="/documents">
-                <Button size="sm" className="bg-lime hover:bg-lime-dark text-black">
+                <Button size="sm" variant="outline">
                   <FileUp className="w-4 h-4 mr-2" />
-                  Cargar Documento
+                  Cargar PDF
+                </Button>
+              </Link>
+              {/* Botón destacado para captura de residuos */}
+              <Link href="/clients/4?tab=wastedata">
+                <Button size="sm" className="bg-lime hover:bg-lime-dark text-black">
+                  <PlusCircle className="w-4 h-4 mr-2" />
+                  Registrar Residuos
                 </Button>
               </Link>
             </div>

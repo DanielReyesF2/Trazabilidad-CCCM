@@ -39,7 +39,17 @@ import {
 export default function ClientDetail() {
   const [_, params] = useRoute<{ id: string }>('/clients/:id');
   const clientId = params ? parseInt(params.id) : 0;
-  const [activeTab, setActiveTab] = useState('overview');
+  
+  // Obtener la pestaña de la URL si está presente
+  const getInitialTab = () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const tabParam = urlParams.get('tab');
+    return tabParam && ['overview', 'analysis', 'documents', 'wastedata'].includes(tabParam) 
+      ? tabParam 
+      : 'overview';
+  };
+  
+  const [activeTab, setActiveTab] = useState(getInitialTab());
   
   // Fetch client
   const { data: client, isLoading: isClientLoading } = useQuery<Client>({
@@ -415,7 +425,13 @@ export default function ClientDetail() {
               <TabsTrigger value="overview">General</TabsTrigger>
               <TabsTrigger value="analysis">Análisis</TabsTrigger>
               <TabsTrigger value="documents">Documentos</TabsTrigger>
-              <TabsTrigger value="wastedata">Registro de Residuos</TabsTrigger>
+              <TabsTrigger 
+                value="wastedata" 
+                className={activeTab === "wastedata" ? "bg-lime text-black" : "bg-gray-100 text-gray-900 hover:bg-gray-200 hover:text-black"}
+              >
+                <PlusCircle className="w-4 h-4 mr-1" />
+                Registrar Residuos
+              </TabsTrigger>
             </TabsList>
             <TabsContent value="overview">
               <div className="flex flex-col gap-6">
