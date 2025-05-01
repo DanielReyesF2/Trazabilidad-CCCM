@@ -5,6 +5,14 @@ import autoTable from 'jspdf-autotable';
 import { createGradientPattern } from './imageUtils';
 import logoPath from '@assets/Logo-ECONOVA-OF_Blanco.png';
 
+// Un margen adecuado mejora la legibilidad del documento
+const MARGINS = {
+  top: 25,
+  bottom: 25,
+  left: 15,
+  right: 15
+};
+
 interface ReportData {
   client: Client;
   wasteData: WasteData[];
@@ -381,13 +389,33 @@ export async function generateClientPDF(data: ReportData): Promise<Blob> {
   });
   
   // ==== IMPACTO AMBIENTAL ====
+  // Añadir nueva página para el impacto ambiental
+  doc.addPage();
+  
+  // Encabezado consistente
+  doc.setFillColor(39, 57, 73); // Navy
+  doc.rect(0, 0, 210, 25, 'F');
+  
+  // Logo pequeño en el encabezado
+  try {
+    doc.addImage(logoPath, 'PNG', 10, 5, 30, 15, undefined, 'FAST');
+  } catch (error) {
+    console.error('Error al añadir el logo en el encabezado:', error);
+  }
+  
+  // Título en el encabezado
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(14);
+  doc.text('REPORTE DE GESTIÓN DE RESIDUOS', 105, 15, { align: 'center' });
+  
   // Título de la sección con fondo degradado para destacar
   doc.setFillColor(39, 57, 73); // Navy
-  doc.rect(0, 140, 210, 10, 'F');
+  doc.roundedRect(15, 35, 180, 12, 3, 3, 'F');
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(16);
   doc.setTextColor(255, 255, 255);
-  doc.text('IMPACTO AMBIENTAL POSITIVO', 105, 147, { align: 'center' });
+  doc.text('IMPACTO AMBIENTAL POSITIVO', 105, 44, { align: 'center' });
   
   // Calcular impacto ambiental
   const paperRecycled = data.recyclableTotal * 0.3; // Asumiendo que el 30% de los reciclables es papel
@@ -399,65 +427,122 @@ export async function generateClientPDF(data: ReportData): Promise<Blob> {
   // Crear visualizaciones de impacto ambiental
   // Contenedor para los indicadores del impacto
   doc.setFillColor(245, 250, 255);
-  doc.roundedRect(15, 155, 180, 65, 3, 3, 'F');
+  doc.roundedRect(15, 55, 180, 120, 3, 3, 'F');
+  
+  // Título interior
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(12);
+  doc.setTextColor(39, 57, 73);
+  doc.text('BENEFICIOS AMBIENTALES DE LA RECUPERACIÓN DE MATERIALES', 105, 65, { align: 'center' });
   
   // Árboles - círculo verde
   doc.setFillColor(108, 185, 71);
-  doc.circle(30, 170, 8, 'F');
+  doc.circle(45, 85, 10, 'F');
   
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(18);
-  doc.setTextColor(39, 57, 73);
-  doc.text(formatNumber(treesSaved), 60, 170, { align: 'center' });
-  
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(10);
-  doc.text('Árboles salvados', 60, 180);
-  
-  // Agua - círculo azul
-  doc.setFillColor(66, 139, 202);
-  doc.circle(30, 200, 8, 'F');
-  
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(18);
-  doc.setTextColor(39, 57, 73);
-  doc.text(formatNumber(waterSaved), 60, 200, { align: 'center' });
-  
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(10);
-  doc.text('Litros de agua ahorrados', 60, 210);
-  
-  // Energía - círculo amarillo
-  doc.setFillColor(241, 196, 15);
-  doc.circle(120, 170, 8, 'F');
-  
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(18);
-  doc.setTextColor(39, 57, 73);
-  doc.text(formatNumber(energySaved), 150, 170, { align: 'center' });
-  
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(10);
-  doc.text('kWh de energía ahorrados', 150, 180);
-  
-  // CO2 - círculo azul claro
-  doc.setFillColor(52, 152, 219);
-  doc.circle(120, 200, 8, 'F');
-  
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(18);
-  doc.setTextColor(39, 57, 73);
-  doc.text(formatNumber(co2Reduced / 1000), 150, 200, { align: 'center' });
-  
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(10);
-  doc.text('Ton CO₂ no emitidas', 150, 210);
-  
-  // ==== DETALLE MENSUAL ====
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(16);
   doc.setTextColor(39, 57, 73);
-  doc.text('DETALLE MENSUAL', 15, 230);
+  doc.text(formatNumber(treesSaved), 105, 85, { align: 'right' });
+  
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(12);
+  doc.text('Árboles salvados', 120, 85);
+  
+  // Agua - círculo azul
+  doc.setFillColor(66, 139, 202);
+  doc.circle(45, 110, 10, 'F');
+  
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(16);
+  doc.setTextColor(39, 57, 73);
+  doc.text(formatNumber(waterSaved), 105, 110, { align: 'right' });
+  
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(12);
+  doc.text('Litros de agua ahorrados', 120, 110);
+  
+  // Energía - círculo amarillo
+  doc.setFillColor(241, 196, 15);
+  doc.circle(45, 135, 10, 'F');
+  
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(16);
+  doc.setTextColor(39, 57, 73);
+  doc.text(formatNumber(energySaved), 105, 135, { align: 'right' });
+  
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(12);
+  doc.text('kWh de energía ahorrados', 120, 135);
+  
+  // CO2 - círculo azul claro
+  doc.setFillColor(52, 152, 219);
+  doc.circle(45, 160, 10, 'F');
+  
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(16);
+  doc.setTextColor(39, 57, 73);
+  doc.text(formatNumber(co2Reduced / 1000), 105, 160, { align: 'right' });
+  
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(12);
+  doc.text('Ton CO₂ no emitidas', 120, 160);
+  
+  // Equivalencias visuales
+  doc.setFillColor(245, 245, 245);
+  doc.roundedRect(15, 185, 180, 70, 3, 3, 'F');
+  
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(12);
+  doc.setTextColor(39, 57, 73);
+  doc.text('EQUIVALENCIAS', 105, 195, { align: 'center' });
+  
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(10);
+  
+  // Texto explicativo
+  const impactText = [
+    `• Los ${formatNumber(treesSaved)} árboles salvados equivalen a un bosque de aproximadamente ${formatNumber(treesSaved / 400)} hectáreas.`,
+    `• El ahorro de ${formatNumber(waterSaved)} litros de agua representa el consumo anual de ${formatNumber(waterSaved / 73000)} personas.`,
+    `• La energía ahorrada de ${formatNumber(energySaved)} kWh es suficiente para abastecer ${formatNumber(energySaved / 1200)} hogares durante un mes.`,
+    `• La reducción de ${formatNumber(co2Reduced / 1000)} toneladas de CO₂ equivale a retirar de circulación ${formatNumber((co2Reduced / 1000) / 4.6)} automóviles durante un año.`
+  ];
+  
+  let yPosImpact = 210;
+  impactText.forEach(line => {
+    doc.text(line, 20, yPosImpact);
+    yPosImpact += 10;
+  });
+  
+  // ==== DETALLE MENSUAL ====
+  doc.addPage();
+  
+  // Encabezado consistente
+  doc.setFillColor(39, 57, 73); // Navy
+  doc.rect(0, 0, 210, 25, 'F');
+  
+  // Logo pequeño en el encabezado
+  try {
+    doc.addImage(logoPath, 'PNG', 10, 5, 30, 15, undefined, 'FAST');
+  } catch (error) {
+    console.error('Error al añadir el logo en el encabezado:', error);
+  }
+  
+  // Título en el encabezado
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(14);
+  doc.text('REPORTE DE GESTIÓN DE RESIDUOS', 105, 15, { align: 'center' });
+  
+  // Título de la sección
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(16);
+  doc.setTextColor(39, 57, 73);
+  doc.text('DETALLE MENSUAL', 105, 40, { align: 'center' });
+  
+  // Elemento decorativo
+  doc.setDrawColor(181, 233, 81); // Lime
+  doc.setLineWidth(2);
+  doc.line(75, 45, 135, 45);
   
   // Agrupar datos por mes y año
   const monthlyData: Record<string, { 
@@ -512,7 +597,7 @@ export async function generateClientPDF(data: ReportData): Promise<Blob> {
   
   // Añadir la tabla de detalle mensual
   autoTable(doc, {
-    startY: 235,
+    startY: 60,
     head: [['Mes/Año', 'Orgánico (ton)', 'Inorgánico (ton)', 'Reciclable (ton)', 'Total (ton)', 'Desviación']],
     body: monthlyRows,
     headStyles: {
