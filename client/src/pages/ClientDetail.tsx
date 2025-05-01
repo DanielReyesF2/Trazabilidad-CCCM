@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { User, FileText, BarChart2, AlertTriangle, ChevronLeft, Download, Edit, Trash2, Percent, RecycleIcon, Leaf, FileDown } from 'lucide-react';
+import { User, FileText, BarChart2, AlertTriangle, ChevronLeft, Download, Edit, Trash2, Percent, RecycleIcon, Leaf, FileDown, PlusCircle } from 'lucide-react';
 import { generateClientReport } from '@/lib/reportGenerator';
 import { generateAndDownloadPDFReport } from '@/lib/jsPdfGenerator';
 import FileUploader from '@/components/FileUploader';
