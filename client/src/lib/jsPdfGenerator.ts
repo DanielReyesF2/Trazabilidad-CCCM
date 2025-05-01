@@ -41,12 +41,18 @@ export async function generateClientPDF(data: ReportData): Promise<Blob> {
   });
   
   // ===== PORTADA =====
-  // Fondo del encabezado con gradiente
+  // Fondo de la portada con gradiente
   doc.setFillColor(39, 57, 73); // Navy
   doc.rect(0, 0, 210, 297, 'F');
   
   // Crear franja de color degradado en la parte superior
-  createGradientPattern(doc, 0, 0, 210, 60, '#273949', '#1a2a3c', 'vertical');
+  createGradientPattern(doc, 0, 0, 210, 90, '#273949', '#1a2a3c', 'vertical');
+  
+  // Elementos decorativos - círculos con degradado
+  doc.setFillColor(181, 233, 81, 0.3); // Lime con transparencia
+  doc.circle(180, 30, 40, 'F');
+  doc.setFillColor(181, 233, 81, 0.2); // Lime con más transparencia
+  doc.circle(20, 260, 35, 'F');
   
   // Añadir imagen del logo (centrado en la parte superior)
   try {
@@ -71,18 +77,49 @@ export async function generateClientPDF(data: ReportData): Promise<Blob> {
   doc.setFontSize(14);
   doc.text(data.client.name, 105, 180, { align: 'center' });
   
-  // Diseño gráfico: elementos decorativos
+  // Diseño gráfico: elementos decorativos y visuales de impacto
+  // Panel con datos clave para destacar
+  doc.setFillColor(20, 40, 60, 0.8); // Fondo azul oscuro semi-transparente
+  doc.roundedRect(25, 195, 160, 60, 5, 5, 'F');
+  
+  // Círculo verde para el índice de desviación
   doc.setFillColor(181, 233, 81); // Lime
-  doc.circle(105, 210, 25, 'F');
+  doc.circle(60, 225, 25, 'F');
   
   // Índice de desviación destacado
   doc.setTextColor(39, 57, 73); // Navy
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(24);
-  doc.text(`${data.deviation.toFixed(1)}%`, 105, 215, { align: 'center' });
+  doc.text(`${data.deviation.toFixed(1)}%`, 60, 230, { align: 'center' });
   
   doc.setFontSize(10);
-  doc.text('ÍNDICE DE DESVIACIÓN', 105, 225, { align: 'center' });
+  doc.setTextColor(255, 255, 255);
+  doc.text('ÍNDICE DE DESVIACIÓN', 60, 250, { align: 'center' });
+  
+  // Información adicional destacada para la portada
+  const portalTotalTons = data.totalWaste / 1000;
+  const portalRecyclableTons = data.recyclableTotal / 1000;
+  
+  // Toneladas totales
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(18);
+  doc.setTextColor(255, 255, 255);
+  doc.text(formatNumber(portalTotalTons), 150, 215);
+  
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(10);
+  doc.text('TONELADAS GESTIONADAS', 150, 225);
+  
+  // Toneladas recicladas
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(18);
+  doc.setTextColor(181, 233, 81); // Lime
+  doc.text(formatNumber(portalRecyclableTons), 150, 245);
+  
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(10);
+  doc.setTextColor(255, 255, 255);
+  doc.text('TONELADAS RECICLADAS', 150, 255);
   
   // Pie de página de la portada
   doc.setFont('helvetica', 'normal');
@@ -344,86 +381,83 @@ export async function generateClientPDF(data: ReportData): Promise<Blob> {
   });
   
   // ==== IMPACTO AMBIENTAL ====
+  // Título de la sección con fondo degradado para destacar
+  doc.setFillColor(39, 57, 73); // Navy
+  doc.rect(0, 140, 210, 10, 'F');
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(16);
-  doc.setTextColor(39, 57, 73);
-  doc.text('IMPACTO AMBIENTAL POSITIVO', 15, 140);
+  doc.setTextColor(255, 255, 255);
+  doc.text('IMPACTO AMBIENTAL POSITIVO', 105, 147, { align: 'center' });
   
   // Calcular impacto ambiental
   const paperRecycled = data.recyclableTotal * 0.3; // Asumiendo que el 30% de los reciclables es papel
   const treesSaved = (paperRecycled / 1000) * 17; // 17 árboles salvados por tonelada de papel reciclado
   const waterSaved = (paperRecycled / 1000) * 26000; // 26,000 litros de agua por tonelada de papel
   const energySaved = data.recyclableTotal * 5.3; // 5.3 kWh por kg de reciclables
+  const co2Reduced = data.recyclableTotal * 2.5; // 2.5 kg de CO2 por kg de residuos reciclados
   
-  // Crear íconos visuales para el impacto
+  // Crear visualizaciones de impacto ambiental
+  // Contenedor para los indicadores del impacto
+  doc.setFillColor(245, 250, 255);
+  doc.roundedRect(15, 155, 180, 65, 3, 3, 'F');
   
-  // Árboles 
+  // Árboles - círculo verde
+  doc.setFillColor(108, 185, 71);
+  doc.circle(30, 170, 8, 'F');
+  
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(32);
-  doc.setTextColor(108, 185, 71);
-  doc.text('🌳', 30, 135);
-  
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(16);
+  doc.setFontSize(18);
   doc.setTextColor(39, 57, 73);
-  doc.text(formatNumber(treesSaved), 60, 130);
+  doc.text(formatNumber(treesSaved), 60, 170, { align: 'center' });
   
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(10);
-  doc.text('Árboles salvados', 60, 140);
+  doc.text('Árboles salvados', 60, 180);
   
-  // Agua
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(32);
-  doc.setTextColor(66, 139, 202);
-  doc.text('💧', 30, 170);
+  // Agua - círculo azul
+  doc.setFillColor(66, 139, 202);
+  doc.circle(30, 200, 8, 'F');
   
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(16);
+  doc.setFontSize(18);
   doc.setTextColor(39, 57, 73);
-  doc.text(formatNumber(waterSaved), 60, 165);
+  doc.text(formatNumber(waterSaved), 60, 200, { align: 'center' });
   
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(10);
-  doc.text('Litros de agua ahorrados', 60, 175);
+  doc.text('Litros de agua ahorrados', 60, 210);
   
-  // Energía
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(32);
-  doc.setTextColor(241, 196, 15);
-  doc.text('⚡', 120, 135);
+  // Energía - círculo amarillo
+  doc.setFillColor(241, 196, 15);
+  doc.circle(120, 170, 8, 'F');
   
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(16);
+  doc.setFontSize(18);
   doc.setTextColor(39, 57, 73);
-  doc.text(formatNumber(energySaved), 150, 130);
+  doc.text(formatNumber(energySaved), 150, 170, { align: 'center' });
   
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(10);
-  doc.text('kWh de energía ahorrados', 150, 140);
+  doc.text('kWh de energía ahorrados', 150, 180);
   
-  // CO2
-  const co2Reduced = data.recyclableTotal * 2.5; // Aproximación: 2.5 kg de CO2 por kg de residuos reciclados
-  
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(32);
-  doc.setTextColor(52, 152, 219);
-  doc.text('🌎', 120, 170);
+  // CO2 - círculo azul claro
+  doc.setFillColor(52, 152, 219);
+  doc.circle(120, 200, 8, 'F');
   
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(16);
+  doc.setFontSize(18);
   doc.setTextColor(39, 57, 73);
-  doc.text(formatNumber(co2Reduced / 1000), 150, 165);
+  doc.text(formatNumber(co2Reduced / 1000), 150, 200, { align: 'center' });
   
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(10);
-  doc.text('Ton CO₂ no emitidas', 150, 175);
+  doc.text('Ton CO₂ no emitidas', 150, 210);
   
   // ==== DETALLE MENSUAL ====
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(16);
   doc.setTextColor(39, 57, 73);
-  doc.text('DETALLE MENSUAL', 15, 200);
+  doc.text('DETALLE MENSUAL', 15, 230);
   
   // Agrupar datos por mes y año
   const monthlyData: Record<string, { 
@@ -478,7 +512,7 @@ export async function generateClientPDF(data: ReportData): Promise<Blob> {
   
   // Añadir la tabla de detalle mensual
   autoTable(doc, {
-    startY: 205,
+    startY: 235,
     head: [['Mes/Año', 'Orgánico (ton)', 'Inorgánico (ton)', 'Reciclable (ton)', 'Total (ton)', 'Desviación']],
     body: monthlyRows,
     headStyles: {
