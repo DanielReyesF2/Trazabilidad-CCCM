@@ -50,85 +50,45 @@ export const TrueCertification: React.FC<TrueCertificationProps> = ({ currentDev
   ];
   
   return (
-    <div className="bg-white border border-gray-100 rounded-xl overflow-hidden mb-8">
-      <div className="px-6 py-4 border-b border-gray-100">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-navy/10 rounded-lg flex items-center justify-center">
-              <Shield className="h-5 w-5 text-navy" />
-            </div>
-            <div>
-              <h2 className="font-semibold text-gray-900">TRUE Zero Waste</h2>
-              <p className="text-sm text-gray-500">Certificación GBCI</p>
-            </div>
-          </div>
-          
-          <span className="text-xs bg-yellow-50 text-yellow-700 px-2 py-1 rounded-lg font-medium">
-            En proceso
-          </span>
+    <div className="bg-white border border-gray-100 rounded-lg p-4 mb-6">
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center space-x-2">
+          <Shield className="h-4 w-4 text-navy" />
+          <h3 className="font-medium text-gray-900">TRUE Zero Waste</h3>
         </div>
+        <span className="text-xs bg-yellow-50 text-yellow-700 px-2 py-1 rounded">
+          En proceso
+        </span>
       </div>
       
-      <div className="p-6">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Progress section - simplified */}
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-sm text-gray-600">Progreso hacia 90%</span>
-              <span className="text-lg font-semibold text-gray-900">{currentDeviation.toFixed(1)}%</span>
-            </div>
-            
-            <div className="w-full h-2 bg-gray-100 rounded-full mb-2">
-              <div 
-                className={`h-2 rounded-full transition-all ${getStatusColor()}`} 
-                style={{ width: `${progressPercentage}%` }}
-              />
-            </div>
-            
-            <div className="flex justify-between text-xs text-gray-500">
-              <span>0%</span>
-              <span className="font-medium">Meta: 90%</span>
-              <span>100%</span>
-            </div>
-          </div>
-          
-          {/* Download button */}
-          <div className="flex items-center justify-end">
-            <Button 
-              onClick={() => generateAndDownloadTrueCertificationReport('Club Campestre CDMX', currentDeviation, pendingActions)}
-              className="bg-navy hover:bg-navy/90 text-white px-4 py-2 text-sm"
-              size="sm"
-            >
-              <FileDown className="h-4 w-4 mr-2" />
-              Descargar reporte TRUE
-            </Button>
-          </div>
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <span className="text-sm text-gray-600">Progreso hacia 90%</span>
+          <span className="text-lg font-semibold text-gray-900">{currentDeviation.toFixed(1)}%</span>
         </div>
         
-        {/* Actions list - minimalist */}
-        <div className="mt-6">
-          <h3 className="text-sm font-medium text-gray-900 mb-3">Acciones prioritarias</h3>
-          <div className="space-y-2">
-            {pendingActions.map((action) => (
-              <div key={action.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                <div className="flex items-center space-x-3">
-                  <div className={`w-2 h-2 rounded-full ${
-                    action.status === 'completed' ? 'bg-green-500' :
-                    action.status === 'in-progress' ? 'bg-yellow-500' : 'bg-gray-300'
-                  }`} />
-                  <div>
-                    <p className="text-sm font-medium text-gray-900">{action.title}</p>
-                    <p className="text-xs text-gray-500">{action.description}</p>
-                  </div>
-                </div>
-                {action.status === 'completed' && (
-                  <ClipboardCheck className="h-4 w-4 text-green-500" />
-                )}
-                {action.status === 'pending' && (
-                  <AlertTriangle className="h-4 w-4 text-gray-400" />
-                )}
-              </div>
-            ))}
+        <div className="w-full h-2 bg-gray-100 rounded-full">
+          <div 
+            className={`h-2 rounded-full transition-all ${getStatusColor()}`} 
+            style={{ width: `${progressPercentage}%` }}
+          />
+        </div>
+        
+        <div className="flex justify-between items-center">
+          <span className="text-xs text-gray-500">Meta: 90%</span>
+          <Button 
+            onClick={() => generateAndDownloadTrueCertificationReport('Club Campestre CDMX', currentDeviation, pendingActions)}
+            className="bg-navy hover:bg-navy/90 text-white text-xs px-2 py-1"
+            size="sm"
+          >
+            <FileDown className="h-3 w-3 mr-1" />
+            Reporte
+          </Button>
+        </div>
+        
+        <div className="mt-4 pt-3 border-t border-gray-100">
+          <div className="text-xs text-gray-500">
+            Acciones pendientes: {pendingActions.filter(a => a.status === 'pending').length}
           </div>
         </div>
       </div>

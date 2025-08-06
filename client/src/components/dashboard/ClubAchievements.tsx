@@ -34,35 +34,22 @@ const achievements = [
 
 export const ClubAchievements = () => {
   return (
-    <div className="bg-white border border-gray-100 rounded-xl overflow-hidden mb-6">
-      <div className="px-6 py-4 border-b border-gray-100">
-        <h2 className="font-semibold text-gray-900">Logros de Sostenibilidad</h2>
+    <div className="bg-white border border-gray-100 rounded-lg p-4 mb-6">
+      <h3 className="font-medium text-gray-900 mb-4">Certificaciones</h3>
+      
+      <div className="grid grid-cols-2 gap-3">
+        <div className="text-center">
+          <div className="text-2xl font-semibold text-gray-900">85%</div>
+          <div className="text-xs text-gray-500">Economía Circular</div>
+        </div>
+        <div className="text-center">
+          <div className="text-2xl font-semibold text-gray-900">75%</div>
+          <div className="text-xs text-gray-500">Ahorro Hídrico</div>
+        </div>
       </div>
       
-      <div className="p-6">
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          {achievements.map((achievement, index) => (
-            <div key={index} className="text-center">
-              <div className={`w-12 h-12 ${achievement.color} rounded-xl flex items-center justify-center text-white mx-auto mb-3`}>
-                {achievement.icon}
-              </div>
-              <h3 className="font-medium text-gray-900 text-sm mb-1">{achievement.name}</h3>
-              <div className="w-full h-1 bg-gray-100 rounded-full mb-1">
-                <div 
-                  className={`h-1 rounded-full ${achievement.color}`}
-                  style={{ width: `${achievement.progress}%` }}
-                />
-              </div>
-              <span className="text-xs text-gray-500">{achievement.progress}%</span>
-            </div>
-          ))}
-        </div>
-        
-        <div className="mt-6 pt-4 border-t border-gray-100 text-center">
-          <span className="text-sm text-gray-600">
-            ISO 14001 en proceso · Estimado Dic 2025
-          </span>
-        </div>
+      <div className="mt-4 pt-3 border-t border-gray-100 text-center">
+        <span className="text-xs text-gray-500">ISO 14001 · Dic 2025</span>
       </div>
     </div>
   );

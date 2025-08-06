@@ -73,100 +73,82 @@ export default function Dashboard() {
   return (
     <AppLayout>
       <div className="min-h-screen bg-gray-50">
-        <div className="container mx-auto py-6 px-4">
-          {/* Header con branding personalizado del Club Campestre */}
-          <ClubHeader />
-          
-          {/* KPI Cards - diseño minimalista usando el componente SummaryCard */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <ClubHeader />
+        
+        <div className="max-w-6xl mx-auto px-4 py-6">
+          {/* Métricas principales */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
             <SummaryCard
-              title="Índice de Desviación"
+              title="Desviación Actual"
               value={`${summaryData.deviation}%`}
               change={2.3}
               progress={summaryData.deviation}
-              progressLabel="Meta: 90% para certificación TRUE"
+              progressLabel="Meta: 90%"
               type="deviation"
             />
-            
             <SummaryCard
-              title="Residuos Orgánicos"
+              title="Orgánicos"
               value={`${summaryData.organicWaste} ton`}
               change={-8.2}
               progress={75}
-              progressLabel="Incluye comedor y PODA"
+              progressLabel="Incluye PODA"
               type="organic"
             />
-            
             <SummaryCard
-              title="Residuos Inorgánicos"
+              title="Inorgánicos"
               value={`${summaryData.inorganicWaste} ton`}
               change={4.1}
               progress={60}
-              progressLabel="Requiere mejor separación"
+              progressLabel="Total año"
               type="inorganic"
             />
-            
             <SummaryCard
-              title="Total de Residuos"
+              title="Total"
               value={`${summaryData.totalWaste} ton`}
               change={-2.5}
               progress={85}
-              progressLabel="Generación en 2024"
+              progressLabel="2024"
               type="total"
             />
           </div>
           
-          {/* Certificación TRUE Zero Waste */}
-          <TrueCertification currentDeviation={summaryData.deviation} />
-          
-          {/* Logros de sostenibilidad del Club Campestre */}
-          <ClubAchievements />
-          
-          {/* Gráfica de tendencias - diseño minimalista */}
-          <div className="bg-white border border-gray-100 rounded-xl p-6 mb-6">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="font-semibold text-gray-900">Tendencia de Residuos</h2>
-              <select 
-                className="text-sm border border-gray-200 rounded-lg px-3 py-1 bg-white"
-                value={selectedPeriod}
-                onChange={(e) => setSelectedPeriod(e.target.value)}
-              >
-                <option value="year">Último año</option>
-                <option value="quarter">Último trimestre</option>
-                <option value="month">Último mes</option>
-              </select>
-            </div>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* TRUE Certification */}
+            <TrueCertification currentDeviation={summaryData.deviation} />
             
-            <div className="h-[300px]">
-              <TrendChart data={chartData} />
+            {/* Certificaciones */}
+            <ClubAchievements />
+            
+            {/* Gráfico compacto */}
+            <div className="bg-white border border-gray-100 rounded-lg p-4">
+              <h3 className="font-medium text-gray-900 mb-4">Tendencia</h3>
+              <div className="h-[200px]">
+                <TrendChart data={chartData} />
+              </div>
             </div>
           </div>
           
-          {/* Acciones rápidas - diseño minimalista */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+          {/* Acciones rápidas */}
+          <div className="grid grid-cols-2 gap-4 mt-6">
             <Link href="/data-entry">
-              <div className="bg-white border border-gray-100 rounded-xl p-6 hover:border-navy/20 transition-colors group">
-                <div className="flex items-center space-x-4">
-                  <div className="w-12 h-12 bg-lime/10 rounded-xl flex items-center justify-center group-hover:bg-lime/20 transition-colors">
-                    <PlusCircle className="h-6 w-6 text-lime" />
-                  </div>
+              <div className="bg-white border border-gray-100 rounded-lg p-4 hover:border-navy/20 transition-colors">
+                <div className="flex items-center space-x-3">
+                  <PlusCircle className="h-5 w-5 text-lime" />
                   <div>
-                    <h3 className="font-medium text-gray-900">Registrar Residuos</h3>
-                    <p className="text-sm text-gray-500 mt-1">Ingresa datos del día</p>
+                    <h4 className="font-medium text-gray-900">Registrar Datos</h4>
+                    <p className="text-xs text-gray-500">Agregar residuos</p>
                   </div>
                 </div>
               </div>
             </Link>
             
             <Link href="/documents">
-              <div className="bg-white border border-gray-100 rounded-xl p-6 hover:border-navy/20 transition-colors group">
-                <div className="flex items-center space-x-4">
-                  <div className="w-12 h-12 bg-navy/10 rounded-xl flex items-center justify-center group-hover:bg-navy/20 transition-colors">
-                    <FileUp className="h-6 w-6 text-navy" />
-                  </div>
+              <div className="bg-white border border-gray-100 rounded-lg p-4 hover:border-navy/20 transition-colors">
+                <div className="flex items-center space-x-3">
+                  <FileUp className="h-5 w-5 text-navy" />
                   <div>
-                    <h3 className="font-medium text-gray-900">Subir Documento</h3>
-                    <p className="text-sm text-gray-500 mt-1">Carga una nueva bitácora o reporte</p>
+                    <h4 className="font-medium text-gray-900">Subir PDF</h4>
+                    <p className="text-xs text-gray-500">Bitácoras RSR</p>
                   </div>
                 </div>
               </div>
