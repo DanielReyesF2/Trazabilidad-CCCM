@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 interface TrendChartProps {
   data: Array<{
@@ -261,28 +261,12 @@ export default function TrendChart({ data }: TrendChartProps) {
       
       <div className="h-[350px]">
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart
+          <BarChart
             data={displayData}
-            margin={{ top: 5, right: 15, left: 15, bottom: 60 }}
+            margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
+            barGap={10}
+            barCategoryGap={15}
           >
-            <defs>
-              <linearGradient id="organicGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#b5e951" stopOpacity={0.3}/>
-                <stop offset="95%" stopColor="#b5e951" stopOpacity={0}/>
-              </linearGradient>
-              <linearGradient id="podaGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#20b2aa" stopOpacity={0.3}/>
-                <stop offset="95%" stopColor="#20b2aa" stopOpacity={0}/>
-              </linearGradient>
-              <linearGradient id="inorganicGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#273949" stopOpacity={0.2}/>
-                <stop offset="95%" stopColor="#273949" stopOpacity={0}/>
-              </linearGradient>
-              <linearGradient id="recyclableGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#ff9933" stopOpacity={0.2}/>
-                <stop offset="95%" stopColor="#ff9933" stopOpacity={0}/>
-              </linearGradient>
-            </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" vertical={false} />
             <XAxis 
               dataKey="month" 
@@ -296,7 +280,6 @@ export default function TrendChart({ data }: TrendChartProps) {
             />
             <YAxis 
               tick={{ fontSize: 11, fill: '#64748b' }}
-              unit=" ton"
               axisLine={false}
               tickLine={false}
               tickCount={6}
@@ -312,135 +295,63 @@ export default function TrendChart({ data }: TrendChartProps) {
                 fontSize: '12px',
                 border: 'none',
               }}
-              formatter={(value) => [`${value.toLocaleString('es-ES', {minimumFractionDigits: 2, maximumFractionDigits: 2})} ton`, undefined]}
-              labelFormatter={(label) => `<span style="font-weight: 600;">${label}</span>`}
-              itemStyle={{ padding: '3px 0' }}
+              formatter={(value, name) => [
+                `${value.toLocaleString('es-ES', {minimumFractionDigits: 2, maximumFractionDigits: 2})} ton`, 
+                name === 'organicWaste' ? 'Orgánicos' : 
+                name === 'inorganicWaste' ? 'Inorgánicos' : 
+                name === 'recyclableWaste' ? 'Reciclables' : 'PODA'
+              ]}
+              labelFormatter={(label) => `${label}`}
             />
             <Legend 
-              verticalAlign="top" 
+              verticalAlign="bottom" 
               height={36}
               formatter={(value) => (
                 <span style={{ 
-                  color: value === 'organicWaste' ? '#3a5a14' : 
-                         value === 'inorganicWaste' ? '#273949' : 
-                         value === 'podaWaste' ? '#20b2aa' : '#b25a0c',
                   fontSize: 12,
                   fontWeight: 500,
                   padding: '3px 6px',
                 }}>
                   {value === 'organicWaste' 
-                    ? 'Orgánicos (Comedor)' 
+                    ? 'Orgánicos' 
                     : value === 'inorganicWaste' 
                       ? 'Inorgánicos' 
-                      : value === 'podaWaste'
-                        ? 'Orgánicos (PODA)'
-                        : 'Reciclables'}
+                      : value === 'recyclableWaste'
+                        ? 'Reciclables'
+                        : 'PODA'}
                 </span>
               )}
-              wrapperStyle={{ paddingBottom: '10px' }}
+              wrapperStyle={{ paddingTop: '20px' }}
             />
-            <Line 
-              type="monotone" 
+            <Bar 
               dataKey="organicWaste" 
               name="organicWaste"
-              stroke="#b5e951" 
-              strokeWidth={3}
-              dot={{ r: 4, strokeWidth: 2, fill: 'white' }}
-              activeDot={{ r: 7, stroke: '#b5e951', strokeWidth: 2, fill: 'white' }}
-              animationDuration={1500}
-              animationEasing="ease-out"
+              fill="#b5e951" 
+              radius={[2, 2, 0, 0]}
+              animationDuration={1000}
             />
-            <Line 
-              type="monotone" 
+            <Bar 
               dataKey="inorganicWaste" 
               name="inorganicWaste"
-              stroke="#273949" 
-              strokeWidth={3}
-              dot={{ r: 4, strokeWidth: 2, fill: 'white' }}
-              activeDot={{ r: 7, stroke: '#273949', strokeWidth: 2, fill: 'white' }}
-              animationDuration={1500}
-              animationEasing="ease-out"
+              fill="#273949" 
+              radius={[2, 2, 0, 0]}
+              animationDuration={1000}
             />
-            <Line 
-              type="monotone" 
+            <Bar 
               dataKey="podaWaste" 
               name="podaWaste"
-              stroke="#20b2aa" 
-              strokeWidth={3}
-              dot={{ r: 4, strokeWidth: 2, fill: 'white' }}
-              activeDot={{ r: 7, stroke: '#20b2aa', strokeWidth: 2, fill: 'white' }}
-              animationDuration={1500}
-              animationEasing="ease-out"
+              fill="#20b2aa" 
+              radius={[2, 2, 0, 0]}
+              animationDuration={1000}
             />
-            <Line 
-              type="monotone" 
+            <Bar 
               dataKey="recyclableWaste" 
               name="recyclableWaste"
-              stroke="#ff9933" 
-              strokeWidth={3}
-              dot={{ r: 4, strokeWidth: 2, fill: 'white' }}
-              activeDot={{ r: 7, stroke: '#ff9933', strokeWidth: 2, fill: 'white' }}
-              animationDuration={1500}
-              animationEasing="ease-out"
+              fill="#ff9933" 
+              radius={[2, 2, 0, 0]}
+              animationDuration={1000}
             />
-            
-            {/* Líneas de promedio */}
-            <ReferenceLine 
-              y={avgOrganicWaste} 
-              stroke="#b5e951" 
-              strokeDasharray="3 3" 
-              strokeWidth={2}
-              label={{ 
-                value: `Promedio: ${avgOrganicWaste.toLocaleString('es-ES', {minimumFractionDigits: 2, maximumFractionDigits: 2})} ton`, 
-                position: 'insideBottomRight',
-                fill: '#3a5a14',
-                fontSize: 10,
-                offset: 10,
-              }}
-            />
-            
-            <ReferenceLine 
-              y={avgPodaWaste} 
-              stroke="#20b2aa" 
-              strokeDasharray="3 3" 
-              strokeWidth={2}
-              label={{ 
-                value: `Promedio: ${avgPodaWaste.toLocaleString('es-ES', {minimumFractionDigits: 2, maximumFractionDigits: 2})} ton`, 
-                position: 'insideBottomLeft',
-                fill: '#20b2aa',
-                fontSize: 10,
-                offset: 10,
-              }}
-            />
-            
-            <ReferenceLine 
-              y={avgInorganicWaste} 
-              stroke="#273949" 
-              strokeDasharray="3 3" 
-              strokeWidth={2}
-              label={{ 
-                value: `Promedio: ${avgInorganicWaste.toLocaleString('es-ES', {minimumFractionDigits: 2, maximumFractionDigits: 2})} ton`, 
-                position: 'insideBottomLeft',
-                fill: '#273949',
-                fontSize: 10,
-                offset: 30,
-              }}
-            />
-            
-            <ReferenceLine 
-              y={avgRecyclableWaste} 
-              stroke="#ff9933" 
-              strokeDasharray="3 3" 
-              strokeWidth={2}
-              label={{ 
-                value: `Promedio: ${avgRecyclableWaste.toLocaleString('es-ES', {minimumFractionDigits: 2, maximumFractionDigits: 2})} ton`, 
-                position: 'insideTopRight',
-                fill: '#b25a0c',
-                fontSize: 10,
-                offset: 10,
-              }}
-            />
-          </LineChart>
+          </BarChart>
         </ResponsiveContainer>
       </div>
       
