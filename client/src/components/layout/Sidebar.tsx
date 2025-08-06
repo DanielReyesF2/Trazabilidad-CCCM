@@ -35,8 +35,8 @@ export default function Sidebar() {
   
   // User data
   const user = {
-    name: "Daniel Reyes",
-    role: "Administrador"
+    name: "CCCM Sustentabilidad",
+    role: "Club Campestre"
   };
   
   return (
@@ -54,7 +54,7 @@ export default function Sidebar() {
       
       {/* Navigation */}
       <nav className="flex-1 pt-4 pb-4">
-        <div className="px-4 py-2 text-xs uppercase tracking-wider text-gray-400">Principal</div>
+        <div className="px-4 py-2 text-xs uppercase tracking-wider text-gray-400">Club Campestre CDMX</div>
         <SidebarItem 
           to="/" 
           icon={<LayoutDashboard className="w-5 h-5" />} 
@@ -70,34 +70,11 @@ export default function Sidebar() {
           Análisis
         </SidebarItem>
         <SidebarItem 
-          to="/reports" 
-          icon={<FileText className="w-5 h-5" />} 
-          isActive={location === "/reports"}
-        >
-          Reportes
-        </SidebarItem>
-        <SidebarItem 
           to="/documents" 
           icon={<FileUp className="w-5 h-5" />} 
           isActive={location === "/documents"}
         >
           Documentos
-        </SidebarItem>
-        
-        <div className="px-4 py-2 mt-6 text-xs uppercase tracking-wider text-gray-400">Administración</div>
-        <SidebarItem 
-          to="/clients" 
-          icon={<Users className="w-5 h-5" />} 
-          isActive={location === "/clients"}
-        >
-          Clientes
-        </SidebarItem>
-        <SidebarItem 
-          to="/settings" 
-          icon={<Settings className="w-5 h-5" />} 
-          isActive={location === "/settings"}
-        >
-          Configuración
         </SidebarItem>
       </nav>
       

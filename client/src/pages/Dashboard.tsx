@@ -129,26 +129,38 @@ export default function Dashboard() {
           </div>
           
           {/* Acciones rápidas */}
-          <div className="grid grid-cols-2 gap-4 mt-6">
-            <Link href="/data-entry">
-              <div className="bg-white border border-gray-100 rounded-lg p-4 hover:border-navy/20 transition-colors">
-                <div className="flex items-center space-x-3">
-                  <PlusCircle className="h-5 w-5 text-lime" />
-                  <div>
-                    <h4 className="font-medium text-gray-900">Registrar Datos</h4>
-                    <p className="text-xs text-gray-500">Agregar residuos</p>
-                  </div>
-                </div>
-              </div>
-            </Link>
-            
+          <div className="grid grid-cols-3 gap-4 mt-6">
             <Link href="/documents">
               <div className="bg-white border border-gray-100 rounded-lg p-4 hover:border-navy/20 transition-colors">
                 <div className="flex items-center space-x-3">
                   <FileUp className="h-5 w-5 text-navy" />
                   <div>
-                    <h4 className="font-medium text-gray-900">Subir PDF</h4>
-                    <p className="text-xs text-gray-500">Bitácoras RSR</p>
+                    <h4 className="font-medium text-gray-900">Subir Bitácoras</h4>
+                    <p className="text-xs text-gray-500">PDFs automáticos</p>
+                  </div>
+                </div>
+              </div>
+            </Link>
+            
+            <Link href="/analysis">
+              <div className="bg-white border border-gray-100 rounded-lg p-4 hover:border-navy/20 transition-colors">
+                <div className="flex items-center space-x-3">
+                  <BarChart2 className="h-5 w-5 text-lime" />
+                  <div>
+                    <h4 className="font-medium text-gray-900">Ver Análisis</h4>
+                    <p className="text-xs text-gray-500">Datos detallados</p>
+                  </div>
+                </div>
+              </div>
+            </Link>
+            
+            <Link href="/data-entry">
+              <div className="bg-white border border-gray-100 rounded-lg p-4 hover:border-navy/20 transition-colors">
+                <div className="flex items-center space-x-3">
+                  <PlusCircle className="h-5 w-5 text-gray-600" />
+                  <div>
+                    <h4 className="font-medium text-gray-900">Registro Manual</h4>
+                    <p className="text-xs text-gray-500">Si es necesario</p>
                   </div>
                 </div>
               </div>

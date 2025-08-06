@@ -1,8 +1,8 @@
 # Overview
 
-Econova is a comprehensive environmental waste management system designed to track, analyze, and optimize waste management practices for businesses. The application is specifically tailored for Club Campestre Ciudad de México (CCCM), tracking various types of waste including organic, inorganic, recyclable materials, and PODA (pruning) waste. The system supports sustainability certification processes like TRUE Zero Waste and provides detailed environmental impact analysis.
+Econova is a simplified internal waste management system designed exclusively for Club Campestre Ciudad de México (CCCM). The application focuses on three core functions: dashboard visualization, document processing for automatic data extraction, and detailed analysis for TRUE Zero Waste certification tracking.
 
-The application features a React-based frontend with TypeScript, an Express.js backend, and uses PostgreSQL for data persistence. It includes PDF document processing capabilities, report generation, and comprehensive dashboards for waste management analytics.
+The system processes PDF bitácoras automatically, tracks organic/inorganic/recyclable/PODA waste, and provides internal reporting through dashboard screenshots rather than generated reports. Built for internal club use with ultra-simplified interface design.
 
 # User Preferences
 
