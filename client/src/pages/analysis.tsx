@@ -50,10 +50,10 @@ export default function Analysis() {
 
   // Datos reales extraídos de los PDFs enero-junio 2025
   const realData2025 = [
-    { month: 1, organicsToLandfill: 5386.5, recyclables: 569.05, inorganicNonRecyclable: 2965.58, organicsCompost: 0 }, // Enero
+    { month: 1, organicsToLandfill: 5386.5, recyclables: 569.05, inorganicNonRecyclable: 2965.58, organicsCompost: 12800 }, // Enero
     { month: 2, organicsToLandfill: 4841.5, recyclables: 2368.0, inorganicNonRecyclable: 2423.3, organicsCompost: 0 }, // Febrero
     { month: 3, organicsToLandfill: 5964.0, recyclables: 2156.8, inorganicNonRecyclable: 3140.5, organicsCompost: 0 }, // Marzo
-    { month: 4, organicsToLandfill: 4677.5, recyclables: 721.2, inorganicNonRecyclable: 2480.7, organicsCompost: 0 }, // Abril
+    { month: 4, organicsToLandfill: 4677.5, recyclables: 721.2, inorganicNonRecyclable: 2480.7, organicsCompost: 25600 }, // Abril
     { month: 5, organicsToLandfill: 4921.0, recyclables: 2980.0, inorganicNonRecyclable: 2844.0, organicsCompost: 0 }, // Mayo
     { month: 6, organicsToLandfill: 3837.5, recyclables: 3468.0, inorganicNonRecyclable: 2147.5, organicsCompost: 0 }, // Junio
   ];
