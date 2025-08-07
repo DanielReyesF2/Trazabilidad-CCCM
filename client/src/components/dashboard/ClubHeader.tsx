@@ -12,9 +12,7 @@ export const ClubHeader = () => {
             alt="Club Campestre" 
             className="h-10 w-10 rounded"
           />
-          <div>
-            <p className="text-sm text-gray-500">Gestión de Residuos</p>
-          </div>
+          
         </div>
         
         <div className="flex items-center space-x-2">
