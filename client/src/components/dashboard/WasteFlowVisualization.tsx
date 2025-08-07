@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   ArrowRight, 
+  ArrowDown,
   Recycle, 
   Leaf, 
   Trash2, 
@@ -216,128 +217,34 @@ export function WasteFlowVisualization({ totalWasteDiverted }: WasteFlowVisualiz
           </div>
         </div>
 
-        {/* Flow Lines - SVG Background */}
-        <div className="absolute inset-0 pointer-events-none" style={{ top: '80px', height: '280px' }}>
-          <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-            <defs>
-              <linearGradient id="greenFlow" x1="0%" y1="0%" x2="0%" y2="100%">
-                <stop offset="0%" stopColor="#10b981" stopOpacity="0.3"/>
-                <stop offset="100%" stopColor="#059669" stopOpacity="0.7"/>
-              </linearGradient>
-              <linearGradient id="blueFlow" x1="0%" y1="0%" x2="0%" y2="100%">
-                <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.3"/>
-                <stop offset="100%" stopColor="#2563eb" stopOpacity="0.7"/>
-              </linearGradient>
-              <linearGradient id="grayFlow" x1="0%" y1="0%" x2="0%" y2="100%">
-                <stop offset="0%" stopColor="#6b7280" stopOpacity="0.3"/>
-                <stop offset="100%" stopColor="#4b5563" stopOpacity="0.7"/>
-              </linearGradient>
-            </defs>
-            
-            {/* From Casa Club (left origin at ~20%) */}
-            {/* To Orgánicos (left destination at ~15%) */}
-            <path
-              d="M 20 15 Q 12 40 15 65"
-              stroke="url(#greenFlow)"
-              strokeWidth="0.8"
-              fill="none"
-              strokeDasharray="2,1"
-              className={`transition-all duration-1000 ${animatingParticles ? 'opacity-80' : 'opacity-40'}`}
-            />
-            {/* To Reciclables (center destination at ~50%) */}
-            <path
-              d="M 20 15 Q 35 40 50 65"
-              stroke="url(#blueFlow)"
-              strokeWidth="0.8"
-              fill="none"
-              strokeDasharray="2,1"
-              className={`transition-all duration-1000 delay-200 ${animatingParticles ? 'opacity-80' : 'opacity-40'}`}
-            />
-            {/* To Inorgánicos (right destination at ~85%) */}
-            <path
-              d="M 20 15 Q 52 40 85 65"
-              stroke="url(#grayFlow)"
-              strokeWidth="0.8"
-              fill="none"
-              strokeDasharray="2,1"
-              className={`transition-all duration-1000 delay-400 ${animatingParticles ? 'opacity-80' : 'opacity-40'}`}
-            />
+        {/* Flow Connections */}
+        <div className="relative z-0 mb-4">
+          <div className="flex justify-center items-center h-24">
+            <div className="flex items-center space-x-4">
+              {/* Visual flow indicators */}
+              <div className={`flex items-center space-x-2 transition-all duration-1000 ${
+                animatingParticles ? 'opacity-100' : 'opacity-60'
+              }`}>
+                <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                <div className="w-1 h-1 bg-green-500 rounded-full animate-pulse" style={{ animationDelay: '0.2s' }}></div>
+                <div className="w-1 h-1 bg-blue-400 rounded-full animate-pulse" style={{ animationDelay: '0.4s' }}></div>
+                <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" style={{ animationDelay: '0.6s' }}></div>
+                <div className="w-1 h-1 bg-gray-400 rounded-full animate-pulse" style={{ animationDelay: '0.8s' }}></div>
+                <div className="w-2 h-2 bg-gray-500 rounded-full animate-pulse" style={{ animationDelay: '1s' }}></div>
+              </div>
+            </div>
+          </div>
 
-            {/* From Restaurante (center origin at ~50%) */}
-            {/* To Orgánicos */}
-            <path
-              d="M 50 15 Q 32 40 15 65"
-              stroke="url(#greenFlow)"
-              strokeWidth="0.8"
-              fill="none"
-              strokeDasharray="2,1"
-              className={`transition-all duration-1000 delay-100 ${animatingParticles ? 'opacity-80' : 'opacity-40'}`}
-            />
-            {/* To Reciclables */}
-            <path
-              d="M 50 15 Q 50 40 50 65"
-              stroke="url(#blueFlow)"
-              strokeWidth="0.8"
-              fill="none"
-              strokeDasharray="2,1"
-              className={`transition-all duration-1000 delay-300 ${animatingParticles ? 'opacity-80' : 'opacity-40'}`}
-            />
-            {/* To Inorgánicos */}
-            <path
-              d="M 50 15 Q 68 40 85 65"
-              stroke="url(#grayFlow)"
-              strokeWidth="0.8"
-              fill="none"
-              strokeDasharray="2,1"
-              className={`transition-all duration-1000 delay-500 ${animatingParticles ? 'opacity-80' : 'opacity-40'}`}
-            />
-
-            {/* From Eventos (right origin at ~80%) */}
-            {/* To Orgánicos */}
-            <path
-              d="M 80 15 Q 48 40 15 65"
-              stroke="url(#greenFlow)"
-              strokeWidth="0.8"
-              fill="none"
-              strokeDasharray="2,1"
-              className={`transition-all duration-1000 delay-200 ${animatingParticles ? 'opacity-80' : 'opacity-40'}`}
-            />
-            {/* To Reciclables */}
-            <path
-              d="M 80 15 Q 65 40 50 65"
-              stroke="url(#blueFlow)"
-              strokeWidth="0.8"
-              fill="none"
-              strokeDasharray="2,1"
-              className={`transition-all duration-1000 delay-400 ${animatingParticles ? 'opacity-80' : 'opacity-40'}`}
-            />
-            {/* To Inorgánicos */}
-            <path
-              d="M 80 15 Q 82 40 85 65"
-              stroke="url(#grayFlow)"
-              strokeWidth="0.8"
-              fill="none"
-              strokeDasharray="2,1"
-              className={`transition-all duration-1000 delay-600 ${animatingParticles ? 'opacity-80' : 'opacity-40'}`}
-            />
-
-            {/* Animated flow particles */}
-            <circle r="0.8" fill="#10b981" className={`transition-all duration-1000 ${animatingParticles ? 'opacity-100' : 'opacity-0'}`}>
-              <animateMotion dur="3s" repeatCount="indefinite" begin="0s">
-                <path d="M 20 15 Q 12 40 15 65"/>
-              </animateMotion>
-            </circle>
-            <circle r="0.8" fill="#3b82f6" className={`transition-all duration-1000 ${animatingParticles ? 'opacity-100' : 'opacity-0'}`}>
-              <animateMotion dur="3s" repeatCount="indefinite" begin="1s">
-                <path d="M 50 15 Q 50 40 50 65"/>
-              </animateMotion>
-            </circle>
-            <circle r="0.8" fill="#6b7280" className={`transition-all duration-1000 ${animatingParticles ? 'opacity-100' : 'opacity-0'}`}>
-              <animateMotion dur="3s" repeatCount="indefinite" begin="2s">
-                <path d="M 80 15 Q 82 40 85 65"/>
-              </animateMotion>
-            </circle>
-          </svg>
+          {/* Simple animated arrows */}
+          <div className="flex justify-center mb-6">
+            <div className={`flex items-center space-x-8 transition-all duration-1000 ${
+              animatingParticles ? 'opacity-100 translate-y-0' : 'opacity-60 translate-y-1'
+            }`}>
+              <ArrowDown className="w-6 h-6 text-green-500 animate-bounce" style={{ animationDelay: '0s' }} />
+              <ArrowDown className="w-6 h-6 text-blue-500 animate-bounce" style={{ animationDelay: '0.5s' }} />
+              <ArrowDown className="w-6 h-6 text-gray-500 animate-bounce" style={{ animationDelay: '1s' }} />
+            </div>
+          </div>
         </div>
 
         {/* Category Containers */}
