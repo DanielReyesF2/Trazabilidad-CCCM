@@ -66,7 +66,8 @@ export default function Analysis() {
         // Usar datos reales
         const totalGenerated = realDataForMonth.organics + realDataForMonth.recyclables + realDataForMonth.inorganicNonRecyclable;
         const totalDiverted = realDataForMonth.organics + realDataForMonth.recyclables;
-        const deviationPercentage = (totalDiverted / totalGenerated) * 100;
+        const totalToLandfill = realDataForMonth.inorganicNonRecyclable; // Solo los inorgánicos no reciclables van al relleno
+        const deviationPercentage = (totalToLandfill / totalGenerated) * 100;
         
         yearData.push({
           year,
@@ -136,7 +137,8 @@ export default function Analysis() {
     
     // Para calcular el porcentaje necesitamos el total generado
     if (monthData.totalGenerated > 0) {
-      monthData.deviationPercentage = (monthData.totalDiverted / monthData.totalGenerated) * 100;
+      const totalToLandfill = monthData.totalGenerated - monthData.totalDiverted;
+      monthData.deviationPercentage = (totalToLandfill / monthData.totalGenerated) * 100;
     }
     
     setData(newData);
@@ -183,13 +185,13 @@ export default function Analysis() {
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div className="text-lg font-anton">
-                  Índice de Desviación Promedio: 
-                  <span className={`ml-2 text-2xl ${averageDeviation >= 90 ? 'text-green-600' : 'text-red-600'}`}>
+                  Índice de Desviación Promedio (al relleno sanitario): 
+                  <span className={`ml-2 text-2xl ${averageDeviation <= 10 ? 'text-green-600' : 'text-red-600'}`}>
                     {averageDeviation.toFixed(1)}%
                   </span>
                 </div>
                 <div className="text-sm text-gray-600">
-                  Meta TRUE ZERO WASTE: 90% mínimo
+                  Meta TRUE ZERO WASTE: máximo 10% al relleno
                 </div>
               </div>
             </CardContent>
@@ -484,13 +486,13 @@ export default function Analysis() {
                         <TableCell className="font-bold">% Desviación</TableCell>
                         {data.map((month, index) => (
                           <TableCell key={index} className="text-center font-bold">
-                            <span className={month.deviationPercentage >= 90 ? 'text-green-600' : 'text-red-600'}>
+                            <span className={month.deviationPercentage <= 10 ? 'text-green-600' : 'text-red-600'}>
                               {month.deviationPercentage.toFixed(1)}%
                             </span>
                           </TableCell>
                         ))}
                         <TableCell className="text-center font-bold">
-                          <span className={averageDeviation >= 90 ? 'text-green-600' : 'text-red-600'}>
+                          <span className={averageDeviation <= 10 ? 'text-green-600' : 'text-red-600'}>
                             {averageDeviation.toFixed(1)}%
                           </span>
                         </TableCell>
