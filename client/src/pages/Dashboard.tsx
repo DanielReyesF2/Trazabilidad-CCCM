@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Link } from 'wouter';
 import AppLayout from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
-import { ClubHeader } from '@/components/dashboard/ClubHeader';
+
 import { WasteFlowVisualization } from '@/components/dashboard/WasteFlowVisualization';
 import { WasteData, Alert } from '@shared/schema';
 import cccmLogo from '@assets/CCCM_1754423231662.png';
@@ -61,8 +61,6 @@ export default function Dashboard() {
   return (
     <AppLayout>
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-gray-50 to-blue-50">
-        <ClubHeader />
-        
         <div className="max-w-7xl mx-auto px-4 py-8">
           {/* Header principal */}
           <div className="text-center mb-16">
