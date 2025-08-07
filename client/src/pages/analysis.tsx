@@ -27,6 +27,8 @@ interface MonthlyData {
   // Orgánicos
   organicsCompost: number;
   totalOrganics: number;
+  // Inorgánicos no reciclables
+  inorganicNonRecyclable: number;
   // Reuso
   glassDonation: number;
   // Calculados
@@ -86,6 +88,7 @@ export default function Analysis() {
           totalRecyclables: realDataForMonth.recyclables,
           organicsCompost: realDataForMonth.organics,
           totalOrganics: realDataForMonth.organics,
+          inorganicNonRecyclable: realDataForMonth.inorganicNonRecyclable,
           glassDonation: 0,
           totalDiverted: totalDiverted,
           totalGenerated: totalGenerated,
@@ -110,6 +113,7 @@ export default function Analysis() {
           totalRecyclables: 0,
           organicsCompost: year === 2025 ? 0 : 18000, // Para 2025 usar datos reales, otros años valor por defecto
           totalOrganics: year === 2025 ? 0 : 18000,
+          inorganicNonRecyclable: 0,
           glassDonation: 0,
           totalDiverted: 0,
           totalGenerated: 0,
@@ -242,6 +246,18 @@ export default function Analysis() {
                         </TableCell>
                       </TableRow>
 
+                      <TableRow className="hover:bg-gray-50">
+                        <TableCell className="font-medium text-red-700">🗑️ Inorgánicos (relleno)</TableCell>
+                        {data.map((month, index) => (
+                          <TableCell key={index} className="text-center font-medium">
+                            {month.inorganicNonRecyclable.toLocaleString()}
+                          </TableCell>
+                        ))}
+                        <TableCell className="text-center font-bold text-red-700">
+                          {calculateTotals('inorganicNonRecyclable').toLocaleString()}
+                        </TableCell>
+                      </TableRow>
+
                       <TableRow className="bg-green-50">
                         <TableCell className="font-bold text-green-800">✅ Total Desviado</TableCell>
                         {data.map((month, index) => (
@@ -267,7 +283,7 @@ export default function Analysis() {
                       </TableRow>
 
                       <TableRow className="bg-yellow-100">
-                        <TableCell className="font-bold text-red-800">🗑️ Al Relleno (%)</TableCell>
+                        <TableCell className="font-bold text-red-800">📊 % Al Relleno</TableCell>
                         {data.map((month, index) => (
                           <TableCell key={index} className="text-center font-bold">
                             <span className={`text-lg ${month.deviationPercentage <= 10 ? 'text-green-600' : 'text-red-600'}`}>
