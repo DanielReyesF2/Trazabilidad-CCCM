@@ -65,8 +65,8 @@ export default function Dashboard() {
         <div className="max-w-7xl mx-auto px-4 py-8">
           {/* Header principal */}
           <div className="text-center mb-16">
-            <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-[#b5e951] to-[#9ed13c] rounded-2xl shadow-lg mb-6">
-              <Leaf className="w-10 h-10 text-white" />
+            <div className="inline-flex items-center justify-center w-20 h-20 bg-white rounded-2xl shadow-lg mb-6 border-2 border-[#b5e951]">
+              <img src="@assets/CCCM_1754423231662.png" alt="Club Campestre Ciudad de México" className="w-16 h-16 object-contain" />
             </div>
             <h1 className="text-4xl md:text-6xl font-anton uppercase tracking-wider mb-4 bg-gradient-to-r from-[#273949] via-[#b5e951] to-[#273949] bg-clip-text text-transparent">
               Sistema de Gestión Ambiental
