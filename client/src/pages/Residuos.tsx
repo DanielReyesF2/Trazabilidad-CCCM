@@ -61,14 +61,33 @@ export default function Residuos() {
     recyclableWasteDiverted: recyclableTotal,
   };
 
-  // Datos para gráficas mensuales
-  const monthlyData = wasteData.map(month => ({
-    name: new Date(month.date).toLocaleDateString('es-MX', { month: 'short' }),
-    organicos: Math.round((month.organicWaste || 0) * 1000), // kg
-    inorganicos: Math.round((month.inorganicWaste || 0) * 1000), // kg
-    reciclables: Math.round((month.recyclableWaste || 0) * 1000), // kg
-    total: Math.round(((month.organicWaste || 0) + (month.inorganicWaste || 0) + (month.recyclableWaste || 0)) * 1000),
-  }));
+  // Limpiar y procesar datos para gráficas mensuales
+  const cleanedData = wasteData
+    .filter(month => month.date) // Filtrar datos válidos
+    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()) // Ordenar por fecha
+    .reduce((acc, month) => {
+      // Crear clave única por año-mes para evitar duplicados
+      const date = new Date(month.date);
+      const key = `${date.getFullYear()}-${date.getMonth()}`;
+      
+      // Solo conservar el último registro de cada mes
+      if (!acc[key] || new Date(acc[key].date) < date) {
+        acc[key] = month;
+      }
+      return acc;
+    }, {} as Record<string, any>);
+
+  // Convertir a array y tomar solo los últimos 12 meses
+  const monthlyData = Object.values(cleanedData)
+    .sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime())
+    .slice(-12) // Solo últimos 12 meses
+    .map((month: any) => ({
+      name: new Date(month.date).toLocaleDateString('es-MX', { month: 'short', year: '2-digit' }),
+      organicos: Math.round((month.organicWaste || 0) * 1000), // kg
+      inorganicos: Math.round((month.inorganicWaste || 0) * 1000), // kg
+      reciclables: Math.round((month.recyclableWaste || 0) * 1000), // kg
+      total: Math.round(((month.organicWaste || 0) + (month.inorganicWaste || 0) + (month.recyclableWaste || 0)) * 1000),
+    }));
 
   const pieData = [
     { name: 'Orgánicos', value: organicTotal, fill: '#b5e951' },
