@@ -4,6 +4,7 @@ import { Link } from 'wouter';
 import AppLayout from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
 import { ClubHeader } from '@/components/dashboard/ClubHeader';
+import { WasteFlowVisualization } from '@/components/dashboard/WasteFlowVisualization';
 import { WasteData, Alert } from '@shared/schema';
 import { 
   Trash2, 
@@ -145,6 +146,9 @@ export default function Dashboard() {
               </div>
             </Link>
           </div>
+
+          {/* Flujos Dinámicos de Residuos */}
+          <WasteFlowVisualization totalWasteDiverted={totalWasteDiverted} />
 
           {/* Impacto Ambiental Positivo */}
           <div className="bg-gradient-to-br from-white to-gray-50 rounded-3xl p-10 shadow-xl border border-gray-200 mb-16">
