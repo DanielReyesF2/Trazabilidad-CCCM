@@ -201,7 +201,7 @@ export function WasteFlowVisualization({ totalWasteDiverted }: WasteFlowVisualiz
           <span className="text-sm font-medium text-gray-700 uppercase tracking-wide">Puntos de Origen</span>
         </div>
 
-        <div className="flex justify-center space-x-24 mb-8">
+        <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6 mb-8 max-w-6xl mx-auto">
           <div className="text-center">
             <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center shadow-lg mb-2 mx-auto">
               <Building2 className="w-6 h-6 text-white" />
@@ -224,6 +224,30 @@ export function WasteFlowVisualization({ totalWasteDiverted }: WasteFlowVisualiz
             </div>
             <div className="text-sm font-medium text-gray-800">Eventos</div>
             <div className="text-xs text-gray-500">Áreas Comunes</div>
+          </div>
+
+          <div className="text-center">
+            <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-full flex items-center justify-center shadow-lg mb-2 mx-auto">
+              <TreePine className="w-6 h-6 text-white" />
+            </div>
+            <div className="text-sm font-medium text-gray-800">Campo</div>
+            <div className="text-xs text-gray-500">Golf & Jardines</div>
+          </div>
+
+          <div className="text-center">
+            <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg mb-2 mx-auto">
+              <Zap className="w-6 h-6 text-white" />
+            </div>
+            <div className="text-sm font-medium text-gray-800">Canchas Tennis</div>
+            <div className="text-xs text-gray-500">Deportivo</div>
+          </div>
+
+          <div className="text-center">
+            <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-full flex items-center justify-center shadow-lg mb-2 mx-auto">
+              <Package className="w-6 h-6 text-white" />
+            </div>
+            <div className="text-sm font-medium text-gray-800">Canchas Padel</div>
+            <div className="text-xs text-gray-500">Deportivo</div>
           </div>
         </div>
 
