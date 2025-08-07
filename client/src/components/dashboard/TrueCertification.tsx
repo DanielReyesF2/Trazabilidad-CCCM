@@ -27,25 +27,25 @@ export const TrueCertification: React.FC<TrueCertificationProps> = ({ currentDev
       id: 1,
       title: 'Priorización Directiva',
       description: 'Lograr que la alta dirección priorice el programa de gestión de residuos.',
-      status: 'pending', // pending, in-progress, completed
+      status: 'pending' as const,
     },
     {
       id: 2,
       title: 'Compostaje en Sitio',
       description: 'Implementar compostero para el 100% de los residuos de poda y comedor.',
-      status: 'in-progress',
+      status: 'in-progress' as const,
     },
     {
       id: 3,
       title: 'Proveedor Privado',
       description: 'Invertir en un proveedor privado en lugar del municipal para asegurar destino final y trazabilidad.',
-      status: 'pending',
+      status: 'pending' as const,
     },
     {
       id: 4,
       title: 'Brigada de Gestión',
       description: 'Conformar una brigada de mínimo 3 personas dedicadas a la gestión interna de residuos.',
-      status: 'pending',
+      status: 'pending' as const,
     },
   ];
   
