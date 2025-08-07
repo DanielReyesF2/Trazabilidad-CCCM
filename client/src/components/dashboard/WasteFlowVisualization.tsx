@@ -188,14 +188,11 @@ export function WasteFlowVisualization({ totalWasteDiverted }: WasteFlowVisualiz
     <div className="bg-gradient-to-br from-white to-gray-50 rounded-3xl p-8 shadow-xl border border-gray-200">
       {/* Header */}
       <div className="text-center mb-8">
-        <h2 className="text-3xl font-anton text-gray-800 uppercase tracking-wide mb-3">
-          Flujos de Residuos Dinámicos
-        </h2>
+        <h2 className="text-3xl font-anton uppercase tracking-wide mb-3 text-[#b5e951]">Flujos de  Materiales</h2>
         <p className="text-lg text-gray-600 mb-6">
           Visualización interactiva del sistema integral de gestión de residuos
         </p>
       </div>
-
       {/* Flow Visualization */}
       <div className="relative">
         {/* Points of Origin */}
@@ -299,7 +296,6 @@ export function WasteFlowVisualization({ totalWasteDiverted }: WasteFlowVisualiz
           </div>
         </div>
       </div>
-
       {/* Detailed Flow Items */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         {/* Orgánicos */}
@@ -443,7 +439,6 @@ export function WasteFlowVisualization({ totalWasteDiverted }: WasteFlowVisualiz
           ))}
         </div>
       </div>
-
       {/* Summary Stats */}
       <div className="bg-gradient-to-r from-green-50 via-blue-50 to-purple-50 rounded-2xl p-6 border border-gray-200 mb-8">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 text-center">
@@ -465,7 +460,6 @@ export function WasteFlowVisualization({ totalWasteDiverted }: WasteFlowVisualiz
           </div>
         </div>
       </div>
-
       {/* Detailed Subcategory Breakdown - Professional Sales Presentation */}
       <div className="bg-white rounded-2xl p-6 border border-gray-200">
         <h3 className="text-xl font-anton text-gray-800 uppercase mb-6 text-center">Clasificación Detallada por Subcategorías</h3>
