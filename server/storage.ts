@@ -55,15 +55,19 @@ export class MemStorage implements IStorage {
     this.wasteDataId = 1;
     this.alertId = 1;
     
+    // Initialize Club Campestre and data synchronously
+    this.initializeClubData();
+  }
+
+  // Initialize Club Campestre client and historical waste data
+  private initializeClubData() {
     // Add Club Campestre as main client
     this.createClient({ name: "Club Campestre Ciudad de México", description: "Club deportivo sustentable" });
-    
-    // Add historical waste data from January 2024 to August 2025 (REAL DATA)
     this.initializeHistoricalWasteData();
   }
 
   // Initialize historical waste data for Club Campestre (REAL DATA from CSV and PDFs)
-  private async initializeHistoricalWasteData() {
+  private initializeHistoricalWasteData() {
     const clubId = 1; // Club Campestre ID
     
     // Historical data 2024 (estimated from PDFs - partial year data)
@@ -94,9 +98,9 @@ export class MemStorage implements IStorage {
       { month: 8, organic: 4.1, inorganic: 2.2, recyclable: 0.177 }, // August 2025 - PARTIAL REAL
     ];
 
-    // Add 2024 data
+    // Add 2024 data synchronously
     for (const data of historicalData2024) {
-      await this.createWasteData({
+      this.createWasteData({
         clientId: clubId,
         documentId: null,
         date: new Date(2024, data.month - 1, 15), // 15th of each month
@@ -106,9 +110,9 @@ export class MemStorage implements IStorage {
       });
     }
 
-    // Add 2025 real data
+    // Add 2025 real data synchronously 
     for (const data of realData2025) {
-      await this.createWasteData({
+      this.createWasteData({
         clientId: clubId,
         documentId: null,
         date: new Date(2025, data.month - 1, 15), // 15th of each month
