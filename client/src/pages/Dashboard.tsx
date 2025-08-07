@@ -58,155 +58,172 @@ export default function Dashboard() {
 
   return (
     <AppLayout>
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-gray-50 to-blue-50">
         <ClubHeader />
         
         <div className="max-w-7xl mx-auto px-4 py-8">
           {/* Header principal */}
-          <div className="text-center mb-12">
-            <h1 className="text-4xl md:text-5xl font-anton uppercase tracking-wider mb-4 text-[#b5e951]">Sistema  de Gestión Ambiental</h1>
+          <div className="text-center mb-16">
+            <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-[#b5e951] to-[#9ed13c] rounded-2xl shadow-lg mb-6">
+              <Leaf className="w-10 h-10 text-white" />
+            </div>
+            <h1 className="text-4xl md:text-6xl font-anton uppercase tracking-wider mb-4 bg-gradient-to-r from-[#273949] via-[#b5e951] to-[#273949] bg-clip-text text-transparent">
+              Sistema de Gestión Ambiental
+            </h1>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              Plataforma integral de sustentabilidad del Club Campestre Ciudad de México
+            </p>
           </div>
 
           {/* Módulos ambientales principales */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
             {/* Residuos */}
             <Link href="/residuos">
-              <div className="group cursor-pointer bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-lg hover:border-green-200 transition-all duration-300 hover:-translate-y-1">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center group-hover:bg-green-500 group-hover:text-white transition-colors">
-                    <Trash2 className="w-6 h-6 text-green-600 group-hover:text-white" />
+              <div className="group cursor-pointer bg-white rounded-3xl p-8 shadow-lg border border-gray-100 hover:shadow-2xl hover:border-green-300 transition-all duration-500 hover:-translate-y-2 relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-green-100 to-green-200 rounded-bl-full opacity-50"></div>
+                <div className="flex items-center justify-between mb-6">
+                  <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                    <Trash2 className="w-8 h-8 text-white" />
                   </div>
-                  <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-green-500 transition-colors" />
+                  <ArrowRight className="w-6 h-6 text-gray-400 group-hover:text-green-500 group-hover:translate-x-1 transition-all" />
                 </div>
-                <div className="text-3xl font-bold text-green-600 mb-1">{processedData.wasteDeviation}%</div>
-                <div className="text-sm text-gray-600 mb-1">Desviación</div>
-                <div className="text-sm font-medium text-gray-900">Residuos</div>
-                <div className="text-xs text-gray-500">TRUE Zero Waste en progreso</div>
+                <div className="text-4xl font-anton text-green-600 mb-2">{processedData.wasteDeviation}%</div>
+                <div className="text-sm text-gray-500 mb-2 uppercase tracking-wide">Desviación del Relleno</div>
+                <div className="text-lg font-bold text-gray-900 mb-1">Residuos</div>
+                <div className="text-sm text-gray-600">TRUE Zero Waste en progreso</div>
               </div>
             </Link>
 
             {/* Energía */}
             <Link href="/energia">
-              <div className="group cursor-pointer bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-lg hover:border-yellow-200 transition-all duration-300 hover:-translate-y-1">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="w-12 h-12 bg-yellow-100 rounded-xl flex items-center justify-center group-hover:bg-yellow-500 group-hover:text-white transition-colors">
-                    <Zap className="w-6 h-6 text-yellow-600 group-hover:text-white" />
+              <div className="group cursor-pointer bg-white rounded-3xl p-8 shadow-lg border border-gray-100 hover:shadow-2xl hover:border-yellow-300 transition-all duration-500 hover:-translate-y-2 relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-yellow-100 to-orange-200 rounded-bl-full opacity-50"></div>
+                <div className="flex items-center justify-between mb-6">
+                  <div className="w-16 h-16 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                    <Zap className="w-8 h-8 text-white" />
                   </div>
-                  <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-yellow-500 transition-colors" />
+                  <ArrowRight className="w-6 h-6 text-gray-400 group-hover:text-yellow-500 group-hover:translate-x-1 transition-all" />
                 </div>
-                <div className="text-3xl font-bold text-yellow-600 mb-1">{processedData.energyRenewable}%</div>
-                <div className="text-sm text-gray-600 mb-1">Renovable</div>
-                <div className="text-sm font-medium text-gray-900">Energía</div>
-                <div className="text-xs text-gray-500">Eficiencia y sustentabilidad</div>
+                <div className="text-4xl font-anton text-yellow-600 mb-2">{processedData.energyRenewable}%</div>
+                <div className="text-sm text-gray-500 mb-2 uppercase tracking-wide">Energía Renovable</div>
+                <div className="text-lg font-bold text-gray-900 mb-1">Energía</div>
+                <div className="text-sm text-gray-600">Paneles solares en desarrollo</div>
               </div>
             </Link>
 
             {/* Agua */}
             <Link href="/agua">
-              <div className="group cursor-pointer bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-lg hover:border-blue-200 transition-all duration-300 hover:-translate-y-1">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center group-hover:bg-blue-500 group-hover:text-white transition-colors">
-                    <Droplets className="w-6 h-6 text-blue-600 group-hover:text-white" />
+              <div className="group cursor-pointer bg-white rounded-3xl p-8 shadow-lg border border-gray-100 hover:shadow-2xl hover:border-blue-300 transition-all duration-500 hover:-translate-y-2 relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-blue-100 to-cyan-200 rounded-bl-full opacity-50"></div>
+                <div className="flex items-center justify-between mb-6">
+                  <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                    <Droplets className="w-8 h-8 text-white" />
                   </div>
-                  <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-blue-500 transition-colors" />
+                  <ArrowRight className="w-6 h-6 text-gray-400 group-hover:text-blue-500 group-hover:translate-x-1 transition-all" />
                 </div>
-                <div className="text-3xl font-bold text-blue-600 mb-1">{processedData.waterRecycled}%</div>
-                <div className="text-sm text-gray-600 mb-1">Reciclada</div>
-                <div className="text-sm font-medium text-gray-900">Agua</div>
-                <div className="text-xs text-gray-500">Conservación y reutilización</div>
+                <div className="text-4xl font-anton text-blue-600 mb-2">{processedData.waterRecycled}%</div>
+                <div className="text-sm text-gray-500 mb-2 uppercase tracking-wide">Agua Reciclada</div>
+                <div className="text-lg font-bold text-gray-900 mb-1">Agua</div>
+                <div className="text-sm text-gray-600">PTAR y sistema de laguna</div>
               </div>
             </Link>
 
             {/* Economía Circular */}
             <Link href="/economia-circular">
-              <div className="group cursor-pointer bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-lg hover:border-purple-200 transition-all duration-300 hover:-translate-y-1">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center group-hover:bg-purple-500 group-hover:text-white transition-colors">
-                    <RefreshCw className="w-6 h-6 text-purple-600 group-hover:text-white" />
+              <div className="group cursor-pointer bg-white rounded-3xl p-8 shadow-lg border border-gray-100 hover:shadow-2xl hover:border-purple-300 transition-all duration-500 hover:-translate-y-2 relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-purple-100 to-indigo-200 rounded-bl-full opacity-50"></div>
+                <div className="flex items-center justify-between mb-6">
+                  <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-indigo-500 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                    <RefreshCw className="w-8 h-8 text-white" />
                   </div>
-                  <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-purple-500 transition-colors" />
+                  <ArrowRight className="w-6 h-6 text-gray-400 group-hover:text-purple-500 group-hover:translate-x-1 transition-all" />
                 </div>
-                <div className="text-3xl font-bold text-purple-600 mb-1">{processedData.circularityIndex}%</div>
-                <div className="text-sm text-gray-600 mb-1">Circularidad</div>
-                <div className="text-sm font-medium text-gray-900">Economía Circular</div>
-                <div className="text-xs text-gray-500">Índice integral de sustentabilidad</div>
+                <div className="text-4xl font-anton text-purple-600 mb-2">{processedData.circularityIndex}%</div>
+                <div className="text-sm text-gray-500 mb-2 uppercase tracking-wide">Índice de Circularidad</div>
+                <div className="text-lg font-bold text-gray-900 mb-1">Economía Circular</div>
+                <div className="text-sm text-gray-600">Sustentabilidad integral</div>
               </div>
             </Link>
           </div>
 
           {/* Impacto Ambiental Positivo */}
-          <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100 mb-8">
-            <div className="text-center mb-8">
-              <h2 className="text-2xl font-anton text-gray-800 uppercase tracking-wide mb-2">
+          <div className="bg-gradient-to-br from-white to-gray-50 rounded-3xl p-10 shadow-xl border border-gray-200 mb-16">
+            <div className="text-center mb-12">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-emerald-500 to-green-600 rounded-2xl shadow-lg mb-4">
+                <TreePine className="w-8 h-8 text-white" />
+              </div>
+              <h2 className="text-3xl font-anton text-gray-800 uppercase tracking-wide mb-3">
                 Impacto Ambiental Positivo
               </h2>
-              <p className="text-gray-600">
-                Beneficios ambientales generados por el programa de gestión de residuos
+              <p className="text-lg text-gray-600">
+                Beneficios ambientales generados por el programa integral de sustentabilidad
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
               {/* Árboles */}
-              <div className="text-center bg-green-50 rounded-xl p-6 border border-green-100">
-                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <TreePine className="w-8 h-8 text-green-600" />
+              <div className="text-center bg-white rounded-2xl p-8 shadow-lg border border-green-100 hover:shadow-xl transition-all duration-300 group">
+                <div className="w-20 h-20 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform shadow-lg">
+                  <TreePine className="w-10 h-10 text-white" />
                 </div>
-                <div className="text-3xl font-bold text-green-600 mb-2">{environmentalImpact.trees}</div>
-                <div className="text-sm font-medium text-gray-700 mb-1">ÁRBOLES</div>
-                <div className="text-xs text-gray-500">Salvados por el reciclaje y compostaje</div>
+                <div className="text-4xl font-anton text-green-600 mb-3">{environmentalImpact.trees}</div>
+                <div className="text-sm font-bold text-gray-800 mb-2 uppercase tracking-wide">ÁRBOLES</div>
+                <div className="text-sm text-gray-600">Salvados por reciclaje y compostaje</div>
               </div>
 
               {/* Agua */}
-              <div className="text-center bg-blue-50 rounded-xl p-6 border border-blue-100">
-                <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Waves className="w-8 h-8 text-blue-600" />
+              <div className="text-center bg-white rounded-2xl p-8 shadow-lg border border-blue-100 hover:shadow-xl transition-all duration-300 group">
+                <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform shadow-lg">
+                  <Waves className="w-10 h-10 text-white" />
                 </div>
-                <div className="text-3xl font-bold text-blue-600 mb-2">{environmentalImpact.waterSaved.toLocaleString()}</div>
-                <div className="text-sm font-medium text-gray-700 mb-1">LITROS</div>
-                <div className="text-xs text-gray-500">Ahorrados en procesos de producción</div>
+                <div className="text-4xl font-anton text-blue-600 mb-3">{environmentalImpact.waterSaved.toLocaleString()}</div>
+                <div className="text-sm font-bold text-gray-800 mb-2 uppercase tracking-wide">LITROS</div>
+                <div className="text-sm text-gray-600">Ahorrados en procesos de producción</div>
               </div>
 
               {/* Energía */}
-              <div className="text-center bg-yellow-50 rounded-xl p-6 border border-yellow-100">
-                <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Bolt className="w-8 h-8 text-yellow-600" />
+              <div className="text-center bg-white rounded-2xl p-8 shadow-lg border border-yellow-100 hover:shadow-xl transition-all duration-300 group">
+                <div className="w-20 h-20 bg-gradient-to-br from-yellow-500 to-orange-600 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform shadow-lg">
+                  <Bolt className="w-10 h-10 text-white" />
                 </div>
-                <div className="text-3xl font-bold text-yellow-600 mb-2">{environmentalImpact.energySaved.toLocaleString()}</div>
-                <div className="text-sm font-medium text-gray-700 mb-1">kWh</div>
-                <div className="text-xs text-gray-500">Equivalente al consumo de hogares</div>
+                <div className="text-4xl font-anton text-yellow-600 mb-3">{environmentalImpact.energySaved.toLocaleString()}</div>
+                <div className="text-sm font-bold text-gray-800 mb-2 uppercase tracking-wide">kWh</div>
+                <div className="text-sm text-gray-600">Equivalente al consumo de hogares</div>
               </div>
 
               {/* CO₂ */}
-              <div className="text-center bg-emerald-50 rounded-xl p-6 border border-emerald-100">
-                <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Leaf className="w-8 h-8 text-emerald-600" />
+              <div className="text-center bg-white rounded-2xl p-8 shadow-lg border border-emerald-100 hover:shadow-xl transition-all duration-300 group">
+                <div className="w-20 h-20 bg-gradient-to-br from-emerald-500 to-green-600 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform shadow-lg">
+                  <Leaf className="w-10 h-10 text-white" />
                 </div>
-                <div className="text-3xl font-bold text-emerald-600 mb-2">{environmentalImpact.co2Avoided.toLocaleString()}</div>
-                <div className="text-sm font-medium text-gray-700 mb-1">kg CO₂</div>
-                <div className="text-xs text-gray-500">Emisiones evitadas al ambiente</div>
+                <div className="text-4xl font-anton text-emerald-600 mb-3">{environmentalImpact.co2Avoided.toLocaleString()}</div>
+                <div className="text-sm font-bold text-gray-800 mb-2 uppercase tracking-wide">kg CO₂</div>
+                <div className="text-sm text-gray-600">Emisiones evitadas al ambiente</div>
               </div>
             </div>
 
             {/* Resumen de impacto */}
-            <div className="mt-8 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-6 border border-green-100">
+            <div className="mt-12 bg-gradient-to-r from-green-100 via-emerald-100 to-blue-100 rounded-2xl p-8 border border-green-200">
               <div className="flex items-center justify-center text-center">
-                <TrendingUp className="w-5 h-5 text-green-600 mr-2" />
-                <div className="text-sm text-gray-700">
-                  <span className="font-medium text-green-600">Con {totalWasteDiverted.toFixed(1)} toneladas</span> desviadas del relleno sanitario, el Club Campestre está generando un impacto positivo significativo en el medio ambiente.
+                <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center mr-4">
+                  <TrendingUp className="w-6 h-6 text-white" />
+                </div>
+                <div className="text-lg text-gray-800">
+                  <span className="font-anton text-green-700 text-xl">Con {totalWasteDiverted.toFixed(1)} toneladas</span> desviadas del relleno sanitario, el Club Campestre está generando un impacto ambiental positivo significativo a través de su programa integral de sustentabilidad.
                 </div>
               </div>
             </div>
           </div>
 
           {/* Metodología y acciones rápidas */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Metodología */}
-            <div className="lg:col-span-2 bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-anton text-gray-800 uppercase tracking-wide">
+            <div className="lg:col-span-2 bg-gradient-to-br from-white to-gray-50 rounded-3xl p-8 shadow-xl border border-gray-200">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-2xl font-anton text-gray-800 uppercase tracking-wide">
                   Metodología de Cálculo
                 </h3>
-                <Button variant="outline" size="sm">Ver detalles</Button>
+                <Button variant="outline" size="sm" className="hover:bg-[#b5e951] hover:text-white hover:border-[#b5e951] transition-colors">Ver detalles</Button>
               </div>
               <div className="space-y-3 text-sm text-gray-600">
                 <div className="flex items-start space-x-3">
@@ -231,23 +248,23 @@ export default function Dashboard() {
             </div>
 
             {/* Acciones rápidas */}
-            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-              <h3 className="text-lg font-anton text-gray-800 uppercase tracking-wide mb-4">
+            <div className="bg-gradient-to-br from-[#273949] to-gray-800 rounded-3xl p-8 shadow-xl text-white">
+              <h3 className="text-2xl font-anton text-white uppercase tracking-wide mb-6">
                 Acciones Rápidas
               </h3>
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <Link href="/data-entry">
-                  <Button className="w-full bg-navy hover:bg-navy-dark text-white">
+                  <Button className="w-full bg-[#b5e951] hover:bg-[#9ed13c] text-[#273949] font-bold py-3 rounded-xl transition-all duration-300 hover:scale-105">
                     Registrar Datos
                   </Button>
                 </Link>
                 <Link href="/documents">
-                  <Button variant="outline" className="w-full">
+                  <Button variant="outline" className="w-full border-2 border-white text-white hover:bg-white hover:text-[#273949] py-3 rounded-xl transition-all duration-300">
                     Subir Documentos
                   </Button>
                 </Link>
                 <Link href="/reports">
-                  <Button variant="outline" className="w-full">
+                  <Button variant="outline" className="w-full border-2 border-white text-white hover:bg-white hover:text-[#273949] py-3 rounded-xl transition-all duration-300">
                     Generar Reportes
                   </Button>
                 </Link>
