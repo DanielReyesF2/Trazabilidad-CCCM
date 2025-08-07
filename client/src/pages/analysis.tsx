@@ -358,13 +358,7 @@ export default function Analysis() {
                         </TableCell>
                       </TableRow>
 
-                      {/* Fila de resumen anual */}
-                      <TableRow className="bg-navy text-white">
-                        <TableCell className="font-bold text-center" colSpan={14}>
-                          🎯 DESEMPEÑO ANUAL 2025: 52.6% de desviación promedio
-                          {52.6 >= 90 ? ' ✅ META ALCANZADA' : ` • Objetivo: 90% • Progreso: ${(52.6/90*100).toFixed(0)}%`}
-                        </TableCell>
-                      </TableRow>
+                      
                     </TableBody>
                   </Table>
                 </div>
