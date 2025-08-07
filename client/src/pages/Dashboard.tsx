@@ -205,17 +205,7 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* Resumen de impacto */}
-            <div className="mt-12 bg-gradient-to-r from-green-100 via-emerald-100 to-blue-100 rounded-2xl p-8 border border-green-200">
-              <div className="flex items-center justify-center text-center">
-                <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center mr-4">
-                  <TrendingUp className="w-6 h-6 text-white" />
-                </div>
-                <div className="text-lg text-gray-800">
-                  <span className="font-anton text-green-700 text-xl">Con {totalWasteDiverted.toFixed(1)} toneladas</span> desviadas del relleno sanitario, el Club Campestre está generando un impacto ambiental positivo significativo a través de su programa integral de sustentabilidad.
-                </div>
-              </div>
-            </div>
+            
           </div>
 
           {/* Metodología y acciones rápidas */}
