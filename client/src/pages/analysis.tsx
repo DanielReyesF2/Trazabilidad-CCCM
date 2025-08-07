@@ -45,31 +45,76 @@ export default function Analysis() {
     'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
   ];
 
+  // Datos reales extraídos de los PDFs enero-junio 2025
+  const realData2025 = [
+    { month: 1, organics: 5386.5, recyclables: 569.05, inorganicNonRecyclable: 2965.58 }, // Enero
+    { month: 2, organics: 4841.5, recyclables: 2368.0, inorganicNonRecyclable: 2423.3 }, // Febrero
+    { month: 3, organics: 5964.0, recyclables: 2156.8, inorganicNonRecyclable: 3140.5 }, // Marzo
+    { month: 4, organics: 4677.5, recyclables: 721.2, inorganicNonRecyclable: 2480.7 }, // Abril
+    { month: 5, organics: 4921.0, recyclables: 2980.0, inorganicNonRecyclable: 2844.0 }, // Mayo
+    { month: 6, organics: 3837.5, recyclables: 3468.0, inorganicNonRecyclable: 2147.5 }, // Junio
+  ];
+
   const initializeYear = (year: number) => {
     const yearData: MonthlyData[] = [];
+    
     for (let month = 1; month <= 12; month++) {
-      yearData.push({
-        year,
-        month,
-        mixedFile: 0,
-        officePaper: 0,
-        magazine: 0,
-        newspaper: 0,
-        cardboard: 0,
-        petPlastic: 0,
-        hdpeBlown: 0,
-        hdpeRigid: 0,
-        tinCan: 0,
-        aluminum: 0,
-        glass: 0,
-        totalRecyclables: 0,
-        organicsCompost: 18000, // Default como muestra la tabla
-        totalOrganics: 18000,
-        glassDonation: 0,
-        totalDiverted: 0,
-        totalGenerated: 0,
-        deviationPercentage: 0,
-      });
+      // Buscar datos reales para 2025
+      const realDataForMonth = year === 2025 ? realData2025.find(d => d.month === month) : null;
+      
+      if (realDataForMonth) {
+        // Usar datos reales
+        const totalGenerated = realDataForMonth.organics + realDataForMonth.recyclables + realDataForMonth.inorganicNonRecyclable;
+        const totalDiverted = realDataForMonth.organics + realDataForMonth.recyclables;
+        const deviationPercentage = (totalDiverted / totalGenerated) * 100;
+        
+        yearData.push({
+          year,
+          month,
+          mixedFile: Math.round(realDataForMonth.recyclables * 0.3), // Distribución estimada
+          officePaper: Math.round(realDataForMonth.recyclables * 0.25),
+          magazine: Math.round(realDataForMonth.recyclables * 0.1),
+          newspaper: Math.round(realDataForMonth.recyclables * 0.05),
+          cardboard: Math.round(realDataForMonth.recyclables * 0.2),
+          petPlastic: Math.round(realDataForMonth.recyclables * 0.05),
+          hdpeBlown: Math.round(realDataForMonth.recyclables * 0.02),
+          hdpeRigid: Math.round(realDataForMonth.recyclables * 0.02),
+          tinCan: Math.round(realDataForMonth.recyclables * 0.005),
+          aluminum: Math.round(realDataForMonth.recyclables * 0.005),
+          glass: Math.round(realDataForMonth.recyclables * 0.01),
+          totalRecyclables: realDataForMonth.recyclables,
+          organicsCompost: realDataForMonth.organics,
+          totalOrganics: realDataForMonth.organics,
+          glassDonation: 0,
+          totalDiverted: totalDiverted,
+          totalGenerated: totalGenerated,
+          deviationPercentage: deviationPercentage,
+        });
+      } else {
+        // Datos en blanco para meses sin información
+        yearData.push({
+          year,
+          month,
+          mixedFile: 0,
+          officePaper: 0,
+          magazine: 0,
+          newspaper: 0,
+          cardboard: 0,
+          petPlastic: 0,
+          hdpeBlown: 0,
+          hdpeRigid: 0,
+          tinCan: 0,
+          aluminum: 0,
+          glass: 0,
+          totalRecyclables: 0,
+          organicsCompost: year === 2025 ? 0 : 18000, // Para 2025 usar datos reales, otros años valor por defecto
+          totalOrganics: year === 2025 ? 0 : 18000,
+          glassDonation: 0,
+          totalDiverted: 0,
+          totalGenerated: 0,
+          deviationPercentage: 0,
+        });
+      }
     }
     setData(yearData);
   };
