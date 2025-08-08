@@ -7,6 +7,7 @@ import fs from "fs";
 import { insertDocumentSchema, insertWasteDataSchema, insertAlertSchema } from "@shared/schema";
 import { z } from "zod";
 import { processPDFDocument } from './pdf-processor';
+import { processCSVDocument, isValidCSV, cleanupFile } from './csv-processor';
 
 // Simple type for error handling
 type ProcessingError = {
@@ -34,9 +35,16 @@ const upload = multer({
     fileSize: 10 * 1024 * 1024, // 10MB limit
   },
   fileFilter: function(req, file, cb) {
-    // Accept only PDF files
-    if (file.mimetype !== 'application/pdf') {
-      return cb(new Error('Only PDF files are allowed'));
+    // Accept PDF and CSV files
+    const allowedMimeTypes = [
+      'application/pdf',
+      'text/csv',
+      'application/csv',
+      'text/plain' // Sometimes CSV files are detected as plain text
+    ];
+    
+    if (!allowedMimeTypes.includes(file.mimetype) && !file.originalname.toLowerCase().endsWith('.csv')) {
+      return cb(new Error('Only PDF and CSV files are allowed'));
     }
     cb(null, true);
   }
@@ -100,19 +108,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Start document processing
       try {
-        // Usar nuestro nuevo procesador de PDF
-        const wasteData = await processPDFDocument(req.file.path, clientId, document.id);
+        let wasteData;
         
-        if (!wasteData) {
+        // Determinar el tipo de archivo y usar el procesador apropiado
+        if (isValidCSV(req.file.path)) {
+          console.log('Processing CSV file:', req.file.originalname);
+          wasteData = await processCSVDocument(req.file.path, clientId, document.id);
+        } else {
+          console.log('Processing PDF file:', req.file.originalname);
+          wasteData = await processPDFDocument(req.file.path, clientId, document.id);
+        }
+        
+        if (!wasteData || (Array.isArray(wasteData) && wasteData.length === 0)) {
           throw new Error("No se pudieron extraer datos del documento");
         }
         
         // Mark document as processed
         await storage.updateDocument(document.id, { processed: true });
         
+        // Cleanup the uploaded file
+        cleanupFile(req.file.path);
+        
         res.status(201).json({ 
           document, 
           wasteData,
+          recordsProcessed: Array.isArray(wasteData) ? wasteData.length : 1,
           message: "Documento subido y procesado exitosamente" 
         });
         
@@ -238,13 +258,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const totalWaste = 
         (validatedData.organicWaste || 0) + 
         (validatedData.inorganicWaste || 0) + 
-        (validatedData.recyclableWaste || 0) + 
-        (validatedData.podaWaste || 0);
+        (validatedData.recyclableWaste || 0);
       
-      // Calculate deviation correctly using the formula: (recyclable + poda) / total * 100
+      // Calculate deviation correctly using the formula: (recyclable + organic) / total * 100
       const recyclableTotal = 
         (validatedData.recyclableWaste || 0) + 
-        (validatedData.podaWaste || 0);
+        (validatedData.organicWaste || 0);
       
       const deviation = totalWaste > 0 
         ? (recyclableTotal / totalWaste) * 100 

@@ -11,6 +11,7 @@ import AlertsTable from "../components/dashboard/AlertsTable";
 import SummaryCard from "../components/dashboard/SummaryCard";
 import { WasteData, Alert } from '@shared/schema';
 import { Trash2, Recycle, Leaf, FileUp, BarChart2, PlusCircle } from "lucide-react";
+import { DocumentUpload } from "../components/DocumentUpload";
 
 export default function Residuos() {
   // Obtener datos de residuos
@@ -168,6 +169,17 @@ export default function Residuos() {
             />
           </div>
 
+          {/* Carga de Documentos CSV/PDF */}
+          <div className="mb-8">
+            <DocumentUpload 
+              clientId={1} 
+              onUploadSuccess={() => {
+                // Los datos se actualizarán automáticamente por la invalidación de queries
+                console.log('Datos cargados exitosamente, refrescando visualización...');
+              }}
+            />
+          </div>
+          
           {/* Certificación TRUE Zero Waste */}
           <TrueCertification currentDeviation={summaryData.deviation} />
 
