@@ -223,61 +223,159 @@ export default function ResiduosExcel() {
     const kpis = calculateKPIs();
     const totals = getSectionTotals();
 
-    // Header
-    pdf.setFont('helvetica', 'bold');
-    pdf.setFontSize(18);
-    pdf.setTextColor(39, 57, 73); // Navy color
-    pdf.text('REPORTE DE TRAZABILIDAD DE RESIDUOS', pageWidth / 2, 25, { align: 'center' });
-    
-    pdf.setFontSize(12);
-    pdf.setFont('helvetica', 'normal');
-    pdf.text(`Club Campestre Ciudad de México - Año ${selectedYear}`, pageWidth / 2, 35, { align: 'center' });
-    pdf.text(`Generado el: ${new Date().toLocaleDateString('es-ES')}`, pageWidth / 2, 42, { align: 'center' });
+    // Color palette
+    const colors = {
+      primary: [39, 57, 73],    // Navy
+      accent: [181, 233, 81],   // Lime
+      success: [34, 197, 94],   // Green
+      warning: [245, 158, 11],  // Amber
+      info: [59, 130, 246],     // Blue
+      danger: [239, 68, 68],    // Red
+      text: [55, 65, 81],       // Gray-700
+      lightGray: [249, 250, 251] // Gray-50
+    };
 
-    // KPIs Section
-    let yPos = 55;
-    pdf.setFont('helvetica', 'bold');
-    pdf.setFontSize(14);
-    pdf.text('INDICADORES CLAVE DE DESEMPEÑO (KPI)', margin, yPos);
+    // Header with branding
+    const addHeader = (pageNumber: number = 1) => {
+      // Top accent bar
+      pdf.setFillColor(...colors.accent);
+      pdf.rect(0, 0, pageWidth, 8, 'F');
+      
+      // Navy header background
+      pdf.setFillColor(...colors.primary);
+      pdf.rect(0, 8, pageWidth, 30, 'F');
+      
+      // Main title
+      pdf.setFont('helvetica', 'bold');
+      pdf.setFontSize(20);
+      pdf.setTextColor(255, 255, 255);
+      pdf.text('REPORTE DE TRAZABILIDAD DE RESIDUOS', pageWidth / 2, 25, { align: 'center' });
+      
+      // Subtitle
+      pdf.setFontSize(12);
+      pdf.setFont('helvetica', 'normal');
+      pdf.text(`Club Campestre Ciudad de México • Año ${selectedYear}`, pageWidth / 2, 32, { align: 'center' });
+      
+      // Date and page info in header right
+      pdf.setFontSize(9);
+      pdf.setTextColor(200, 200, 200);
+      pdf.text(`Generado: ${new Date().toLocaleDateString('es-ES')}`, pageWidth - margin, 20, { align: 'right' });
+      pdf.text(`Página ${pageNumber}`, pageWidth - margin, 25, { align: 'right' });
+      
+      // ECONOVA branding in header left
+      pdf.setFont('helvetica', 'bold');
+      pdf.setFontSize(10);
+      pdf.setTextColor(181, 233, 81); // Lime color
+      pdf.text('POWERED BY ECONOVA', margin, 25);
+    };
+
+    // Footer
+    const addFooter = () => {
+      const footerY = pageHeight - 15;
+      pdf.setFillColor(...colors.lightGray);
+      pdf.rect(0, footerY - 5, pageWidth, 20, 'F');
+      
+      pdf.setFont('helvetica', 'normal');
+      pdf.setFontSize(8);
+      pdf.setTextColor(...colors.text);
+      pdf.text('Sistema de Gestión Ambiental ECONOVA - Club Campestre Ciudad de México', margin, footerY);
+      pdf.text('Certificación TRUE Zero Waste en progreso', pageWidth - margin, footerY, { align: 'right' });
+    };
+
+    // Add first page header
+    addHeader(1);
+
+    // Executive Summary Section
+    let yPos = 50;
+    pdf.setFillColor(...colors.lightGray);
+    pdf.rect(margin - 5, yPos - 5, pageWidth - 2 * margin + 10, 45, 'F');
     
-    yPos += 10;
-    const kpiData = [
-      ['Indicador', 'Valor', 'Meta', 'Estado'],
-      ['Total Circular (kg)', kpis.totalCircular.toLocaleString('es-ES', { maximumFractionDigits: 1 }), '-', 'Activo'],
-      ['Total Relleno Sanitario (kg)', kpis.totalLandfill.toLocaleString('es-ES', { maximumFractionDigits: 1 }), 'Minimizar', 'Monitoreo'],
-      ['Total Generado (kg)', kpis.totalWeight.toLocaleString('es-ES', { maximumFractionDigits: 1 }), '-', 'Registro'],
-      ['% Desviación de Relleno', `${kpis.deviationPercentage.toFixed(1)}%`, '≥70%', kpis.deviationPercentage >= 70 ? 'Excelente' : kpis.deviationPercentage >= 50 ? 'Bueno' : 'Mejorable']
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(16);
+    pdf.setTextColor(...colors.primary);
+    pdf.text('📊 RESUMEN EJECUTIVO', margin, yPos + 5);
+    
+    yPos += 15;
+    
+    // KPI Cards Layout
+    const cardWidth = (pageWidth - 2 * margin - 30) / 4;
+    const cardHeight = 25;
+    
+    const kpiCards = [
+      { label: 'Total Circular', value: kpis.totalCircular.toLocaleString('es-ES', { maximumFractionDigits: 0 }) + ' kg', color: colors.success, icon: '♻️' },
+      { label: 'Total Relleno', value: kpis.totalLandfill.toLocaleString('es-ES', { maximumFractionDigits: 0 }) + ' kg', color: colors.danger, icon: '🗑️' },
+      { label: 'Total Generado', value: kpis.totalWeight.toLocaleString('es-ES', { maximumFractionDigits: 0 }) + ' kg', color: colors.info, icon: '📈' },
+      { label: 'Desviación', value: kpis.deviationPercentage.toFixed(1) + '%', color: kpis.deviationPercentage >= 70 ? colors.success : colors.warning, icon: '🎯' }
     ];
-
-    autoTable(pdf, {
-      startY: yPos,
-      head: [kpiData[0]],
-      body: kpiData.slice(1),
-      theme: 'grid',
-      headStyles: { fillColor: [39, 57, 73], textColor: 255, fontStyle: 'bold' },
-      bodyStyles: { fontSize: 10 },
-      columnStyles: {
-        0: { fontStyle: 'bold', cellWidth: 70 },
-        1: { halign: 'right', cellWidth: 50 },
-        2: { halign: 'center', cellWidth: 30 },
-        3: { halign: 'center', cellWidth: 40 }
-      },
-      margin: { left: margin, right: margin }
+    
+    kpiCards.forEach((card, index) => {
+      const cardX = margin + index * (cardWidth + 10);
+      
+      // Card background
+      pdf.setFillColor(...card.color);
+      pdf.roundedRect(cardX, yPos, cardWidth, cardHeight, 3, 3, 'F');
+      
+      // Card content
+      pdf.setTextColor(255, 255, 255);
+      pdf.setFont('helvetica', 'bold');
+      pdf.setFontSize(10);
+      pdf.text(card.icon + ' ' + card.label.toUpperCase(), cardX + 5, yPos + 8);
+      
+      pdf.setFontSize(14);
+      pdf.text(card.value, cardX + 5, yPos + 18);
     });
 
-    yPos = (pdf as any).lastAutoTable.finalY + 15;
+    yPos += 40;
 
-    // Detailed Data Table - Recycling
+    // Performance Status Section
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(14);
+    pdf.setTextColor(...colors.primary);
+    pdf.text('🏆 ESTADO DE CERTIFICACIÓN TRUE ZERO WASTE', margin, yPos);
+    
+    yPos += 10;
+    const statusColor = kpis.deviationPercentage >= 70 ? colors.success : kpis.deviationPercentage >= 50 ? colors.warning : colors.danger;
+    const statusText = kpis.deviationPercentage >= 70 ? 'EXCELENTE - Cumple certificación' : kpis.deviationPercentage >= 50 ? 'BUENO - En progreso' : 'MEJORABLE - Requiere acción';
+    
+    pdf.setFillColor(...statusColor);
+    pdf.roundedRect(margin, yPos, pageWidth - 2 * margin, 15, 3, 3, 'F');
+    
+    pdf.setTextColor(255, 255, 255);
     pdf.setFont('helvetica', 'bold');
     pdf.setFontSize(12);
-    pdf.text('RECICLAJE (kg)', margin, yPos);
-    yPos += 8;
+    pdf.text(`${kpis.deviationPercentage.toFixed(1)}% - ${statusText}`, margin + 10, yPos + 10);
 
-    const recyclingData = [['Material', ...MONTH_LABELS, 'Total']];
+    yPos += 30;
+
+    // Add footer to first page
+    addFooter();
+
+    // Add new page for detailed data
+    pdf.addPage();
+    addHeader(2);
+    yPos = 50;
+
+    // Helper function for section headers
+    const addSectionHeader = (title: string, icon: string, color: number[]) => {
+      pdf.setFillColor(...color);
+      pdf.rect(margin - 5, yPos - 5, pageWidth - 2 * margin + 10, 12, 'F');
+      
+      pdf.setFont('helvetica', 'bold');
+      pdf.setFontSize(14);
+      pdf.setTextColor(255, 255, 255);
+      pdf.text(`${icon} ${title}`, margin, yPos + 3);
+      yPos += 15;
+    };
+
+    // Detailed Data Table - Recycling
+    addSectionHeader('RECICLAJE (kg)', '♻️', colors.success);
+
+    const recyclingData = [['Material', ...MONTH_LABELS, 'Total Anual']];
     wasteData.materials.recycling.forEach(material => {
       const row = [material];
       MONTH_LABELS.forEach((_, monthIndex) => {
-        row.push(getValue('recycling', material, monthIndex).toString());
+        const value = getValue('recycling', material, monthIndex);
+        row.push(value > 0 ? value.toLocaleString('es-ES', { maximumFractionDigits: 1 }) : '-');
       });
       row.push(getRowTotal('recycling', material).toLocaleString('es-ES', { maximumFractionDigits: 1 }));
       recyclingData.push(row);
@@ -290,7 +388,7 @@ export default function ResiduosExcel() {
       wasteData.materials.recycling.forEach(material => {
         monthTotal += getValue('recycling', material, monthIndex);
       });
-      recyclingTotalsRow.push(monthTotal.toLocaleString('es-ES', { maximumFractionDigits: 1 }));
+      recyclingTotalsRow.push(monthTotal > 0 ? monthTotal.toLocaleString('es-ES', { maximumFractionDigits: 1 }) : '-');
     });
     recyclingTotalsRow.push(totals.recyclingTotal.toLocaleString('es-ES', { maximumFractionDigits: 1 }));
     recyclingData.push(recyclingTotalsRow);
@@ -300,33 +398,48 @@ export default function ResiduosExcel() {
       head: [recyclingData[0]],
       body: recyclingData.slice(1, -1),
       foot: [recyclingData[recyclingData.length - 1]],
-      theme: 'grid',
-      headStyles: { fillColor: [34, 197, 94], textColor: 255, fontSize: 8, fontStyle: 'bold' },
-      bodyStyles: { fontSize: 7 },
-      footStyles: { fillColor: [34, 197, 94], textColor: 255, fontSize: 8, fontStyle: 'bold' },
-      columnStyles: {
-        0: { fontStyle: 'bold', cellWidth: 35 },
-        ...Object.fromEntries(MONTH_LABELS.map((_, i) => [i + 1, { halign: 'right', cellWidth: 18 }])),
-        13: { halign: 'right', cellWidth: 25, fontStyle: 'bold' }
+      theme: 'striped',
+      headStyles: { 
+        fillColor: [...colors.success], 
+        textColor: 255, 
+        fontSize: 9, 
+        fontStyle: 'bold',
+        halign: 'center'
       },
-      margin: { left: margin, right: margin }
+      bodyStyles: { 
+        fontSize: 8,
+        alternateRowStyles: { fillColor: [248, 250, 252] }
+      },
+      footStyles: { 
+        fillColor: [...colors.success], 
+        textColor: 255, 
+        fontSize: 9, 
+        fontStyle: 'bold',
+        halign: 'center'
+      },
+      columnStyles: {
+        0: { fontStyle: 'bold', cellWidth: 35, halign: 'left' },
+        ...Object.fromEntries(MONTH_LABELS.map((_, i) => [i + 1, { halign: 'right', cellWidth: 18 }])),
+        13: { halign: 'right', cellWidth: 25, fontStyle: 'bold', fillColor: [240, 253, 244] }
+      },
+      margin: { left: margin, right: margin },
+      styles: {
+        lineColor: [...colors.primary],
+        lineWidth: 0.1
+      }
     });
 
-    // Add new page for remaining sections
-    pdf.addPage();
-    yPos = 25;
+    yPos = (pdf as any).lastAutoTable.finalY + 20;
 
     // Compost Section
-    pdf.setFont('helvetica', 'bold');
-    pdf.setFontSize(12);
-    pdf.text('COMPOSTA (kg)', margin, yPos);
-    yPos += 8;
+    addSectionHeader('COMPOSTA (kg)', '🌱', colors.warning);
 
-    const compostData = [['Categoría', ...MONTH_LABELS, 'Total']];
+    const compostData = [['Categoría', ...MONTH_LABELS, 'Total Anual']];
     wasteData.materials.compost.forEach(category => {
       const row = [category];
       MONTH_LABELS.forEach((_, monthIndex) => {
-        row.push(getValue('compost', category, monthIndex).toString());
+        const value = getValue('compost', category, monthIndex);
+        row.push(value > 0 ? value.toLocaleString('es-ES', { maximumFractionDigits: 1 }) : '-');
       });
       row.push(getRowTotal('compost', category).toLocaleString('es-ES', { maximumFractionDigits: 1 }));
       compostData.push(row);
@@ -338,7 +451,7 @@ export default function ResiduosExcel() {
       wasteData.materials.compost.forEach(category => {
         monthTotal += getValue('compost', category, monthIndex);
       });
-      compostTotalsRow.push(monthTotal.toLocaleString('es-ES', { maximumFractionDigits: 1 }));
+      compostTotalsRow.push(monthTotal > 0 ? monthTotal.toLocaleString('es-ES', { maximumFractionDigits: 1 }) : '-');
     });
     compostTotalsRow.push(totals.compostTotal.toLocaleString('es-ES', { maximumFractionDigits: 1 }));
     compostData.push(compostTotalsRow);
@@ -348,31 +461,56 @@ export default function ResiduosExcel() {
       head: [compostData[0]],
       body: compostData.slice(1, -1),
       foot: [compostData[compostData.length - 1]],
-      theme: 'grid',
-      headStyles: { fillColor: [245, 158, 11], textColor: 255, fontSize: 8, fontStyle: 'bold' },
-      bodyStyles: { fontSize: 7 },
-      footStyles: { fillColor: [245, 158, 11], textColor: 255, fontSize: 8, fontStyle: 'bold' },
-      columnStyles: {
-        0: { fontStyle: 'bold', cellWidth: 35 },
-        ...Object.fromEntries(MONTH_LABELS.map((_, i) => [i + 1, { halign: 'right', cellWidth: 18 }])),
-        13: { halign: 'right', cellWidth: 25, fontStyle: 'bold' }
+      theme: 'striped',
+      headStyles: { 
+        fillColor: [...colors.warning], 
+        textColor: 255, 
+        fontSize: 9, 
+        fontStyle: 'bold',
+        halign: 'center'
       },
-      margin: { left: margin, right: margin }
+      bodyStyles: { 
+        fontSize: 8,
+        alternateRowStyles: { fillColor: [254, 252, 232] }
+      },
+      footStyles: { 
+        fillColor: [...colors.warning], 
+        textColor: 255, 
+        fontSize: 9, 
+        fontStyle: 'bold',
+        halign: 'center'
+      },
+      columnStyles: {
+        0: { fontStyle: 'bold', cellWidth: 35, halign: 'left' },
+        ...Object.fromEntries(MONTH_LABELS.map((_, i) => [i + 1, { halign: 'right', cellWidth: 18 }])),
+        13: { halign: 'right', cellWidth: 25, fontStyle: 'bold', fillColor: [254, 243, 199] }
+      },
+      margin: { left: margin, right: margin },
+      styles: {
+        lineColor: [...colors.primary],
+        lineWidth: 0.1
+      }
     });
 
-    yPos = (pdf as any).lastAutoTable.finalY + 15;
+    yPos = (pdf as any).lastAutoTable.finalY + 20;
+
+    // Check if we need a new page
+    if (yPos > pageHeight - 100) {
+      addFooter();
+      pdf.addPage();
+      addHeader(3);
+      yPos = 50;
+    }
 
     // Reuse Section
-    pdf.setFont('helvetica', 'bold');
-    pdf.setFontSize(12);
-    pdf.text('REUSO (kg)', margin, yPos);
-    yPos += 8;
+    addSectionHeader('REUSO (kg)', '🔄', colors.info);
 
-    const reuseData = [['Categoría', ...MONTH_LABELS, 'Total']];
+    const reuseData = [['Categoría', ...MONTH_LABELS, 'Total Anual']];
     wasteData.materials.reuse.forEach(category => {
       const row = [category];
       MONTH_LABELS.forEach((_, monthIndex) => {
-        row.push(getValue('reuse', category, monthIndex).toString());
+        const value = getValue('reuse', category, monthIndex);
+        row.push(value > 0 ? value.toLocaleString('es-ES', { maximumFractionDigits: 1 }) : '-');
       });
       row.push(getRowTotal('reuse', category).toLocaleString('es-ES', { maximumFractionDigits: 1 }));
       reuseData.push(row);
@@ -384,7 +522,7 @@ export default function ResiduosExcel() {
       wasteData.materials.reuse.forEach(category => {
         monthTotal += getValue('reuse', category, monthIndex);
       });
-      reuseTotalsRow.push(monthTotal.toLocaleString('es-ES', { maximumFractionDigits: 1 }));
+      reuseTotalsRow.push(monthTotal > 0 ? monthTotal.toLocaleString('es-ES', { maximumFractionDigits: 1 }) : '-');
     });
     reuseTotalsRow.push(totals.reuseTotal.toLocaleString('es-ES', { maximumFractionDigits: 1 }));
     reuseData.push(reuseTotalsRow);
@@ -394,31 +532,48 @@ export default function ResiduosExcel() {
       head: [reuseData[0]],
       body: reuseData.slice(1, -1),
       foot: [reuseData[reuseData.length - 1]],
-      theme: 'grid',
-      headStyles: { fillColor: [59, 130, 246], textColor: 255, fontSize: 8, fontStyle: 'bold' },
-      bodyStyles: { fontSize: 7 },
-      footStyles: { fillColor: [59, 130, 246], textColor: 255, fontSize: 8, fontStyle: 'bold' },
-      columnStyles: {
-        0: { fontStyle: 'bold', cellWidth: 35 },
-        ...Object.fromEntries(MONTH_LABELS.map((_, i) => [i + 1, { halign: 'right', cellWidth: 18 }])),
-        13: { halign: 'right', cellWidth: 25, fontStyle: 'bold' }
+      theme: 'striped',
+      headStyles: { 
+        fillColor: [...colors.info], 
+        textColor: 255, 
+        fontSize: 9, 
+        fontStyle: 'bold',
+        halign: 'center'
       },
-      margin: { left: margin, right: margin }
+      bodyStyles: { 
+        fontSize: 8,
+        alternateRowStyles: { fillColor: [239, 246, 255] }
+      },
+      footStyles: { 
+        fillColor: [...colors.info], 
+        textColor: 255, 
+        fontSize: 9, 
+        fontStyle: 'bold',
+        halign: 'center'
+      },
+      columnStyles: {
+        0: { fontStyle: 'bold', cellWidth: 35, halign: 'left' },
+        ...Object.fromEntries(MONTH_LABELS.map((_, i) => [i + 1, { halign: 'right', cellWidth: 18 }])),
+        13: { halign: 'right', cellWidth: 25, fontStyle: 'bold', fillColor: [219, 234, 254] }
+      },
+      margin: { left: margin, right: margin },
+      styles: {
+        lineColor: [...colors.primary],
+        lineWidth: 0.1
+      }
     });
 
-    yPos = (pdf as any).lastAutoTable.finalY + 15;
+    yPos = (pdf as any).lastAutoTable.finalY + 20;
 
     // Landfill Section
-    pdf.setFont('helvetica', 'bold');
-    pdf.setFontSize(12);
-    pdf.text('RELLENO SANITARIO (kg)', margin, yPos);
-    yPos += 8;
+    addSectionHeader('RELLENO SANITARIO (kg)', '🗑️', colors.danger);
 
-    const landfillData = [['Tipo', ...MONTH_LABELS, 'Total']];
+    const landfillData = [['Tipo', ...MONTH_LABELS, 'Total Anual']];
     wasteData.materials.landfill.forEach(wasteType => {
       const row = [wasteType];
       MONTH_LABELS.forEach((_, monthIndex) => {
-        row.push(getValue('landfill', wasteType, monthIndex).toString());
+        const value = getValue('landfill', wasteType, monthIndex);
+        row.push(value > 0 ? value.toLocaleString('es-ES', { maximumFractionDigits: 1 }) : '-');
       });
       row.push(getRowTotal('landfill', wasteType).toLocaleString('es-ES', { maximumFractionDigits: 1 }));
       landfillData.push(row);
@@ -430,7 +585,7 @@ export default function ResiduosExcel() {
       wasteData.materials.landfill.forEach(wasteType => {
         monthTotal += getValue('landfill', wasteType, monthIndex);
       });
-      landfillTotalsRow.push(monthTotal.toLocaleString('es-ES', { maximumFractionDigits: 1 }));
+      landfillTotalsRow.push(monthTotal > 0 ? monthTotal.toLocaleString('es-ES', { maximumFractionDigits: 1 }) : '-');
     });
     landfillTotalsRow.push(totals.landfillTotal.toLocaleString('es-ES', { maximumFractionDigits: 1 }));
     landfillData.push(landfillTotalsRow);
@@ -440,56 +595,126 @@ export default function ResiduosExcel() {
       head: [landfillData[0]],
       body: landfillData.slice(1, -1),
       foot: [landfillData[landfillData.length - 1]],
-      theme: 'grid',
-      headStyles: { fillColor: [239, 68, 68], textColor: 255, fontSize: 8, fontStyle: 'bold' },
-      bodyStyles: { fontSize: 7 },
-      footStyles: { fillColor: [239, 68, 68], textColor: 255, fontSize: 8, fontStyle: 'bold' },
-      columnStyles: {
-        0: { fontStyle: 'bold', cellWidth: 35 },
-        ...Object.fromEntries(MONTH_LABELS.map((_, i) => [i + 1, { halign: 'right', cellWidth: 18 }])),
-        13: { halign: 'right', cellWidth: 25, fontStyle: 'bold' }
+      theme: 'striped',
+      headStyles: { 
+        fillColor: [...colors.danger], 
+        textColor: 255, 
+        fontSize: 9, 
+        fontStyle: 'bold',
+        halign: 'center'
       },
-      margin: { left: margin, right: margin }
+      bodyStyles: { 
+        fontSize: 8,
+        alternateRowStyles: { fillColor: [254, 242, 242] }
+      },
+      footStyles: { 
+        fillColor: [...colors.danger], 
+        textColor: 255, 
+        fontSize: 9, 
+        fontStyle: 'bold',
+        halign: 'center'
+      },
+      columnStyles: {
+        0: { fontStyle: 'bold', cellWidth: 35, halign: 'left' },
+        ...Object.fromEntries(MONTH_LABELS.map((_, i) => [i + 1, { halign: 'right', cellWidth: 18 }])),
+        13: { halign: 'right', cellWidth: 25, fontStyle: 'bold', fillColor: [254, 226, 226] }
+      },
+      margin: { left: margin, right: margin },
+      styles: {
+        lineColor: [...colors.primary],
+        lineWidth: 0.1
+      }
     });
 
-    // Footer with methodology
+    // Add methodology section
     yPos = (pdf as any).lastAutoTable.finalY + 20;
-    if (yPos > pageHeight - 50) {
+    if (yPos > pageHeight - 80) {
+      addFooter();
       pdf.addPage();
-      yPos = 25;
+      addHeader(4);
+      yPos = 50;
     }
 
-    // Certification methodology
+    // Methodology Section with enhanced design
+    pdf.setFillColor(...colors.primary);
+    pdf.rect(margin - 5, yPos - 5, pageWidth - 2 * margin + 10, 15, 'F');
+    
     pdf.setFont('helvetica', 'bold');
-    pdf.setFontSize(14);
-    pdf.text('METODOLOGÍA TRUE ZERO WASTE', margin, yPos);
-    yPos += 10;
+    pdf.setFontSize(16);
+    pdf.setTextColor(255, 255, 255);
+    pdf.text('🎯 METODOLOGÍA TRUE ZERO WASTE', margin, yPos + 7);
+    yPos += 25;
 
+    // Formula section
+    pdf.setFillColor(...colors.lightGray);
+    pdf.roundedRect(margin, yPos, pageWidth - 2 * margin, 25, 3, 3, 'F');
+    
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(12);
+    pdf.setTextColor(...colors.primary);
+    pdf.text('FÓRMULA DE CÁLCULO', margin + 10, yPos + 8);
+    
     pdf.setFont('helvetica', 'normal');
     pdf.setFontSize(10);
-    const methodologyText = [
-      `Fórmula: % Desviación = (Total Circular ÷ Total Residuos) × 100`,
-      `Donde: Total Circular = Reciclaje + Composta + Reuso`,
-      ``,
-      `Resultado actual: ${kpis.deviationPercentage.toFixed(1)}% - ${kpis.deviationPercentage >= 70 ? 'EXCELENTE' : kpis.deviationPercentage >= 50 ? 'BUENO' : 'MEJORABLE'}`,
-      `Meta institucional: ≥70% para certificación TRUE Zero Waste`,
-      ``,
-      `Este reporte fue generado automáticamente por el Sistema ECONOVA`,
-      `Fecha de generación: ${new Date().toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}`
-    ];
+    pdf.setTextColor(...colors.text);
+    pdf.text('% Desviación = (Total Circular ÷ Total Residuos) × 100', margin + 10, yPos + 16);
+    pdf.text('Donde: Total Circular = Reciclaje + Composta + Reuso', margin + 10, yPos + 22);
+    
+    yPos += 35;
 
-    methodologyText.forEach(line => {
-      pdf.text(line, margin, yPos);
-      yPos += 6;
-    });
+    // Results section
+    const resultColor = kpis.deviationPercentage >= 70 ? colors.success : kpis.deviationPercentage >= 50 ? colors.warning : colors.danger;
+    const resultText = kpis.deviationPercentage >= 70 ? 'EXCELENTE - Cumple certificación' : kpis.deviationPercentage >= 50 ? 'BUENO - En progreso hacia certificación' : 'MEJORABLE - Requiere plan de acción';
+    
+    pdf.setFillColor(...resultColor);
+    pdf.roundedRect(margin, yPos, pageWidth - 2 * margin, 20, 3, 3, 'F');
+    
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(14);
+    pdf.setTextColor(255, 255, 255);
+    pdf.text(`RESULTADO ACTUAL: ${kpis.deviationPercentage.toFixed(1)}% - ${resultText}`, margin + 10, yPos + 13);
+    
+    yPos += 30;
+
+    // Goals and certification info
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(11);
+    pdf.setTextColor(...colors.primary);
+    pdf.text('METAS INSTITUCIONALES:', margin, yPos);
+    yPos += 8;
+    
+    pdf.setFont('helvetica', 'normal');
+    pdf.setFontSize(10);
+    pdf.setTextColor(...colors.text);
+    pdf.text('• Meta mínima TRUE Zero Waste: ≥70% desviación de relleno sanitario', margin, yPos);
+    yPos += 6;
+    pdf.text('• Meta excelencia: ≥90% desviación de relleno sanitario', margin, yPos);
+    yPos += 6;
+    pdf.text('• Compromiso institucional: Cero residuos a relleno sanitario para 2026', margin, yPos);
+    
+    yPos += 15;
+    
+    // System info footer
+    pdf.setFillColor(245, 245, 245);
+    pdf.rect(margin - 10, yPos, pageWidth - 2 * margin + 20, 20, 'F');
+    
+    pdf.setFont('helvetica', 'normal');
+    pdf.setFontSize(9);
+    pdf.setTextColor(100, 100, 100);
+    pdf.text('🤖 Este reporte fue generado automáticamente por el Sistema ECONOVA', margin, yPos + 8);
+    pdf.text(`📅 Fecha de generación: ${new Date().toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}`, margin, yPos + 15);
+
+    // Add final page footer
+    addFooter();
 
     // Save the PDF
-    const filename = `Reporte_Trazabilidad_Residuos_${selectedYear}_${new Date().toISOString().split('T')[0]}.pdf`;
+    const filename = `Reporte_Trazabilidad_CCCM_${selectedYear}_${new Date().toISOString().split('T')[0]}.pdf`;
     pdf.save(filename);
 
     toast({
-      title: "✅ Reporte PDF generado",
-      description: `Se ha descargado el reporte completo de trazabilidad de residuos ${selectedYear}`,
+      title: "PDF Reporte Generado",
+      description: `Reporte completo de trazabilidad ${selectedYear} descargado exitosamente`,
+      variant: "default",
     });
   };
 
