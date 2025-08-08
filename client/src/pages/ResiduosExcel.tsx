@@ -684,7 +684,7 @@ export default function ResiduosExcel() {
                                   <div className="flex items-center justify-center gap-3 mb-2">
                                     <h3 className="text-xl font-bold text-navy">Metodología de Cálculo Certificada</h3>
                                   </div>
-                                  <p className="text-sm text-navy/70">Certificación TRUE Zero Waste - Estándar Internacional</p>
+                                  <p className="text-sm text-navy/70">Certificación TRUE Zero Waste </p>
                                 </div>
 
                                 {/* Visual Formula Flow */}
