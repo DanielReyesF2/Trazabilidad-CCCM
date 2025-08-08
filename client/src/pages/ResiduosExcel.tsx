@@ -682,9 +682,12 @@ export default function ResiduosExcel() {
                                 {/* Header */}
                                 <div className="text-center mb-6">
                                   <div className="flex items-center justify-center gap-3 mb-2">
-                                    <h3 className="text-xl font-bold text-navy">Metodología de Cálculo Certificada</h3>
+                                    <div className="inline-flex items-center gap-2 bg-lime-500 text-navy px-4 py-2 rounded-full text-lg font-bold">
+                                      <CheckCircle className="h-5 w-5" />
+                                      Metodología Certificada TRUE Zero Waste
+                                    </div>
                                   </div>
-                                  <p className="text-sm text-navy/70">Certificación TRUE Zero Waste </p>
+                                  <p className="text-sm text-navy/70">Certificación TRUE Zero Waste - Estándar Internacional</p>
                                 </div>
 
                                 {/* Visual Formula Flow */}
@@ -760,13 +763,6 @@ export default function ResiduosExcel() {
                                 </div>
 
 
-                                {/* Certification Badge */}
-                                <div className="text-center mt-4">
-                                  <div className="inline-flex items-center gap-2 bg-lime-500 text-navy px-4 py-2 rounded-full text-sm font-medium">
-                                    <CheckCircle className="h-4 w-4" />
-                                    Metodología Certificada TRUE Zero Waste
-                                  </div>
-                                </div>
                               </div>
                             </div>
                           </td>
