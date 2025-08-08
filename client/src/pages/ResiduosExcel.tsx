@@ -817,36 +817,16 @@ export default function ResiduosExcel() {
                   </Select>
                 </div>
                 
-                <div className="flex items-center gap-2">
-                  <Button
-                    onClick={generateCleanPDF}
-                    disabled={!wasteData}
-                    className="bg-navy hover:bg-navy/90 text-white"
-                  >
-                    <div className="flex items-center gap-2">
-                      <Download className="h-4 w-4" />
-                      Descargar PDF
-                    </div>
-                  </Button>
-                  
-                  <Button
-                    onClick={handleSave}
-                    disabled={!hasChanges || updateMutation.isPending}
-                    className="bg-lime-500 hover:bg-lime-600 text-navy"
-                  >
-                    {updateMutation.isPending ? (
-                      <div className="flex items-center gap-2">
-                        <div className="animate-spin rounded-full h-4 w-4 border-2 border-navy border-t-transparent"></div>
-                        Guardando...
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-2">
-                        <Save className="h-4 w-4" />
-                        Guardar
-                      </div>
-                    )}
-                  </Button>
-                </div>
+                <Button
+                  onClick={generateCleanPDF}
+                  disabled={!wasteData}
+                  className="bg-navy hover:bg-navy/90 text-white"
+                >
+                  <div className="flex items-center gap-2">
+                    <Download className="h-4 w-4" />
+                    Descargar PDF
+                  </div>
+                </Button>
               </div>
             </div>
           </div>
