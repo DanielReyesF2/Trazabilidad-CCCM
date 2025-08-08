@@ -9,7 +9,7 @@ import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
 import AppLayout from '@/components/layout/AppLayout';
 import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
 import { 
   ChevronDown, 
   ChevronRight, 
@@ -249,7 +249,7 @@ export default function ResiduosExcel() {
       ['% Desviación de Relleno', `${kpis.deviationPercentage.toFixed(1)}%`, '≥70%', kpis.deviationPercentage >= 70 ? 'Excelente' : kpis.deviationPercentage >= 50 ? 'Bueno' : 'Mejorable']
     ];
 
-    (pdf as any).autoTable({
+    autoTable(pdf, {
       startY: yPos,
       head: [kpiData[0]],
       body: kpiData.slice(1),
@@ -295,7 +295,7 @@ export default function ResiduosExcel() {
     recyclingTotalsRow.push(totals.recyclingTotal.toLocaleString('es-ES', { maximumFractionDigits: 1 }));
     recyclingData.push(recyclingTotalsRow);
 
-    (pdf as any).autoTable({
+    autoTable(pdf, {
       startY: yPos,
       head: [recyclingData[0]],
       body: recyclingData.slice(1, -1),
@@ -343,7 +343,7 @@ export default function ResiduosExcel() {
     compostTotalsRow.push(totals.compostTotal.toLocaleString('es-ES', { maximumFractionDigits: 1 }));
     compostData.push(compostTotalsRow);
 
-    (pdf as any).autoTable({
+    autoTable(pdf, {
       startY: yPos,
       head: [compostData[0]],
       body: compostData.slice(1, -1),
@@ -389,7 +389,7 @@ export default function ResiduosExcel() {
     reuseTotalsRow.push(totals.reuseTotal.toLocaleString('es-ES', { maximumFractionDigits: 1 }));
     reuseData.push(reuseTotalsRow);
 
-    (pdf as any).autoTable({
+    autoTable(pdf, {
       startY: yPos,
       head: [reuseData[0]],
       body: reuseData.slice(1, -1),
@@ -435,7 +435,7 @@ export default function ResiduosExcel() {
     landfillTotalsRow.push(totals.landfillTotal.toLocaleString('es-ES', { maximumFractionDigits: 1 }));
     landfillData.push(landfillTotalsRow);
 
-    (pdf as any).autoTable({
+    autoTable(pdf, {
       startY: yPos,
       head: [landfillData[0]],
       body: landfillData.slice(1, -1),
