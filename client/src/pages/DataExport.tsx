@@ -109,8 +109,7 @@ export default function DataExport() {
           ...(wasteTypes.recyclable && { 'Residuos Reciclables (kg)': record.recyclableWaste || 0 }),
           'Total Residuos (kg)': record.totalWaste || 0,
           'Desviación de Relleno Sanitario (%)': record.deviation || 0,
-          'Ubicación': record.location || 'N/A',
-          'Observaciones': record.observations || ''
+          'Raw Data': record.rawData ? JSON.stringify(record.rawData) : 'N/A'
         };
       });
 
