@@ -458,6 +458,25 @@ export default function ResiduosExcel() {
                             </td>
                           </tr>
                         ))}
+                        {openSections.recycling && (
+                          <tr className="bg-green-50">
+                            <td className="border border-gray-200 p-2 font-bold">Total reciclaje</td>
+                            {MONTH_LABELS.map((_, monthIndex) => {
+                              let monthTotal = 0;
+                              wasteData?.materials.recycling.forEach(material => {
+                                monthTotal += getValue('recycling', material, monthIndex);
+                              });
+                              return (
+                                <td key={monthIndex} className="border border-gray-200 p-2 text-center font-bold">
+                                  {monthTotal.toLocaleString('es-ES', { maximumFractionDigits: 1 })}
+                                </td>
+                              );
+                            })}
+                            <td className="border border-gray-200 p-2 text-center font-bold">
+                              {getSectionTotals().recyclingTotal.toLocaleString('es-ES', { maximumFractionDigits: 1 })}
+                            </td>
+                          </tr>
+                        )}
 
                         {/* Compost Section */}
                         <tr>
