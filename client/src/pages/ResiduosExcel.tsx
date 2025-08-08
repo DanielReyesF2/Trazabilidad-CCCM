@@ -741,10 +741,10 @@ export default function ResiduosExcel() {
     if (!wasteData) return [];
     
     return MONTH_LABELS.map((monthName, index) => {
-      const recyclingTotal = getValue(`reciclaje_${index + 1}`) || 0;
-      const compostTotal = getValue(`compostaje_${index + 1}`) || 0;
-      const reuseTotal = getValue(`reuso_${index + 1}`) || 0;
-      const landfillTotal = getValue(`relleno_sanitario_${index + 1}`) || 0;
+      const recyclingTotal = getSectionTotal('recycling', index) || 0;
+      const compostTotal = getSectionTotal('compost', index) || 0;
+      const reuseTotal = getSectionTotal('reuse', index) || 0;
+      const landfillTotal = getSectionTotal('landfill', index) || 0;
       
       const total = recyclingTotal + compostTotal + reuseTotal + landfillTotal;
       const monthlyDeviation = total > 0 ? ((recyclingTotal + compostTotal + reuseTotal) / total) * 100 : 0;
@@ -758,7 +758,14 @@ export default function ResiduosExcel() {
         deviation: monthlyDeviation
       };
     });
-  }, [wasteData, getValue]);
+  }, [wasteData, getSectionTotal]);
+
+  // Handle save function - uses existing updateMutation
+  const handleSave = () => {
+    if (Object.keys(editedData).length > 0) {
+      updateMutation.mutate(editedData);
+    }
+  };
   
   // Loading state
   if (isLoading) {
