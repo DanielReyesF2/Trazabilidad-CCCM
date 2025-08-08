@@ -5,19 +5,23 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { WasteData } from '@shared/schema';
 import { generateAndDownloadPDFReport } from '@/lib/jsPdfGenerator';
 
-// Define los periodos disponibles
+// Define los periodos disponibles para 2025
 const PREDEFINED_PERIODS = {
-  '2024_FULL': { name: 'Reporte Anual 2024', filter: (data: WasteData) => {
+  '2025_FULL': { name: 'Reporte Anual 2025', filter: (data: WasteData) => {
     const date = new Date(data.date);
-    return date.getFullYear() === 2024;
+    return date.getFullYear() === 2025;
   }},
-  '2025_Q1': { name: 'Reporte 2025 (Enero-Febrero)', filter: (data: WasteData) => {
+  '2025_Q1': { name: 'T1 2025 (Enero-Marzo)', filter: (data: WasteData) => {
     const date = new Date(data.date);
-    return date.getFullYear() === 2025 && date.getMonth() <= 1;  // Enero (0) y Febrero (1)
+    return date.getFullYear() === 2025 && date.getMonth() <= 2;  // Enero (0), Febrero (1), Marzo (2)
   }},
-  '2025_Q2': { name: 'Reporte 2025 (Marzo-Abril)', filter: (data: WasteData) => {
+  '2025_Q2': { name: 'T2 2025 (Abril-Junio)', filter: (data: WasteData) => {
     const date = new Date(data.date);
-    return date.getFullYear() === 2025 && (date.getMonth() === 2 || date.getMonth() === 3);  // Marzo (2) y Abril (3)
+    return date.getFullYear() === 2025 && (date.getMonth() >= 3 && date.getMonth() <= 5);  // Abril, Mayo, Junio
+  }},
+  '2025_Q3': { name: 'T3 2025 (Julio-Agosto)', filter: (data: WasteData) => {
+    const date = new Date(data.date);
+    return date.getFullYear() === 2025 && (date.getMonth() >= 6 && date.getMonth() <= 7);  // Julio, Agosto
   }}
 };
 
@@ -30,7 +34,7 @@ interface ReportPeriodSelectorProps {
 }
 
 export default function ReportPeriodSelector({ clientId, clientName, wasteData }: ReportPeriodSelectorProps) {
-  const [selectedPeriod, setSelectedPeriod] = useState<Period>('2024_FULL');
+  const [selectedPeriod, setSelectedPeriod] = useState<Period>('2025_FULL');
   const [isGenerating, setIsGenerating] = useState(false);
 
   const handleGenerateReport = async () => {

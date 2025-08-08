@@ -12,7 +12,7 @@ export function ClubHeader() {
             </span>
           </div>
           <div className="text-sm text-gray-600">
-            Datos reales: Enero 2024 - Agosto 2025
+            Datos reales 2025 - Club Campestre Ciudad de México
           </div>
         </div>
       </div>

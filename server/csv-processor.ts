@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import { parse } from 'papaparse';
+import Papa from 'papaparse';
 import { storage } from './storage';
 
 export interface CSVWasteData {
@@ -21,7 +21,7 @@ export async function processCSVDocument(filePath: string, clientId: number, doc
     const fileContent = fs.readFileSync(filePath, 'utf-8');
     
     return new Promise((resolve, reject) => {
-      parse(fileContent, {
+      Papa.parse(fileContent, {
         header: true,
         skipEmptyLines: true,
         delimiter: ',',

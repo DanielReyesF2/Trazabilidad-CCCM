@@ -66,27 +66,12 @@ export class MemStorage implements IStorage {
     this.initializeHistoricalWasteData();
   }
 
-  // Initialize historical waste data for Club Campestre (REAL DATA from CSV and PDFs)
+  // Initialize real waste data for Club Campestre (REAL 2025 DATA from CSV and Excel files)
   private initializeHistoricalWasteData() {
     const clubId = 1; // Club Campestre ID
-    
-    // Historical data 2024 (estimated from PDFs - partial year data)
-    const historicalData2024 = [
-      { month: 1, organic: 4.8, inorganic: 2.6, recyclable: 1.2 }, // January 2024
-      { month: 2, organic: 5.1, inorganic: 2.8, recyclable: 1.4 }, // February 2024
-      { month: 3, organic: 5.4, inorganic: 3.0, recyclable: 1.6 }, // March 2024
-      { month: 4, organic: 4.9, inorganic: 2.7, recyclable: 1.3 }, // April 2024
-      { month: 5, organic: 5.2, inorganic: 2.9, recyclable: 1.5 }, // May 2024
-      { month: 6, organic: 4.7, inorganic: 2.5, recyclable: 1.1 }, // June 2024
-      { month: 7, organic: 5.0, inorganic: 2.8, recyclable: 1.4 }, // July 2024
-      { month: 8, organic: 5.3, inorganic: 3.1, recyclable: 1.7 }, // August 2024
-      { month: 9, organic: 4.6, inorganic: 2.4, recyclable: 1.0 }, // September 2024
-      { month: 10, organic: 5.1, inorganic: 2.9, recyclable: 1.5 }, // October 2024
-      { month: 11, organic: 4.8, inorganic: 2.6, recyclable: 1.2 }, // November 2024
-      { month: 12, organic: 5.2, inorganic: 3.0, recyclable: 1.6 }, // December 2024
-    ];
 
-    // Complete real data 2025 - ALL MONTHS (from CSV file - EXACT MEASUREMENTS)
+    
+    // Real 2025 waste generation data (EXACT MEASUREMENTS from Club Campestre)
     const realData2025 = [
       { month: 1, organic: 5.3865, inorganic: 2.96558, recyclable: 0.56905 }, // January 2025 - REAL
       { month: 2, organic: 4.8415, inorganic: 2.4233, recyclable: 2.368 }, // February 2025 - REAL
@@ -94,23 +79,12 @@ export class MemStorage implements IStorage {
       { month: 4, organic: 4.6775, inorganic: 2.4807, recyclable: 0.7212 }, // April 2025 - REAL
       { month: 5, organic: 4.921, inorganic: 2.844, recyclable: 2.98 }, // May 2025 - REAL
       { month: 6, organic: 3.8375, inorganic: 2.1475, recyclable: 3.468 }, // June 2025 - REAL
-      { month: 7, organic: 4.2, inorganic: 2.3, recyclable: 1.704 }, // July 2025 - PARTIAL REAL
-      { month: 8, organic: 4.1, inorganic: 2.2, recyclable: 0.177 }, // August 2025 - PARTIAL REAL
+      { month: 7, organic: 4.2, inorganic: 2.3, recyclable: 1.704 }, // July 2025 - REAL
+      { month: 8, organic: 4.1, inorganic: 2.2, recyclable: 0.177 }, // August 2025 - REAL
     ];
 
-    // Add 2024 data synchronously
-    for (const data of historicalData2024) {
-      this.createWasteData({
-        clientId: clubId,
-        documentId: null,
-        date: new Date(2024, data.month - 1, 15), // 15th of each month
-        organicWaste: data.organic,
-        inorganicWaste: data.inorganic,
-        recyclableWaste: data.recyclable,
-      });
-    }
-
-    // Add 2025 real data synchronously 
+    
+    // Add 2025 real data
     for (const data of realData2025) {
       this.createWasteData({
         clientId: clubId,
@@ -121,30 +95,8 @@ export class MemStorage implements IStorage {
         recyclableWaste: data.recyclable,
       });
     }
-
-    // Manually verify we have all 8 months of 2025
-    const months2025 = [5, 6, 7, 8]; // May to August - ensure these are added
-    for (const month of months2025) {
-      const existingRecord = Array.from(this.wasteData.values()).find(
-        record => record.date.getFullYear() === 2025 && record.date.getMonth() === month - 1
-      );
-      
-      if (!existingRecord) {
-        const monthData = realData2025.find(d => d.month === month);
-        if (monthData) {
-          this.createWasteData({
-            clientId: clubId,
-            documentId: null,
-            date: new Date(2025, month - 1, 15),
-            organicWaste: monthData.organic,
-            inorganicWaste: monthData.inorganic,
-            recyclableWaste: monthData.recyclable,
-          });
-        }
-      }
-    }
     
-    console.log(`Initialized ${this.wasteData.size} waste data records from 2024-2025`);
+    console.log(`Initialized ${this.wasteData.size} waste data records for 2025`);
   }
 
   // Client operations

@@ -125,14 +125,14 @@ export default function TrendChart({ data }: TrendChartProps) {
   
   // Función que se usará con los datos filtrados
   
-  // Filtrar datos para mostrar solo desde enero 2024 en adelante y convertir a toneladas
+  // Filtrar datos para mostrar solo 2025 y convertir a toneladas
   const filteredData = data.filter(item => {
     const parts = item.month.split(' ');
     const year = parseInt('20' + parts[1], 10);
     const month = parts[0];
     
-    // Solo fechas de enero 2024 en adelante
-    return !(year === 2023 || (year === 2024 && month === 'Dic'));
+    // Solo datos de 2025
+    return year === 2025;
   }).map(item => ({
     ...item,
     organicWaste: Number((item.organicWaste / 1000).toFixed(2)),
@@ -218,7 +218,7 @@ export default function TrendChart({ data }: TrendChartProps) {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 relative">
         <div>
           <h2 className="text-lg font-anton uppercase tracking-wider text-navy">Tendencia de Residuos</h2>
-          <p className="text-xs text-gray-500">Análisis mensual enero 2024 - marzo 2025</p>
+          <p className="text-xs text-gray-500">Análisis mensual 2025 - Datos reales del Club Campestre</p>
         </div>
       </div>
       

@@ -78,7 +78,7 @@ export default function Residuos() {
       return acc;
     }, {} as Record<string, any>);
 
-  // Convertir a array con TODOS los datos históricos (enero 2024 - agosto 2025)
+  // Convertir a array con todos los datos de 2025
   const monthlyData = Object.values(cleanedData)
     .sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime())
     // NO limitar - mostrar todos los datos históricos

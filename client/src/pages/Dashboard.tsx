@@ -229,7 +229,7 @@ export default function Dashboard() {
                       <span className="font-bold text-gray-800">Residuos Orgánicos</span>
                       <span className="text-green-600 font-bold text-lg">1.83 tCO₂eq/ton</span>
                     </div>
-                    <p className="text-xs text-gray-600">Factor EPA 2024 - Compostaje vs. Relleno Sanitario</p>
+                    <p className="text-xs text-gray-600">Factor EPA - Compostaje vs. Relleno Sanitario</p>
                   </div>
                   
                   <div className="bg-white p-5 rounded-xl border border-gray-200 hover:shadow-md transition-shadow">
@@ -245,7 +245,7 @@ export default function Dashboard() {
                       <span className="font-bold text-gray-800">Plásticos</span>
                       <span className="text-purple-600 font-bold text-lg">2.14 tCO₂eq/ton</span>
                     </div>
-                    <p className="text-xs text-gray-600">Factor SEMARNAT 2024 - Reciclaje vs. Relleno</p>
+                    <p className="text-xs text-gray-600">Factor SEMARNAT - Reciclaje vs. Relleno</p>
                   </div>
                   
                   <div className="bg-white p-5 rounded-xl border border-gray-200 hover:shadow-md transition-shadow">
@@ -291,7 +291,7 @@ export default function Dashboard() {
                       <span className="font-bold text-gray-800">Combustible Fósil</span>
                       <span className="text-red-600 font-bold text-lg">0.89 L diesel/ton</span>
                     </div>
-                    <p className="text-xs text-gray-600">Equivalencia energética CFE México 2024</p>
+                    <p className="text-xs text-gray-600">Equivalencia energética CFE México</p>
                   </div>
                 </div>
               </div>
@@ -307,7 +307,7 @@ export default function Dashboard() {
                   <div className="w-16 h-16 bg-[#b5e951] rounded-full flex items-center justify-center mx-auto mb-3">
                     <Leaf className="w-8 h-8 text-[#273949]" />
                   </div>
-                  <span className="block font-bold text-white mb-1">EPA 2024</span>
+                  <span className="block font-bold text-white mb-1">EPA</span>
                   <span className="text-xs">Factores de Emisión CO₂</span>
                 </div>
                 <div className="text-center text-gray-300">

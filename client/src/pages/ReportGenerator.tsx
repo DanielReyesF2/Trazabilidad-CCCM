@@ -11,9 +11,9 @@ import { generateAndDownloadPDFReport } from '@/lib/jsPdfGenerator';
 
 // Define los periodos disponibles
 const PREDEFINED_PERIODS = {
-  '2024_FULL': { name: 'Reporte Anual 2024', filter: (data: WasteData) => {
+  '2025_FULL': { name: 'Reporte Anual 2025', filter: (data: WasteData) => {
     const date = new Date(data.date);
-    return date.getFullYear() === 2024;
+    return date.getFullYear() === 2025;
   }},
   '2025_Q1': { name: 'Reporte 2025 (Enero-Febrero)', filter: (data: WasteData) => {
     const date = new Date(data.date);
@@ -30,7 +30,7 @@ type Period = keyof typeof PREDEFINED_PERIODS;
 export default function ReportGenerator() {
   const [_, params] = useRoute<{ id: string }>('/reports/:id');
   const clientId = params ? parseInt(params.id) : 0;
-  const [selectedPeriod, setSelectedPeriod] = useState<Period>('2024_FULL');
+  const [selectedPeriod, setSelectedPeriod] = useState<Period>('2025_FULL');
   const [isGenerating, setIsGenerating] = useState(false);
 
   // Fetch client

@@ -38,7 +38,7 @@ interface MonthlyData {
 
 export default function DataEntry() {
   const { toast } = useToast();
-  const [selectedYear, setSelectedYear] = useState('2024');
+  const [selectedYear, setSelectedYear] = useState('2025');
   const [data, setData] = useState<MonthlyData[]>([]);
 
   const months = [
@@ -122,7 +122,7 @@ export default function DataEntry() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="2024">2024</SelectItem>
+                  <SelectItem value="2025">2025</SelectItem>
                   <SelectItem value="2025">2025</SelectItem>
                 </SelectContent>
               </Select>
