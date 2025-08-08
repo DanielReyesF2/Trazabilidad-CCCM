@@ -700,7 +700,7 @@ export default function ResiduosExcel() {
                                       <div className="w-12 h-12 bg-lime-100 rounded-full flex items-center justify-center mx-auto mb-2">
                                         <Recycle className="h-6 w-6 text-lime-600" />
                                       </div>
-                                      <div className="text-xs text-gray-600 mb-1">Total Circular</div>
+                                      <div className="text-xs text-gray-600 mb-1">Zero Waste</div>
                                       <div className="text-lg font-bold text-lime-700">
                                         {kpis.totalCircular.toLocaleString('es-ES', { maximumFractionDigits: 1 })}
                                       </div>
