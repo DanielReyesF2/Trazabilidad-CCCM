@@ -402,46 +402,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Batch update all data for a year
   app.post("/api/waste-excel/batch-update", async (req: Request, res: Response) => {
     try {
-      const { year, data } = req.body;
+      const editedData = req.body;
       
-      // Process batch updates
-      for (const monthData of data) {
-        const { monthId, entries } = monthData;
+      // Get year months to map month indices to month IDs
+      const currentYear = 2025;
+      const months = await storage.getMonths(currentYear);
+      
+      // Process each edited entry
+      for (const [editKey, value] of Object.entries(editedData)) {
+        const [section, material, monthIndexStr] = editKey.split('-');
+        const monthIndex = parseInt(monthIndexStr);
+        const kg = parseFloat(value as string) || 0;
         
-        // Update recycling entries
-        for (const entry of entries.recycling || []) {
-          await storage.upsertRecyclingEntry({
-            monthId,
-            material: entry.material,
-            kg: parseFloat(entry.kg) || 0
-          });
-        }
+        // Find the month record
+        const monthRecord = months.find(m => m.month === monthIndex + 1);
+        if (!monthRecord) continue;
         
-        // Update compost entries
-        for (const entry of entries.compost || []) {
-          await storage.upsertCompostEntry({
-            monthId,
-            category: entry.category,
-            kg: parseFloat(entry.kg) || 0
-          });
-        }
-        
-        // Update reuse entries
-        for (const entry of entries.reuse || []) {
-          await storage.upsertReuseEntry({
-            monthId,
-            category: entry.category,
-            kg: parseFloat(entry.kg) || 0
-          });
-        }
-        
-        // Update landfill entries
-        for (const entry of entries.landfill || []) {
-          await storage.upsertLandfillEntry({
-            monthId,
-            wasteType: entry.wasteType,
-            kg: parseFloat(entry.kg) || 0
-          });
+        // Update based on section type
+        switch (section) {
+          case 'recycling':
+            await storage.upsertRecyclingEntry({
+              monthId: monthRecord.id,
+              material,
+              kg
+            });
+            break;
+          case 'compost':
+            await storage.upsertCompostEntry({
+              monthId: monthRecord.id,
+              category: material,
+              kg
+            });
+            break;
+          case 'reuse':
+            await storage.upsertReuseEntry({
+              monthId: monthRecord.id,
+              category: material,
+              kg
+            });
+            break;
+          case 'landfill':
+            await storage.upsertLandfillEntry({
+              monthId: monthRecord.id,
+              wasteType: material,
+              kg
+            });
+            break;
         }
       }
       
