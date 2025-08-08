@@ -226,7 +226,8 @@ export const COMPOST_CATEGORIES = [
 ] as const;
 
 export const REUSE_CATEGORIES = [
-  "Vidrio donación"
+  "Vidrio donación",
+  "Comida a donacion"
 ] as const;
 
 export const LANDFILL_WASTE_TYPES = [
