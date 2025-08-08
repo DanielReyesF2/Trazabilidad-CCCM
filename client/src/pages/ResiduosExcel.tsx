@@ -17,7 +17,11 @@ import {
   Recycle,
   Leaf,
   RotateCcw,
-  Trash2
+  Trash2,
+  Calculator,
+  ArrowRight,
+  Target,
+  CheckCircle
 } from 'lucide-react';
 
 // Types for the Excel replication
@@ -669,32 +673,143 @@ export default function ResiduosExcel() {
                             {kpis.totalWeight.toLocaleString('es-ES', { maximumFractionDigits: 1 })}
                           </td>
                         </tr>
-                        {/* Formula explanation */}
-                        <tr className="bg-slate-50 border-t-2 border-slate-200">
-                          <td className="p-4 font-medium text-sm text-slate-700">
-                            <div className="flex items-center gap-2 mb-2">
-                              <div className="w-2 h-2 bg-slate-600 rounded-full"></div>
-                              <span className="font-semibold">Fórmula de cálculo:</span>
+                        {/* Formula explanation - Enhanced Visual Design */}
+                        <tr>
+                          <td colSpan={14} className="p-0">
+                            <div className="bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 p-6 border-t-2 border-indigo-200">
+                              <div className="max-w-5xl mx-auto">
+                                {/* Header */}
+                                <div className="text-center mb-6">
+                                  <div className="flex items-center justify-center gap-3 mb-2">
+                                    <div className="p-2 bg-indigo-600 rounded-full">
+                                      <Calculator className="h-5 w-5 text-white" />
+                                    </div>
+                                    <h3 className="text-xl font-bold text-indigo-900">Metodología de Cálculo Certificada</h3>
+                                    <div className="p-2 bg-green-600 rounded-full">
+                                      <CheckCircle className="h-5 w-5 text-white" />
+                                    </div>
+                                  </div>
+                                  <p className="text-sm text-indigo-700">Certificación TRUE Zero Waste - Estándar Internacional</p>
+                                </div>
+
+                                {/* Visual Formula Flow */}
+                                <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 items-center mb-6">
+                                  {/* Step 1: Total Circular */}
+                                  <div className="bg-white rounded-xl p-4 shadow-sm border border-green-200 transform hover:scale-105 transition-transform">
+                                    <div className="text-center">
+                                      <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                                        <Recycle className="h-6 w-6 text-green-600" />
+                                      </div>
+                                      <div className="text-xs text-gray-600 mb-1">Total Circular</div>
+                                      <div className="text-lg font-bold text-green-700">
+                                        {kpis.totalCircular.toLocaleString('es-ES', { maximumFractionDigits: 1 })}
+                                      </div>
+                                      <div className="text-xs text-gray-500">kg</div>
+                                    </div>
+                                  </div>
+
+                                  {/* Arrow 1 */}
+                                  <div className="flex justify-center">
+                                    <div className="text-indigo-600">
+                                      <ArrowRight className="h-6 w-6" />
+                                    </div>
+                                  </div>
+
+                                  {/* Step 2: Division Symbol & Total Residuos */}
+                                  <div className="bg-white rounded-xl p-4 shadow-sm border border-blue-200 transform hover:scale-105 transition-transform">
+                                    <div className="text-center">
+                                      <div className="text-2xl font-bold text-blue-600 mb-1">÷</div>
+                                      <div className="text-xs text-gray-600 mb-1">Total Residuos</div>
+                                      <div className="text-lg font-bold text-blue-700">
+                                        {kpis.totalWeight.toLocaleString('es-ES', { maximumFractionDigits: 1 })}
+                                      </div>
+                                      <div className="text-xs text-gray-500">kg</div>
+                                    </div>
+                                  </div>
+
+                                  {/* Arrow 2 */}
+                                  <div className="flex justify-center">
+                                    <div className="text-indigo-600">
+                                      <ArrowRight className="h-6 w-6" />
+                                    </div>
+                                  </div>
+
+                                  {/* Step 3: Result */}
+                                  <div className={`bg-white rounded-xl p-4 shadow-lg border-2 transform hover:scale-105 transition-transform ${
+                                    kpis.deviationPercentage >= 70 ? 'border-green-300 bg-gradient-to-br from-green-50 to-emerald-50' : 
+                                    kpis.deviationPercentage >= 50 ? 'border-amber-300 bg-gradient-to-br from-amber-50 to-yellow-50' : 
+                                    'border-red-300 bg-gradient-to-br from-red-50 to-pink-50'
+                                  }`}>
+                                    <div className="text-center">
+                                      <div className={`w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-2 ${
+                                        kpis.deviationPercentage >= 70 ? 'bg-green-100' : 
+                                        kpis.deviationPercentage >= 50 ? 'bg-amber-100' : 'bg-red-100'
+                                      }`}>
+                                        <Target className={`h-6 w-6 ${
+                                          kpis.deviationPercentage >= 70 ? 'text-green-600' : 
+                                          kpis.deviationPercentage >= 50 ? 'text-amber-600' : 'text-red-600'
+                                        }`} />
+                                      </div>
+                                      <div className="text-xs text-gray-600 mb-1">% Desviación</div>
+                                      <div className={`text-2xl font-bold ${
+                                        kpis.deviationPercentage >= 70 ? 'text-green-700' : 
+                                        kpis.deviationPercentage >= 50 ? 'text-amber-700' : 'text-red-700'
+                                      }`}>
+                                        {kpis.deviationPercentage.toFixed(1)}%
+                                      </div>
+                                      <div className={`text-xs font-medium ${
+                                        kpis.deviationPercentage >= 70 ? 'text-green-600' : 
+                                        kpis.deviationPercentage >= 50 ? 'text-amber-600' : 'text-red-600'
+                                      }`}>
+                                        {kpis.deviationPercentage >= 70 ? 'Excelente' : 
+                                         kpis.deviationPercentage >= 50 ? 'Bueno' : 'Mejorable'}
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {/* Mathematical Formula Display */}
+                                <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-200">
+                                  <div className="text-center">
+                                    <div className="text-sm text-gray-600 mb-2">Fórmula matemática:</div>
+                                    <div className="font-mono text-lg text-indigo-800 bg-indigo-50 rounded-lg p-3 inline-block">
+                                      % = (Total Circular ÷ Total Residuos) × 100
+                                    </div>
+                                  </div>
+                                  <div className="mt-3 text-center">
+                                    <div className="text-sm text-gray-600">Aplicando los valores actuales:</div>
+                                    <div className="font-mono text-sm text-gray-700 bg-gray-50 rounded-lg p-3 mt-2">
+                                      ({kpis.totalCircular.toLocaleString('es-ES', { maximumFractionDigits: 1 })} ÷ {kpis.totalWeight.toLocaleString('es-ES', { maximumFractionDigits: 1 })}) × 100 = <span className="font-bold text-indigo-700">{kpis.deviationPercentage.toFixed(1)}%</span>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {/* Certification Badge */}
+                                <div className="text-center mt-4">
+                                  <div className="inline-flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-full text-sm font-medium">
+                                    <CheckCircle className="h-4 w-4" />
+                                    Metodología Certificada TRUE Zero Waste
+                                  </div>
+                                </div>
+                              </div>
                             </div>
-                            <div className="font-mono text-xs text-slate-600">
-                              % = (Total Circular ÷ Total Residuos) × 100
-                            </div>
-                          </td>
-                          <td colSpan={12} className="bg-slate-50 p-3 text-sm text-slate-600">
-                            <div className="font-mono text-center">
-                              ({kpis.totalCircular.toLocaleString('es-ES', { maximumFractionDigits: 1 })} ÷ {kpis.totalWeight.toLocaleString('es-ES', { maximumFractionDigits: 1 })}) × 100 = {kpis.deviationPercentage.toFixed(1)}%
-                            </div>
-                          </td>
-                          <td className="bg-slate-100 p-3 text-sm text-slate-600 text-center font-mono">
-                            {kpis.deviationPercentage.toFixed(1)}%
                           </td>
                         </tr>
-                        <tr className={`border-t-2 ${
-                          kpis.deviationPercentage >= 70 ? 'bg-emerald-100 border-emerald-300' : 
-                          kpis.deviationPercentage >= 50 ? 'bg-amber-100 border-amber-300' : 'bg-red-100 border-red-300'
+                        <tr className={`${
+                          kpis.deviationPercentage >= 70 ? 'bg-emerald-50' : 
+                          kpis.deviationPercentage >= 50 ? 'bg-amber-50' : 'bg-red-50'
                         }`}>
-                          <td className="p-4 font-bold text-xl text-navy">% de Desviación</td>
-                          <td colSpan={12}></td>
+                          <td className="p-4 font-bold text-xl text-navy">Resultado Final</td>
+                          <td colSpan={12} className="text-center">
+                            <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium ${
+                              kpis.deviationPercentage >= 70 ? 'bg-emerald-100 text-emerald-800' : 
+                              kpis.deviationPercentage >= 50 ? 'bg-amber-100 text-amber-800' : 'bg-red-100 text-red-800'
+                            }`}>
+                              <CheckCircle className="h-4 w-4" />
+                              {kpis.deviationPercentage >= 70 ? 'Certificación TRUE Zero Waste Alcanzada' : 
+                               kpis.deviationPercentage >= 50 ? 'En Progreso hacia Certificación' : 'Requiere Mejoras para Certificación'}
+                            </div>
+                          </td>
                           <td className={`p-4 text-center font-bold text-3xl ${
                             kpis.deviationPercentage >= 70 ? 'text-emerald-800 bg-emerald-200' : 
                             kpis.deviationPercentage >= 50 ? 'text-amber-800 bg-amber-200' : 'text-red-800 bg-red-200'
