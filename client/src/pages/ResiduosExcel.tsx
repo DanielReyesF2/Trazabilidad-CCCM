@@ -775,7 +775,7 @@ export default function ResiduosExcel() {
   }
 
   const kpis = calculateKPIs();
-  const chartData = generateChartData();
+  const chartData = generateChartData;
   const hasChanges = Object.keys(editedData).length > 0;
 
   return (
