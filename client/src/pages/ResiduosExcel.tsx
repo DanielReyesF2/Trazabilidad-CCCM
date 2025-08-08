@@ -346,7 +346,7 @@ export default function ResiduosExcel() {
   return (
     <AppLayout>
       <div className="min-h-screen bg-gray-50 py-6">
-        <div className="max-w-[100rem] mx-auto px-4">
+        <div className="w-full px-4">
           {/* Header */}
           <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -395,9 +395,9 @@ export default function ResiduosExcel() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          <div className="space-y-6">
             {/* Main Table */}
-            <div className="lg:col-span-3">
+            <div>
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
@@ -682,9 +682,6 @@ export default function ResiduosExcel() {
                                 {/* Header */}
                                 <div className="text-center mb-6">
                                   <div className="flex items-center justify-center gap-3 mb-2">
-                                    <div className="p-2 bg-navy rounded-full">
-                                      <Calculator className="h-5 w-5 text-white" />
-                                    </div>
                                     <h3 className="text-xl font-bold text-navy">Metodología de Cálculo Certificada</h3>
                                     <div className="p-2 bg-lime-500 rounded-full">
                                       <CheckCircle className="h-5 w-5 text-navy" />
@@ -930,56 +927,57 @@ export default function ResiduosExcel() {
               </div>
             )}
 
-            {/* KPIs Sidebar */}
-            <div className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">Indicadores Clave</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="p-4 bg-green-50 rounded-lg">
-                    <div className="text-2xl font-bold text-green-800">
-                      {kpis.totalCircular.toLocaleString('es-ES', { maximumFractionDigits: 1 })}
+            {/* KPIs Row */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <Card className="bg-gradient-to-r from-lime-500 to-lime-600 text-white">
+                <CardContent className="p-4">
+                  <div className="text-center">
+                    <div className="text-xl font-bold">
+                      {(kpis.totalCircular / 1000).toFixed(1)}
                     </div>
-                    <div className="text-sm text-green-600">Total Circular (kg)</div>
+                    <div className="text-sm text-lime-100">Circular (ton)</div>
                   </div>
-                  
-                  <div className="p-4 bg-red-50 rounded-lg">
-                    <div className="text-2xl font-bold text-red-800">
-                      {kpis.totalLandfill.toLocaleString('es-ES', { maximumFractionDigits: 1 })}
+                </CardContent>
+              </Card>
+              
+              <Card className="bg-gradient-to-r from-red-500 to-red-600 text-white">
+                <CardContent className="p-4">
+                  <div className="text-center">
+                    <div className="text-xl font-bold">
+                      {(kpis.totalLandfill / 1000).toFixed(1)}
                     </div>
-                    <div className="text-sm text-red-600">Total relleno sanitario (kg)</div>
+                    <div className="text-sm text-red-100">Relleno (ton)</div>
                   </div>
-                  
-                  <div className="p-4 bg-blue-50 rounded-lg">
-                    <div className="text-2xl font-bold text-blue-800">
-                      {kpis.totalWeight.toLocaleString('es-ES', { maximumFractionDigits: 1 })}
+                </CardContent>
+              </Card>
+              
+              <Card className="bg-gradient-to-r from-navy to-navy/80 text-white">
+                <CardContent className="p-4">
+                  <div className="text-center">
+                    <div className="text-xl font-bold">
+                      {(kpis.totalWeight / 1000).toFixed(1)}
                     </div>
-                    <div className="text-sm text-blue-600">Pesos totales (kg)</div>
+                    <div className="text-sm text-white/80">Total (ton)</div>
                   </div>
-                  
-                  <div className={`p-4 rounded-lg ${
-                    kpis.deviationPercentage >= 70 ? 'bg-green-50' : 
-                    kpis.deviationPercentage >= 50 ? 'bg-amber-50' : 'bg-red-50'
-                  }`}>
-                    <div className={`text-3xl font-bold ${
-                      kpis.deviationPercentage >= 70 ? 'text-green-800' : 
-                      kpis.deviationPercentage >= 50 ? 'text-amber-800' : 'text-red-800'
-                    }`}>
+                </CardContent>
+              </Card>
+              
+              <Card className={`bg-gradient-to-r ${
+                kpis.deviationPercentage >= 70 ? 'from-green-500 to-green-600' : 
+                kpis.deviationPercentage >= 50 ? 'from-amber-500 to-amber-600' : 'from-red-500 to-red-600'
+              } text-white`}>
+                <CardContent className="p-4">
+                  <div className="text-center">
+                    <div className="text-xl font-bold">
                       {kpis.deviationPercentage.toFixed(1)}%
                     </div>
-                    <div className={`text-sm ${
-                      kpis.deviationPercentage >= 70 ? 'text-green-600' : 
-                      kpis.deviationPercentage >= 50 ? 'text-amber-600' : 'text-red-600'
-                    }`}>
-                      % de Desviación
-                    </div>
+                    <div className="text-sm opacity-80">Desviación</div>
                   </div>
                 </CardContent>
               </Card>
             </div>
             {/* Charts Section */}
-            <div className="lg:col-span-4 mt-6">
+            <div>
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Stacked Bar Chart */}
                 <Card>
