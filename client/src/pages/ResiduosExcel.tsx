@@ -708,10 +708,10 @@ export default function ResiduosExcel() {
                                     </div>
                                   </div>
 
-                                  {/* Arrow 1 */}
+                                  {/* Division Symbol */}
                                   <div className="flex justify-center">
-                                    <div className="text-navy">
-                                      <ArrowRight className="h-6 w-6" />
+                                    <div className="text-navy text-3xl font-bold">
+                                      ÷
                                     </div>
                                   </div>
 
