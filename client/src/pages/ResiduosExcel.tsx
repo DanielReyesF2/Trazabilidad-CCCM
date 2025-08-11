@@ -91,7 +91,10 @@ export default function ResiduosExcel() {
     mutationFn: async (updateData: any) => {
       const response = await fetch('/api/waste-excel/batch-update', {
         method: 'POST',
-        body: JSON.stringify(updateData),
+        body: JSON.stringify({
+          editedData: updateData,
+          year: selectedYear
+        }),
         headers: { 'Content-Type': 'application/json' }
       });
       if (!response.ok) throw new Error('Failed to update data');

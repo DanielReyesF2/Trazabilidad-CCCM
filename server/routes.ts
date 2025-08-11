@@ -402,11 +402,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Batch update all data for a year
   app.post("/api/waste-excel/batch-update", async (req: Request, res: Response) => {
     try {
-      const editedData = req.body;
+      const { editedData, year } = req.body;
       
       // Get year months to map month indices to month IDs
-      const currentYear = 2025;
-      const months = await storage.getMonths(currentYear);
+      const months = await storage.getMonths(year);
       
       // Process each edited entry
       for (const [editKey, value] of Object.entries(editedData)) {
