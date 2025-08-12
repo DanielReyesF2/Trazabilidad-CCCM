@@ -149,7 +149,7 @@ export default function Dashboard() {
               <h1 className="text-5xl md:text-7xl font-light text-[#273949] mb-2 tracking-tight">
                 Sistema de
               </h1>
-              <h1 className="text-5xl md:text-7xl font-bold text-[#273949] tracking-tight relative">
+              <h1 className="text-5xl md:text-7xl text-[#273949] tracking-tight relative font-light">
                 Gestión Ambiental
                 <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-32 h-1 bg-gradient-to-r from-[#b5e951] to-emerald-400 rounded-full"></div>
               </h1>
