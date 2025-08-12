@@ -7,6 +7,7 @@ import fs from "fs";
 import { 
   insertDocumentSchema, insertWasteDataSchema, insertAlertSchema,
   insertRecyclingEntrySchema, insertCompostEntrySchema, insertReuseEntrySchema, insertLandfillEntrySchema,
+  insertDailyWasteEntrySchema, DailyWasteEntry,
   RECYCLING_MATERIALS, COMPOST_CATEGORIES, REUSE_CATEGORIES, LANDFILL_WASTE_TYPES
 } from "@shared/schema";
 import { z } from "zod";
@@ -626,50 +627,175 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // GET /api/daily-totals/:date - Obtener totales del día
+  // GET /api/daily-totals/:date - Obtener totales del día desde registros diarios reales
   app.get('/api/daily-totals/:date', async (req: Request, res: Response) => {
     try {
       const { date } = req.params;
       const targetDate = new Date(date);
-      const year = targetDate.getFullYear();
-      const month = targetDate.getMonth() + 1;
-
-      // Por ahora, como es MVP, simulamos datos del mes actual
-      // En implementación real, tendríamos una tabla de registros diarios
-      const monthRecord = await storage.getMonth(year, month);
       
-      if (!monthRecord) {
-        return res.json({
-          recycling: 0,
-          compost: 0,
-          reuse: 0,
-          landfill: 0
-        });
-      }
-
-      // Obtener entradas del mes y simular distribución diaria
-      const [recyclingEntries, compostEntries, reuseEntries, landfillEntries] = await Promise.all([
-        storage.getRecyclingEntries(monthRecord.id),
-        storage.getCompostEntries(monthRecord.id),
-        storage.getReuseEntries(monthRecord.id),
-        storage.getLandfillEntries(monthRecord.id)
-      ]);
-
-      // Calcular totales (simulando datos del día actual como 3% del mes)
-      const dayFactor = 0.03; // 3% del total mensual para simular el día actual
+      // Obtener registros diarios reales para esta fecha específica
+      const dailyEntries = await storage.getDailyWasteEntriesByDate(targetDate);
       
       const totals = {
-        recycling: recyclingEntries.reduce((sum, e) => sum + e.kg, 0) * dayFactor,
-        compost: compostEntries.reduce((sum, e) => sum + e.kg, 0) * dayFactor,
-        reuse: reuseEntries.reduce((sum, e) => sum + e.kg, 0) * dayFactor,
-        landfill: landfillEntries.reduce((sum, e) => sum + e.kg, 0) * dayFactor
+        recycling: 0,
+        compost: 0,
+        reuse: 0,
+        landfill: 0
       };
+
+      // Sumar por tipo
+      dailyEntries.forEach(entry => {
+        if (entry.type === 'recycling') totals.recycling += entry.kg;
+        else if (entry.type === 'compost') totals.compost += entry.kg;
+        else if (entry.type === 'reuse') totals.reuse += entry.kg;
+        else if (entry.type === 'landfill') totals.landfill += entry.kg;
+      });
 
       res.json(totals);
 
     } catch (error) {
       console.error("Error fetching daily totals:", error);
       res.status(500).json({ message: "Error al obtener totales del día" });
+    }
+  });
+
+  // GET /api/monthly-summary/:year/:month - Obtener resumen mensual
+  app.get('/api/monthly-summary/:year/:month', async (req: Request, res: Response) => {
+    try {
+      const year = parseInt(req.params.year);
+      const month = parseInt(req.params.month);
+      const clientId = 4; // Club Campestre
+
+      // Buscar o crear resumen mensual
+      let summary = await storage.getMonthlySummary(clientId, year, month);
+      
+      if (!summary) {
+        // Crear nuevo resumen mensual
+        summary = await storage.createMonthlySummary(clientId, year, month);
+      }
+
+      // Obtener registros diarios del mes para actualizar totales
+      const monthlyEntries = await storage.getDailyWasteEntriesByMonth(clientId, year, month);
+      
+      // Calcular totales actuales
+      const totals = {
+        recycling: 0,
+        compost: 0,
+        reuse: 0,
+        landfill: 0
+      };
+
+      const breakdowns = {
+        recycling: {} as Record<string, number>,
+        compost: {} as Record<string, number>,
+        reuse: {} as Record<string, number>,
+        landfill: {} as Record<string, number>
+      };
+
+      monthlyEntries.forEach(entry => {
+        totals[entry.type as keyof typeof totals] += entry.kg;
+        
+        if (!breakdowns[entry.type as keyof typeof breakdowns][entry.material]) {
+          breakdowns[entry.type as keyof typeof breakdowns][entry.material] = 0;
+        }
+        breakdowns[entry.type as keyof typeof breakdowns][entry.material] += entry.kg;
+      });
+
+      const totalWaste = totals.recycling + totals.compost + totals.reuse + totals.landfill;
+
+      // Actualizar resumen con datos actuales
+      const updatedSummary = await storage.updateMonthlySummary(summary.id, {
+        totalRecycling: totals.recycling,
+        totalCompost: totals.compost,
+        totalReuse: totals.reuse,
+        totalLandfill: totals.landfill,
+        totalWaste: totalWaste,
+        recyclingBreakdown: breakdowns.recycling,
+        compostBreakdown: breakdowns.compost,
+        reuseBreakdown: breakdowns.reuse,
+        landfillBreakdown: breakdowns.landfill,
+        dailyEntriesCount: monthlyEntries.length
+      });
+
+      res.json({
+        summary: updatedSummary,
+        dailyEntries: monthlyEntries,
+        canClose: updatedSummary.status === 'open' && monthlyEntries.length > 0
+      });
+
+    } catch (error) {
+      console.error("Error fetching monthly summary:", error);
+      res.status(500).json({ message: "Error al obtener resumen mensual" });
+    }
+  });
+
+  // POST /api/monthly-summary/:year/:month/close - Cerrar mes
+  app.post('/api/monthly-summary/:year/:month/close', async (req: Request, res: Response) => {
+    try {
+      const year = parseInt(req.params.year);
+      const month = parseInt(req.params.month);
+      const clientId = 4; // Club Campestre
+      const { closedBy } = req.body;
+
+      const summary = await storage.getMonthlySummary(clientId, year, month);
+      
+      if (!summary) {
+        return res.status(404).json({ message: "Resumen mensual no encontrado" });
+      }
+
+      if (summary.status !== 'open') {
+        return res.status(400).json({ message: "El mes ya está cerrado" });
+      }
+
+      // Cerrar el mes
+      const closedSummary = await storage.closeMonthlySummary(summary.id, closedBy || 'Sistema');
+
+      res.json({
+        message: "Mes cerrado correctamente",
+        summary: closedSummary
+      });
+
+    } catch (error) {
+      console.error("Error closing month:", error);
+      res.status(500).json({ message: "Error al cerrar el mes" });
+    }
+  });
+
+  // POST /api/monthly-summary/:year/:month/transfer - Transferir a trazabilidad oficial
+  app.post('/api/monthly-summary/:year/:month/transfer', async (req: Request, res: Response) => {
+    try {
+      const year = parseInt(req.params.year);
+      const month = parseInt(req.params.month);
+      const clientId = 4; // Club Campestre
+
+      const summary = await storage.getMonthlySummary(clientId, year, month);
+      
+      if (!summary) {
+        return res.status(404).json({ message: "Resumen mensual no encontrado" });
+      }
+
+      if (summary.status !== 'closed') {
+        return res.status(400).json({ message: "El mes debe estar cerrado antes de transferir" });
+      }
+
+      if (summary.transferredToOfficial) {
+        return res.status(400).json({ message: "Los datos ya fueron transferidos" });
+      }
+
+      // Crear o actualizar registro en monthly_deviation_data
+      await storage.transferToOfficialData(summary);
+
+      // Marcar como transferido
+      const transferredSummary = await storage.markAsTransferred(summary.id);
+
+      res.json({
+        message: "Datos transferidos a trazabilidad oficial",
+        summary: transferredSummary
+      });
+
+    } catch (error) {
+      console.error("Error transferring to official data:", error);
+      res.status(500).json({ message: "Error al transferir datos" });
     }
   });
 

@@ -8,8 +8,11 @@ import {
   CompostEntry, InsertCompostEntry,
   ReuseEntry, InsertReuseEntry,
   LandfillEntry, InsertLandfillEntry,
+  DailyWasteEntry, InsertDailyWasteEntry,
+  MonthlySummary, InsertMonthlySummary,
   clients, documents, wasteData, alerts,
   months, recyclingEntries, compostEntries, reuseEntries, landfillEntries,
+  dailyWasteEntries, monthlySummaries,
   RECYCLING_MATERIALS, COMPOST_CATEGORIES, REUSE_CATEGORIES, LANDFILL_WASTE_TYPES
 } from "@shared/schema";
 import { db } from "./db";
@@ -63,6 +66,19 @@ export interface IStorage {
   
   // Batch update operations
   updateWasteDataForYear(year: number, data: any): Promise<void>;
+  
+  // Daily waste entry operations
+  getDailyWasteEntriesByDate(date: Date): Promise<DailyWasteEntry[]>;
+  getDailyWasteEntriesByMonth(clientId: number, year: number, month: number): Promise<DailyWasteEntry[]>;
+  createDailyWasteEntry(entry: InsertDailyWasteEntry): Promise<DailyWasteEntry>;
+  
+  // Monthly summary operations
+  getMonthlySummary(clientId: number, year: number, month: number): Promise<MonthlySummary | undefined>;
+  createMonthlySummary(clientId: number, year: number, month: number): Promise<MonthlySummary>;
+  updateMonthlySummary(id: number, updates: Partial<MonthlySummary>): Promise<MonthlySummary>;
+  closeMonthlySummary(id: number, closedBy: string): Promise<MonthlySummary>;
+  markAsTransferred(id: number): Promise<MonthlySummary>;
+  transferToOfficialData(summary: MonthlySummary): Promise<void>;
 }
 
 export class MemStorage implements IStorage {
@@ -624,6 +640,112 @@ export class DatabaseStorage implements IStorage {
   async updateWasteDataForYear(year: number, data: any): Promise<void> {
     // This will be implemented when we create the API routes
     console.log(`Updating waste data for year ${year}`, data);
+  }
+
+  // Daily waste entry operations
+  async getDailyWasteEntriesByDate(date: Date): Promise<DailyWasteEntry[]> {
+    const startOfDay = new Date(date);
+    startOfDay.setHours(0, 0, 0, 0);
+    const endOfDay = new Date(date);
+    endOfDay.setHours(23, 59, 59, 999);
+
+    return db.select()
+      .from(dailyWasteEntries)
+      .where(and(
+        gte(dailyWasteEntries.date, startOfDay),
+        lte(dailyWasteEntries.date, endOfDay)
+      ));
+  }
+
+  async getDailyWasteEntriesByMonth(clientId: number, year: number, month: number): Promise<DailyWasteEntry[]> {
+    const startOfMonth = new Date(year, month - 1, 1);
+    const endOfMonth = new Date(year, month, 0, 23, 59, 59, 999);
+
+    return db.select()
+      .from(dailyWasteEntries)
+      .where(and(
+        eq(dailyWasteEntries.clientId, clientId),
+        gte(dailyWasteEntries.date, startOfMonth),
+        lte(dailyWasteEntries.date, endOfMonth)
+      ));
+  }
+
+  async createDailyWasteEntry(entry: InsertDailyWasteEntry): Promise<DailyWasteEntry> {
+    const [created] = await db
+      .insert(dailyWasteEntries)
+      .values(entry)
+      .returning();
+    return created;
+  }
+
+  // Monthly summary operations
+  async getMonthlySummary(clientId: number, year: number, month: number): Promise<MonthlySummary | undefined> {
+    const [summary] = await db.select()
+      .from(monthlySummaries)
+      .where(and(
+        eq(monthlySummaries.clientId, clientId),
+        eq(monthlySummaries.year, year),
+        eq(monthlySummaries.month, month)
+      ));
+    return summary;
+  }
+
+  async createMonthlySummary(clientId: number, year: number, month: number): Promise<MonthlySummary> {
+    const [created] = await db
+      .insert(monthlySummaries)
+      .values({
+        clientId,
+        year,
+        month,
+        status: 'open'
+      })
+      .returning();
+    return created;
+  }
+
+  async updateMonthlySummary(id: number, updates: Partial<MonthlySummary>): Promise<MonthlySummary> {
+    const [updated] = await db
+      .update(monthlySummaries)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(monthlySummaries.id, id))
+      .returning();
+    return updated;
+  }
+
+  async closeMonthlySummary(id: number, closedBy: string): Promise<MonthlySummary> {
+    const [updated] = await db
+      .update(monthlySummaries)
+      .set({
+        status: 'closed',
+        closedAt: new Date(),
+        closedBy,
+        updatedAt: new Date()
+      })
+      .where(eq(monthlySummaries.id, id))
+      .returning();
+    return updated;
+  }
+
+  async markAsTransferred(id: number): Promise<MonthlySummary> {
+    const [updated] = await db
+      .update(monthlySummaries)
+      .set({
+        transferredToOfficial: true,
+        transferredAt: new Date(),
+        updatedAt: new Date()
+      })
+      .where(eq(monthlySummaries.id, id))
+      .returning();
+    return updated;
+  }
+
+  async transferToOfficialData(summary: MonthlySummary): Promise<void> {
+    // Esta lógica transferirá los datos del resumen mensual a la tabla monthly_deviation_data
+    // para la trazabilidad oficial que requiere la certificadora
+    console.log(`Transferring monthly summary ${summary.id} to official data...`);
+    
+    // Aquí implementaremos la lógica para mapear los datos del resumen mensual
+    // a la estructura de monthly_deviation_data que usa el Excel de trazabilidad
   }
 }
 

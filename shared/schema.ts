@@ -239,3 +239,69 @@ export type RecyclingMaterial = typeof RECYCLING_MATERIALS[number];
 export type CompostCategory = typeof COMPOST_CATEGORIES[number];
 export type ReuseCategory = typeof REUSE_CATEGORIES[number];
 export type LandfillWasteType = typeof LANDFILL_WASTE_TYPES[number];
+
+// Daily waste entries for security team registration
+export const dailyWasteEntries = pgTable("daily_waste_entries", {
+  id: serial("id").primaryKey(),
+  clientId: integer("client_id").references(() => clients.id).notNull(),
+  date: timestamp("date").notNull(),
+  type: text("type").notNull(), // 'recycling', 'compost', 'reuse', 'landfill'
+  material: text("material").notNull(), // Specific material from the type category
+  kg: real("kg").notNull(),
+  location: text("location").notNull(), // Area of the club where it was generated
+  notes: text("notes"), // Optional notes
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+// Monthly summaries - bridge between daily entries and official monthly data
+export const monthlySummaries = pgTable("monthly_summaries", {
+  id: serial("id").primaryKey(),
+  clientId: integer("client_id").references(() => clients.id).notNull(),
+  year: integer("year").notNull(),
+  month: integer("month").notNull(), // 1-12
+  
+  // Status control
+  status: text("status").notNull().default("open"), // 'open', 'closed', 'transferred'
+  closedAt: timestamp("closed_at"),
+  closedBy: text("closed_by"), // User who closed the month
+  
+  // Aggregated totals from daily entries (calculated automatically)
+  totalRecycling: real("total_recycling").default(0),
+  totalCompost: real("total_compost").default(0),
+  totalReuse: real("total_reuse").default(0),
+  totalLandfill: real("total_landfill").default(0),
+  totalWaste: real("total_waste").default(0),
+  
+  // Material breakdown (JSON for flexibility)
+  recyclingBreakdown: json("recycling_breakdown").$type<Record<string, number>>(),
+  compostBreakdown: json("compost_breakdown").$type<Record<string, number>>(),
+  reuseBreakdown: json("reuse_breakdown").$type<Record<string, number>>(),
+  landfillBreakdown: json("landfill_breakdown").$type<Record<string, number>>(),
+  
+  // Audit trail
+  dailyEntriesCount: integer("daily_entries_count").default(0),
+  transferredToOfficial: boolean("transferred_to_official").default(false),
+  transferredAt: timestamp("transferred_at"),
+  
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+// Insert schemas
+export const insertDailyWasteEntrySchema = createInsertSchema(dailyWasteEntries).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertMonthlySummarySchema = createInsertSchema(monthlySummaries).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+// Types
+export type DailyWasteEntry = typeof dailyWasteEntries.$inferSelect;
+export type InsertDailyWasteEntry = z.infer<typeof insertDailyWasteEntrySchema>;
+
+export type MonthlySummary = typeof monthlySummaries.$inferSelect;
+export type InsertMonthlySummary = z.infer<typeof insertMonthlySummarySchema>;
