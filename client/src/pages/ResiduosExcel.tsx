@@ -62,8 +62,15 @@ interface WasteExcelData {
 
 const MONTH_LABELS = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
 
+// TRUE Year labels (Aug 2024 - Aug 2025)
+const TRUE_MONTH_LABELS = [
+  'Ago 24', 'Sep 24', 'Oct 24', 'Nov 24', 'Dic 24', 
+  'Ene 25', 'Feb 25', 'Mar 25', 'Abr 25', 'May 25', 'Jun 25', 'Jul 25', 'Ago 25'
+].slice(0, 12); // Take only first 12 months
+
 export default function ResiduosExcel() {
   const [selectedYear, setSelectedYear] = useState(2025);
+  const [isTrueMode, setIsTrueMode] = useState(false);
   const [editedData, setEditedData] = useState<Record<string, any>>({});
   const [openSections, setOpenSections] = useState({
     recycling: true,
@@ -84,7 +91,58 @@ export default function ResiduosExcel() {
       return response.json();
     },
     refetchOnWindowFocus: false,
+    enabled: !isTrueMode
   });
+
+  // Fetch data for both years when in TRUE mode (Aug 2024 - Aug 2025)
+  const { data: trueData2024, isLoading: isLoading2024 } = useQuery<WasteExcelData>({
+    queryKey: ['/api/waste-excel', 2024],
+    queryFn: async () => {
+      const response = await fetch('/api/waste-excel/2024');
+      if (!response.ok) throw new Error('Failed to fetch 2024 data');
+      return response.json();
+    },
+    refetchOnWindowFocus: false,
+    enabled: isTrueMode
+  });
+
+  const { data: trueData2025, isLoading: isLoading2025 } = useQuery<WasteExcelData>({
+    queryKey: ['/api/waste-excel', 2025],
+    queryFn: async () => {
+      const response = await fetch('/api/waste-excel/2025');
+      if (!response.ok) throw new Error('Failed to fetch 2025 data');
+      return response.json();
+    },
+    refetchOnWindowFocus: false,
+    enabled: isTrueMode
+  });
+
+  // Combine data for TRUE mode (last 12 months: Aug 2024 - Aug 2025)
+  const combineTrueData = useMemo(() => {
+    if (!isTrueMode || !trueData2024 || !trueData2025) return null;
+    
+    // Get Aug-Dec 2024 (months 8-12) and Jan-Aug 2025 (months 1-8)
+    const months2024 = trueData2024.months.filter(m => m.month.month >= 8); // Aug-Dec 2024
+    const months2025 = trueData2025.months.filter(m => m.month.month <= 8); // Jan-Aug 2025
+    
+    // Combine materials from both years
+    const combinedMaterials = {
+      recycling: Array.from(new Set([...trueData2024.materials.recycling, ...trueData2025.materials.recycling])),
+      compost: Array.from(new Set([...trueData2024.materials.compost, ...trueData2025.materials.compost])),
+      reuse: Array.from(new Set([...trueData2024.materials.reuse, ...trueData2025.materials.reuse])),
+      landfill: Array.from(new Set([...trueData2024.materials.landfill, ...trueData2025.materials.landfill]))
+    };
+    
+    return {
+      year: 'TRUE', // Special identifier for TRUE mode
+      months: [...months2024, ...months2025],
+      materials: combinedMaterials
+    };
+  }, [isTrueMode, trueData2024, trueData2025]);
+
+  // Determine which data to use
+  const currentData = isTrueMode ? combineTrueData : wasteData;
+  const currentIsLoading = isTrueMode ? (isLoading2024 || isLoading2025) : isLoading;
 
   // Update mutation
   const updateMutation = useMutation({
@@ -124,9 +182,9 @@ export default function ResiduosExcel() {
       return editedData[editKey];
     }
     
-    if (!wasteData?.months[monthIndex]) return 0;
+    if (!currentData?.months[monthIndex]) return 0;
     
-    const monthData = wasteData.months[monthIndex];
+    const monthData = currentData.months[monthIndex];
     let entries: any[] = [];
     
     switch (section) {
@@ -152,7 +210,7 @@ export default function ResiduosExcel() {
     );
     
     return entry?.kg || 0;
-  }, [wasteData, editedData]);
+  }, [currentData, editedData]);
 
   // Helper function to calculate row total
   const getRowTotal = useCallback((section: string, material: string): number => {
@@ -165,30 +223,30 @@ export default function ResiduosExcel() {
 
   // Helper function to calculate section totals
   const getSectionTotals = useCallback(() => {
-    if (!wasteData) return { recyclingTotal: 0, compostTotal: 0, reuseTotal: 0, landfillTotal: 0 };
+    if (!currentData) return { recyclingTotal: 0, compostTotal: 0, reuseTotal: 0, landfillTotal: 0 };
     
     let recyclingTotal = 0;
-    wasteData.materials.recycling.forEach(material => {
+    currentData.materials.recycling.forEach(material => {
       recyclingTotal += getRowTotal('recycling', material);
     });
     
     let compostTotal = 0;
-    wasteData.materials.compost.forEach(category => {
+    currentData.materials.compost.forEach(category => {
       compostTotal += getRowTotal('compost', category);
     });
     
     let reuseTotal = 0;
-    wasteData.materials.reuse.forEach(category => {
+    currentData.materials.reuse.forEach(category => {
       reuseTotal += getRowTotal('reuse', category);
     });
     
     let landfillTotal = 0;
-    wasteData.materials.landfill.forEach(wasteType => {
+    currentData.materials.landfill.forEach(wasteType => {
       landfillTotal += getRowTotal('landfill', wasteType);
     });
     
     return { recyclingTotal, compostTotal, reuseTotal, landfillTotal };
-  }, [wasteData, getRowTotal]);
+  }, [currentData, getRowTotal]);
 
   // Helper function to get total for a section in a specific month
   const getSectionTotal = useCallback((section: 'recycling' | 'compost' | 'reuse' | 'landfill', monthIndex: number): number => {
@@ -226,7 +284,7 @@ export default function ResiduosExcel() {
 
   // Generate Premium 3-Page PDF Report (Lead Product Designer approach)
   const generatePremiumPDF = () => {
-    if (!wasteData) return;
+    if (!currentData) return;
 
     const pdf = new jsPDF({
       orientation: 'portrait',
@@ -742,9 +800,11 @@ export default function ResiduosExcel() {
 
   // Generate chart data for visualizations
   const generateChartData = useMemo(() => {
-    if (!wasteData) return [];
+    if (!currentData) return [];
     
-    return MONTH_LABELS.map((monthName, index) => {
+    const monthLabels = isTrueMode ? TRUE_MONTH_LABELS : MONTH_LABELS;
+    
+    return monthLabels.map((monthName, index) => {
       const recyclingTotal = getSectionTotal('recycling', index) || 0;
       const compostTotal = getSectionTotal('compost', index) || 0;
       const reuseTotal = getSectionTotal('reuse', index) || 0;
@@ -762,7 +822,7 @@ export default function ResiduosExcel() {
         deviation: monthlyDeviation
       };
     });
-  }, [wasteData, getSectionTotal]);
+  }, [currentData, getSectionTotal, isTrueMode]);
 
   // Handle save function - uses existing updateMutation
   const handleSave = () => {
@@ -807,22 +867,40 @@ export default function ResiduosExcel() {
               
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-2">
-                  <label className="text-sm font-medium text-gray-700">Año:</label>
-                  <Select value={selectedYear.toString()} onValueChange={(value) => setSelectedYear(parseInt(value))}>
-                    <SelectTrigger className="w-24">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="2024">2024</SelectItem>
-                      <SelectItem value="2025">2025</SelectItem>
-                      <SelectItem value="2026">2026</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <label className="text-sm font-medium text-gray-700">Período:</label>
+                  {!isTrueMode ? (
+                    <Select value={selectedYear.toString()} onValueChange={(value) => setSelectedYear(parseInt(value))}>
+                      <SelectTrigger className="w-24">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="2024">2024</SelectItem>
+                        <SelectItem value="2025">2025</SelectItem>
+                        <SelectItem value="2026">2026</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <div className="bg-green-100 text-green-800 px-3 py-2 rounded-md text-sm font-medium">
+                      Últimos 12 meses (Ago 2024 - Ago 2025)
+                    </div>
+                  )}
                 </div>
                 
                 <Button
+                  onClick={() => {
+                    setIsTrueMode(!isTrueMode);
+                    setEditedData({}); // Clear edits when switching modes
+                  }}
+                  variant={isTrueMode ? "default" : "outline"}
+                  className={isTrueMode ? "bg-green-600 hover:bg-green-700 text-white" : "border-green-600 text-green-600 hover:bg-green-50"}
+                >
+                  <CheckCircle className="h-4 w-4 mr-2" />
+                  Año TRUE
+                </Button>
+                
+                <Button
                   onClick={generateCleanPDF}
-                  disabled={!wasteData}
+                  disabled={!currentData}
                   className="bg-navy hover:bg-navy/90 text-white"
                 >
                   <div className="flex items-center gap-2">
@@ -981,7 +1059,7 @@ export default function ResiduosExcel() {
                   <thead>
                     <tr className="border-b-2 border-navy">
                       <th className="text-left p-3 font-bold text-navy min-w-[200px]">Material/Categoría</th>
-                      {MONTH_LABELS.map((month, index) => (
+                      {(isTrueMode ? TRUE_MONTH_LABELS : MONTH_LABELS).map((month, index) => (
                         <th key={index} className="text-center p-2 font-bold text-navy min-w-[80px]">
                           {month}
                         </th>
