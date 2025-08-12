@@ -140,86 +140,122 @@ export default function Dashboard() {
     <AppLayout>
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-gray-50 to-blue-50">
         <div className="max-w-7xl mx-auto px-4 py-8">
-          {/* Header principal */}
+          {/* Header principal mejorado */}
           <div className="text-center mb-16">
-            <div className="inline-flex items-center justify-center w-20 h-20 bg-white rounded-2xl shadow-lg mb-6 border-2 border-[#b5e951]">
-              <img src={cccmLogo} alt="Club Campestre Ciudad de México" className="w-16 h-16 object-contain" />
+            <div className="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-br from-white to-gray-50 rounded-3xl shadow-xl mb-8 border border-gray-200 backdrop-blur-sm">
+              <img src={cccmLogo} alt="Club Campestre Ciudad de México" className="w-20 h-20 object-contain" />
             </div>
-            <h1 className="text-4xl md:text-6xl font-anton uppercase tracking-wider mb-4 bg-gradient-to-r from-[#273949] via-[#b5e951] to-[#273949] bg-clip-text text-transparent">
-              Sistema de Gestión Ambiental
-            </h1>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Plataforma integral de sustentabilidad del Club Campestre Ciudad de México
+            <div className="relative mb-6">
+              <h1 className="text-5xl md:text-7xl font-light text-[#273949] mb-2 tracking-tight">
+                Sistema de
+              </h1>
+              <h1 className="text-5xl md:text-7xl font-bold text-[#273949] tracking-tight relative">
+                Gestión Ambiental
+                <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-32 h-1 bg-gradient-to-r from-[#b5e951] to-emerald-400 rounded-full"></div>
+              </h1>
+            </div>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto font-light leading-relaxed">
+              Plataforma integral de sustentabilidad para el 
+              <span className="font-semibold text-[#273949]"> Club Campestre Ciudad de México</span>
             </p>
+            <div className="flex items-center justify-center mt-6 space-x-2">
+              <div className="w-2 h-2 bg-[#b5e951] rounded-full animate-pulse"></div>
+              <span className="text-sm text-gray-500 font-medium">En tiempo real</span>
+              <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse delay-150"></div>
+            </div>
           </div>
 
           {/* Módulos ambientales principales */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
             {/* Residuos */}
             <Link href="/trazabilidad-residuos">
-              <div className="group cursor-pointer bg-white rounded-3xl p-8 shadow-lg border border-gray-100 hover:shadow-2xl hover:border-green-300 transition-all duration-500 hover:-translate-y-2 relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-green-100 to-green-200 rounded-bl-full opacity-50"></div>
-                <div className="flex items-center justify-between mb-6">
-                  <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-                    <Trash2 className="w-8 h-8 text-white" />
+              <div className="group cursor-pointer bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl hover:border-green-200 transition-all duration-300 hover:-translate-y-1 relative">
+                <div className="absolute inset-0 bg-gradient-to-br from-green-50/30 to-emerald-50/30 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <div className="relative">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-md group-hover:shadow-lg transition-all">
+                      <Trash2 className="w-6 h-6 text-white" />
+                    </div>
+                    <div className="text-right">
+                      <div className="text-2xl font-bold text-green-600">{processedData.wasteDeviation.toFixed(1)}%</div>
+                      <div className="text-xs text-gray-500 uppercase tracking-wide">Desviación</div>
+                    </div>
                   </div>
-                  <ArrowRight className="w-6 h-6 text-gray-400 group-hover:text-green-500 group-hover:translate-x-1 transition-all" />
+                  <div className="space-y-1">
+                    <h3 className="text-lg font-semibold text-gray-900">Residuos</h3>
+                    <p className="text-sm text-gray-600">TRUE Zero Waste en progreso</p>
+                  </div>
+                  <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-green-500 group-hover:translate-x-1 transition-all absolute bottom-6 right-6" />
                 </div>
-                <div className="text-4xl font-anton text-green-600 mb-2">{processedData.wasteDeviation.toFixed(1)}%</div>
-                <div className="text-sm text-gray-500 mb-2 uppercase tracking-wide">Desviación del Relleno</div>
-                <div className="text-lg font-bold text-gray-900 mb-1">Residuos</div>
-                <div className="text-sm text-gray-600">TRUE Zero Waste en progreso</div>
               </div>
             </Link>
 
             {/* Energía */}
             <Link href="/energia">
-              <div className="group cursor-pointer bg-white rounded-3xl p-8 shadow-lg border border-gray-100 hover:shadow-2xl hover:border-yellow-300 transition-all duration-500 hover:-translate-y-2 relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-yellow-100 to-orange-200 rounded-bl-full opacity-50"></div>
-                <div className="flex items-center justify-between mb-6">
-                  <div className="w-16 h-16 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-                    <Zap className="w-8 h-8 text-white" />
+              <div className="group cursor-pointer bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl hover:border-yellow-200 transition-all duration-300 hover:-translate-y-1 relative">
+                <div className="absolute inset-0 bg-gradient-to-br from-yellow-50/30 to-orange-50/30 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <div className="relative">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="w-12 h-12 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-xl flex items-center justify-center shadow-md group-hover:shadow-lg transition-all">
+                      <Zap className="w-6 h-6 text-white" />
+                    </div>
+                    <div className="text-right">
+                      <div className="text-2xl font-bold text-yellow-600">{processedData.energyRenewable}%</div>
+                      <div className="text-xs text-gray-500 uppercase tracking-wide">Renovable</div>
+                    </div>
                   </div>
-                  <ArrowRight className="w-6 h-6 text-gray-400 group-hover:text-yellow-500 group-hover:translate-x-1 transition-all" />
+                  <div className="space-y-1">
+                    <h3 className="text-lg font-semibold text-gray-900">Energía</h3>
+                    <p className="text-sm text-gray-600">Paneles solares en desarrollo</p>
+                  </div>
+                  <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-yellow-500 group-hover:translate-x-1 transition-all absolute bottom-6 right-6" />
                 </div>
-                <div className="text-4xl font-anton text-yellow-600 mb-2">{processedData.energyRenewable}%</div>
-                <div className="text-sm text-gray-500 mb-2 uppercase tracking-wide">Energía Renovable</div>
-                <div className="text-lg font-bold text-gray-900 mb-1">Energía</div>
-                <div className="text-sm text-gray-600">Paneles solares en desarrollo</div>
               </div>
             </Link>
 
             {/* Agua */}
             <Link href="/agua">
-              <div className="group cursor-pointer bg-white rounded-3xl p-8 shadow-lg border border-gray-100 hover:shadow-2xl hover:border-blue-300 transition-all duration-500 hover:-translate-y-2 relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-blue-100 to-cyan-200 rounded-bl-full opacity-50"></div>
-                <div className="flex items-center justify-between mb-6">
-                  <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-                    <Droplets className="w-8 h-8 text-white" />
+              <div className="group cursor-pointer bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl hover:border-blue-200 transition-all duration-300 hover:-translate-y-1 relative">
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-50/30 to-cyan-50/30 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <div className="relative">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center shadow-md group-hover:shadow-lg transition-all">
+                      <Droplets className="w-6 h-6 text-white" />
+                    </div>
+                    <div className="text-right">
+                      <div className="text-2xl font-bold text-blue-600">{processedData.waterRecycled}%</div>
+                      <div className="text-xs text-gray-500 uppercase tracking-wide">Reciclada</div>
+                    </div>
                   </div>
-                  <ArrowRight className="w-6 h-6 text-gray-400 group-hover:text-blue-500 group-hover:translate-x-1 transition-all" />
+                  <div className="space-y-1">
+                    <h3 className="text-lg font-semibold text-gray-900">Agua</h3>
+                    <p className="text-sm text-gray-600">PTAR y sistema de laguna</p>
+                  </div>
+                  <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-blue-500 group-hover:translate-x-1 transition-all absolute bottom-6 right-6" />
                 </div>
-                <div className="text-4xl font-anton text-blue-600 mb-2">{processedData.waterRecycled}%</div>
-                <div className="text-sm text-gray-500 mb-2 uppercase tracking-wide">Agua Reciclada</div>
-                <div className="text-lg font-bold text-gray-900 mb-1">Agua</div>
-                <div className="text-sm text-gray-600">PTAR y sistema de laguna</div>
               </div>
             </Link>
 
             {/* Economía Circular */}
             <Link href="/economia-circular">
-              <div className="group cursor-pointer bg-white rounded-3xl p-8 shadow-lg border border-gray-100 hover:shadow-2xl hover:border-purple-300 transition-all duration-500 hover:-translate-y-2 relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-purple-100 to-indigo-200 rounded-bl-full opacity-50"></div>
-                <div className="flex items-center justify-between mb-6">
-                  <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-indigo-500 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-                    <RefreshCw className="w-8 h-8 text-white" />
+              <div className="group cursor-pointer bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl hover:border-purple-200 transition-all duration-300 hover:-translate-y-1 relative">
+                <div className="absolute inset-0 bg-gradient-to-br from-purple-50/30 to-indigo-50/30 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <div className="relative">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-indigo-500 rounded-xl flex items-center justify-center shadow-md group-hover:shadow-lg transition-all">
+                      <RefreshCw className="w-6 h-6 text-white" />
+                    </div>
+                    <div className="text-right">
+                      <div className="text-2xl font-bold text-purple-600">{processedData.circularityIndex}%</div>
+                      <div className="text-xs text-gray-500 uppercase tracking-wide">Circularidad</div>
+                    </div>
                   </div>
-                  <ArrowRight className="w-6 h-6 text-gray-400 group-hover:text-purple-500 group-hover:translate-x-1 transition-all" />
+                  <div className="space-y-1">
+                    <h3 className="text-lg font-semibold text-gray-900">Economía Circular</h3>
+                    <p className="text-sm text-gray-600">Sustentabilidad integral</p>
+                  </div>
+                  <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-purple-500 group-hover:translate-x-1 transition-all absolute bottom-6 right-6" />
                 </div>
-                <div className="text-4xl font-anton text-purple-600 mb-2">{processedData.circularityIndex}%</div>
-                <div className="text-sm text-gray-500 mb-2 uppercase tracking-wide">Índice de Circularidad</div>
-                <div className="text-lg font-bold text-gray-900 mb-1">Economía Circular</div>
-                <div className="text-sm text-gray-600">Sustentabilidad integral</div>
               </div>
             </Link>
           </div>
