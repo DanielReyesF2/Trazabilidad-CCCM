@@ -18,8 +18,11 @@ import {
   TrendingUp,
   Calendar,
   Weight,
-  MapPin
+  MapPin,
+  History,
+  ArrowRight
 } from 'lucide-react';
+import { Link } from 'wouter';
 
 interface DailyWasteEntry {
   type: 'recycling' | 'compost' | 'reuse' | 'landfill';
@@ -211,6 +214,13 @@ export default function RegistroDiario() {
               </div>
               
               <div className="flex flex-col items-end gap-2">
+                <Link href="/historial-mensual">
+                  <Button variant="outline" className="border-navy text-navy hover:bg-navy hover:text-white">
+                    <History className="h-4 w-4 mr-2" />
+                    Historial Mensual
+                    <ArrowRight className="h-4 w-4 ml-2" />
+                  </Button>
+                </Link>
                 <div className="flex items-center gap-3 bg-navy text-white px-6 py-3 rounded-full text-lg font-semibold">
                   <Calendar className="h-5 w-5" />
                   <span>
