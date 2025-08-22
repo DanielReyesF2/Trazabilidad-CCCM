@@ -1,0 +1,39 @@
+{
+  "client": {
+    "name": "Club Campestre Ciudad de México",
+    "shortName": "CCCM",
+    "logo": "/assets/CCCM_logo.png",
+    "primaryColor": "#273949",
+    "secondaryColor": "#b5e951",
+    "website": "https://cccm.com.mx",
+    "contact": {
+      "email": "sustentabilidad@cccm.com.mx",
+      "phone": "+52 55 1234 5678"
+    }
+  },
+  "branding": {
+    "appName": "ECONOVA",
+    "tagline": "Sistema Integral de Gestión Ambiental",
+    "reportHeader": "Club Campestre Ciudad de México",
+    "reportFooter": "Sistema ECONOVA - Gestión Ambiental Integral"
+  },
+  "features": {
+    "wasteModule": true,
+    "energyModule": true,
+    "waterModule": true,
+    "circularEconomyModule": true,
+    "trueZeroWaste": true,
+    "solarPanels": true,
+    "waterTreatment": true
+  },
+  "customization": {
+    "currency": "MXN",
+    "language": "es",
+    "timezone": "America/Mexico_City",
+    "units": {
+      "weight": "kg",
+      "volume": "L",
+      "energy": "kWh"
+    }
+  }
+}
