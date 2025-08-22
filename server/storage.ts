@@ -10,13 +10,10 @@ import {
   LandfillEntry, InsertLandfillEntry,
   DailyWasteEntry, InsertDailyWasteEntry,
   MonthlySummary, InsertMonthlySummary,
-  ClientSetting, InsertClientSetting,
-  ClientFeatureFlag, InsertClientFeatureFlag,
   clients, documents, wasteData, alerts,
   months, recyclingEntries, compostEntries, reuseEntries, landfillEntries,
-  dailyWasteEntries, monthlySummaries, clientSettings, clientFeatureFlags,
-  RECYCLING_MATERIALS, COMPOST_CATEGORIES, REUSE_CATEGORIES, LANDFILL_WASTE_TYPES,
-  AVAILABLE_FEATURES
+  dailyWasteEntries, monthlySummaries,
+  RECYCLING_MATERIALS, COMPOST_CATEGORIES, REUSE_CATEGORIES, LANDFILL_WASTE_TYPES
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, gte, lte } from "drizzle-orm";
@@ -25,19 +22,7 @@ export interface IStorage {
   // Client operations
   getClients(): Promise<Client[]>;
   getClient(id: number): Promise<Client | undefined>;
-  getClientBySlug(slug: string): Promise<Client | undefined>;
   createClient(client: InsertClient): Promise<Client>;
-  updateClient(id: number, updates: Partial<Client>): Promise<Client | undefined>;
-  
-  // Client settings operations
-  getClientSettings(clientId: number): Promise<ClientSetting[]>;
-  getClientSetting(clientId: number, key: string): Promise<ClientSetting | undefined>;
-  setClientSetting(setting: InsertClientSetting): Promise<ClientSetting>;
-  
-  // Client feature flags operations
-  getClientFeatureFlags(clientId: number): Promise<ClientFeatureFlag[]>;
-  getClientFeatureFlag(clientId: number, feature: string): Promise<ClientFeatureFlag | undefined>;
-  setClientFeatureFlag(flag: InsertClientFeatureFlag): Promise<ClientFeatureFlag>;
   
   // Document operations
   getDocuments(): Promise<Document[]>;
@@ -125,11 +110,7 @@ export class MemStorage implements IStorage {
   // Initialize Club Campestre client and historical waste data
   private initializeClubData() {
     // Add Club Campestre as main client
-    this.createClient({ 
-      name: "Club Campestre Ciudad de México", 
-      slug: "cccm",
-      description: "Club deportivo sustentable" 
-    });
+    this.createClient({ name: "Club Campestre Ciudad de México", description: "Club deportivo sustentable" });
     this.initializeHistoricalWasteData();
   }
 
@@ -175,53 +156,12 @@ export class MemStorage implements IStorage {
     return this.clients.get(id);
   }
 
-  async getClientBySlug(slug: string): Promise<Client | undefined> {
-    return Array.from(this.clients.values()).find(client => client.slug === slug);
-  }
-
-  async updateClient(id: number, updates: Partial<Client>): Promise<Client | undefined> {
-    const client = this.clients.get(id);
-    if (!client) return undefined;
-    const updated = { ...client, ...updates };
-    this.clients.set(id, updated);
-    return updated;
-  }
-
-  // Client settings operations (mock implementations)
-  async getClientSettings(clientId: number): Promise<ClientSetting[]> {
-    return [];
-  }
-
-  async getClientSetting(clientId: number, key: string): Promise<ClientSetting | undefined> {
-    return undefined;
-  }
-
-  async setClientSetting(setting: InsertClientSetting): Promise<ClientSetting> {
-    return { ...setting };
-  }
-
-  // Client feature flags operations (mock implementations)
-  async getClientFeatureFlags(clientId: number): Promise<ClientFeatureFlag[]> {
-    return [];
-  }
-
-  async getClientFeatureFlag(clientId: number, feature: string): Promise<ClientFeatureFlag | undefined> {
-    return undefined;
-  }
-
-  async setClientFeatureFlag(flag: InsertClientFeatureFlag): Promise<ClientFeatureFlag> {
-    return { ...flag, enabled: flag.enabled ?? false };
-  }
-
   async createClient(client: InsertClient): Promise<Client> {
     const id = this.clientId++;
-    const now = new Date();
     const newClient: Client = { 
       ...client, 
       id,
-      description: client.description || null,
-      createdAt: now,
-      updatedAt: now
+      description: client.description || null
     };
     this.clients.set(id, newClient);
     return newClient;
@@ -393,43 +333,6 @@ export class MemStorage implements IStorage {
   async updateWasteDataForYear(year: number, data: any): Promise<void> {
     throw new Error("Detailed waste tracking not implemented in MemStorage");
   }
-
-  // Missing methods - simple implementations
-  async getDailyWasteEntriesByDate(date: Date): Promise<DailyWasteEntry[]> {
-    return [];
-  }
-
-  async getDailyWasteEntriesByMonth(clientId: number, year: number, month: number): Promise<DailyWasteEntry[]> {
-    return [];
-  }
-
-  async createDailyWasteEntry(entry: InsertDailyWasteEntry): Promise<DailyWasteEntry> {
-    throw new Error("Daily waste entries not implemented in MemStorage");
-  }
-
-  async getMonthlySummary(clientId: number, year: number, month: number): Promise<MonthlySummary | undefined> {
-    return undefined;
-  }
-
-  async createMonthlySummary(clientId: number, year: number, month: number): Promise<MonthlySummary> {
-    throw new Error("Monthly summaries not implemented in MemStorage");
-  }
-
-  async updateMonthlySummary(id: number, updates: Partial<MonthlySummary>): Promise<MonthlySummary> {
-    throw new Error("Monthly summaries not implemented in MemStorage");
-  }
-
-  async closeMonthlySummary(id: number, closedBy: string): Promise<MonthlySummary> {
-    throw new Error("Monthly summaries not implemented in MemStorage");
-  }
-
-  async markAsTransferred(id: number): Promise<MonthlySummary> {
-    throw new Error("Monthly summaries not implemented in MemStorage");
-  }
-
-  async transferToOfficialData(summary: MonthlySummary): Promise<void> {
-    throw new Error("Monthly summaries not implemented in MemStorage");
-  }
 }
 
 export class DatabaseStorage implements IStorage {
@@ -441,99 +344,6 @@ export class DatabaseStorage implements IStorage {
   async getClient(id: number): Promise<Client | undefined> {
     const results = await db.select().from(clients).where(eq(clients.id, id));
     return results.length > 0 ? results[0] : undefined;
-  }
-
-  async getClientBySlug(slug: string): Promise<Client | undefined> {
-    const results = await db.select().from(clients).where(eq(clients.slug, slug));
-    return results.length > 0 ? results[0] : undefined;
-  }
-
-  async updateClient(id: number, updates: Partial<Client>): Promise<Client | undefined> {
-    const updateData = { ...updates };
-    if ('id' in updateData) delete updateData.id;
-    
-    const results = await db
-      .update(clients)
-      .set(updateData)
-      .where(eq(clients.id, id))
-      .returning();
-    return results.length > 0 ? results[0] : undefined;
-  }
-
-  // Client settings operations
-  async getClientSettings(clientId: number): Promise<ClientSetting[]> {
-    return await db.select().from(clientSettings).where(eq(clientSettings.clientId, clientId));
-  }
-
-  async getClientSetting(clientId: number, key: string): Promise<ClientSetting | undefined> {
-    const results = await db
-      .select()
-      .from(clientSettings)
-      .where(and(
-        eq(clientSettings.clientId, clientId),
-        eq(clientSettings.key, key)
-      ));
-    return results.length > 0 ? results[0] : undefined;
-  }
-
-  async setClientSetting(setting: InsertClientSetting): Promise<ClientSetting> {
-    const existing = await this.getClientSetting(setting.clientId, setting.key);
-    
-    if (existing) {
-      const [updated] = await db
-        .update(clientSettings)
-        .set({ value: setting.value })
-        .where(and(
-          eq(clientSettings.clientId, setting.clientId),
-          eq(clientSettings.key, setting.key)
-        ))
-        .returning();
-      return updated;
-    } else {
-      const [created] = await db
-        .insert(clientSettings)
-        .values(setting)
-        .returning();
-      return created;
-    }
-  }
-
-  // Client feature flags operations
-  async getClientFeatureFlags(clientId: number): Promise<ClientFeatureFlag[]> {
-    return await db.select().from(clientFeatureFlags).where(eq(clientFeatureFlags.clientId, clientId));
-  }
-
-  async getClientFeatureFlag(clientId: number, feature: string): Promise<ClientFeatureFlag | undefined> {
-    const results = await db
-      .select()
-      .from(clientFeatureFlags)
-      .where(and(
-        eq(clientFeatureFlags.clientId, clientId),
-        eq(clientFeatureFlags.feature, feature)
-      ));
-    return results.length > 0 ? results[0] : undefined;
-  }
-
-  async setClientFeatureFlag(flag: InsertClientFeatureFlag): Promise<ClientFeatureFlag> {
-    const existing = await this.getClientFeatureFlag(flag.clientId, flag.feature);
-    
-    if (existing) {
-      const [updated] = await db
-        .update(clientFeatureFlags)
-        .set({ enabled: flag.enabled })
-        .where(and(
-          eq(clientFeatureFlags.clientId, flag.clientId),
-          eq(clientFeatureFlags.feature, flag.feature)
-        ))
-        .returning();
-      return updated;
-    } else {
-      const [created] = await db
-        .insert(clientFeatureFlags)
-        .values(flag)
-        .returning();
-      return created;
-    }
   }
   
   async createClient(client: InsertClient): Promise<Client> {
@@ -948,17 +758,14 @@ async function initializeDatabase() {
       await db.insert(clients).values([
         {
           name: "Empresa Sustentable S.A.",
-          slug: "empresa-sustentable", 
           description: "Empresa líder en gestión sustentable de recursos y residuos industriales."
         },
         {
           name: "EcoServicios SpA",
-          slug: "ecoservicios",
           description: "Servicios de reciclaje y manejo de residuos para empresas e instituciones."
         },
         {
           name: "Constructora Verde Ltda.",
-          slug: "constructora-verde",
           description: "Construcción sustentable con enfoque en minimización y gestión de residuos."
         }
       ]);

@@ -1,8 +1,6 @@
 import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { resolveTenant, requireTenant, requireAdminScopes, logTenantContext } from "./middleware";
-import { RLS, Access } from "./rls";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
@@ -57,105 +55,8 @@ const upload = multer({
   }
 });
 
-// Legacy tenant interface for backward compatibility
-interface TenantRequest extends Request {
-  tenant?: { id: number; slug: string; name: string };
-  isAdmin?: boolean;
-}
-
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Apply hardened multi-tenant middleware to specific routes only
-  // This prevents interference with static assets and initial HTML loading
-  app.use('/api', resolveTenant);
-  app.use('/api', logTenantContext);
-  
-  // Apply tenant resolution to client dashboard routes
-  app.use('/:clientSlug(cccm|club-avandaro|rancho-avandaro)/*', (req, res, next) => {
-    // Only apply to non-asset requests
-    if (!req.path.includes('.') && !req.path.includes('@vite') && !req.path.includes('src')) {
-      resolveTenant(req, res, next);
-    } else {
-      next();
-    }
-  });
-
-  // Admin Routes (global access) - Protected with admin scope
-  app.get("/api/admin/clients", requireAdminScopes, async (req: Request, res: Response) => {
-    try {
-      const clients = await storage.getClients();
-      res.json(clients);
-    } catch (error) {
-      console.error("Error fetching clients:", error);
-      res.status(500).json({ message: "Failed to fetch clients" });
-    }
-  });
-
-  app.get("/api/admin/clients/:id", async (req: TenantRequest, res: Response) => {
-    try {
-      const id = parseInt(req.params.id);
-      const client = await storage.getClient(id);
-      if (!client) {
-        return res.status(404).json({ message: "Client not found" });
-      }
-      res.json(client);
-    } catch (error) {
-      console.error("Error fetching client:", error);
-      res.status(500).json({ message: "Failed to fetch client" });
-    }
-  });
-
-  app.get("/api/admin/clients/:id/settings", async (req: TenantRequest, res: Response) => {
-    try {
-      const id = parseInt(req.params.id);
-      const settings = await storage.getClientSettings(id);
-      res.json(settings);
-    } catch (error) {
-      console.error("Error fetching client settings:", error);
-      res.status(500).json({ message: "Failed to fetch client settings" });
-    }
-  });
-
-  app.get("/api/admin/clients/:id/features", async (req: TenantRequest, res: Response) => {
-    try {
-      const id = parseInt(req.params.id);
-      const features = await storage.getClientFeatureFlags(id);
-      res.json(features);
-    } catch (error) {
-      console.error("Error fetching client features:", error);
-      res.status(500).json({ message: "Failed to fetch client features" });
-    }
-  });
-
-  // Tenant-specific routes
-  app.get("/api/tenant/:slug/info", async (req: TenantRequest, res: Response) => {
-    if (!req.tenant) {
-      return res.status(404).json({ message: "Tenant not found" });
-    }
-    
-    try {
-      const [settings, features] = await Promise.all([
-        storage.getClientSettings(req.tenant.id),
-        storage.getClientFeatureFlags(req.tenant.id)
-      ]);
-      
-      res.json({
-        client: req.tenant,
-        settings: settings.reduce((acc, setting) => {
-          acc[setting.key] = setting.value;
-          return acc;
-        }, {} as Record<string, any>),
-        features: features.reduce((acc: Record<string, boolean>, feature: any) => {
-          acc[feature.feature] = feature.enabled;
-          return acc;
-        }, {})
-      });
-    } catch (error) {
-      console.error("Error fetching tenant info:", error);
-      res.status(500).json({ message: "Failed to fetch tenant info" });
-    }
-  });
-
-  // Legacy compatibility - Get all clients (keeping existing route)
+  // Get all clients
   app.get("/api/clients", async (req: Request, res: Response) => {
     try {
       const clients = await storage.getClients();
@@ -183,15 +84,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Upload a document - Tenant-isolated
-  app.post('/api/documents/upload', requireTenant, upload.single('file'), async (req: Request, res: Response) => {
+  // Upload a document
+  app.post('/api/documents/upload', upload.single('file'), async (req: Request, res: Response) => {
     try {
       if (!req.file) {
         return res.status(400).json({ message: "No file uploaded" });
       }
       
-      // Use client ID from tenant context (enforced by middleware)
-      const clientId = req.context!.clientId;
+      // Validate request body
+      const clientId = req.body.clientId ? parseInt(req.body.clientId) : undefined;
+      
+      if (!clientId) {
+        return res.status(400).json({ message: "Client ID is required" });
+      }
+      
+      // Check if client exists
+      const client = await storage.getClient(clientId);
+      if (!client) {
+        return res.status(404).json({ message: "Client not found" });
+      }
       
       // Create document record
       const document = await storage.createDocument({
@@ -279,15 +190,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get waste data with filters (multi-tenant aware)
-  app.get("/api/waste-data", async (req: TenantRequest, res: Response) => {
+  // Get waste data with filters
+  app.get("/api/waste-data", async (req: Request, res: Response) => {
     try {
       const filters: { clientId?: number, fromDate?: Date, toDate?: Date } = {};
       
-      // Use tenant from middleware if available
-      if (req.tenant) {
-        filters.clientId = req.tenant.id;
-      } else if (req.query.clientId) {
+      if (req.query.clientId) {
         filters.clientId = parseInt(req.query.clientId as string);
       }
       
@@ -307,8 +215,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get alerts (multi-tenant aware)
-  app.get("/api/alerts", async (req: TenantRequest, res: Response) => {
+  // Get alerts
+  app.get("/api/alerts", async (req: Request, res: Response) => {
     try {
       const clientId = req.query.clientId ? parseInt(req.query.clientId as string) : undefined;
       const alerts = await storage.getAlerts(clientId);
@@ -596,8 +504,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           
           csvRecord['Total Residuos (kg)'] = record.totalWaste || 0;
           csvRecord['Desviación de Relleno Sanitario (%)'] = record.deviation || 0;
-          // csvRecord['Ubicación'] = record.location || 'N/A'; // Field not in schema
-          // csvRecord['Observaciones'] = record.observations || ''; // Field not in schema
+          csvRecord['Ubicación'] = record.location || 'N/A';
+          csvRecord['Observaciones'] = record.observations || '';
           
           return csvRecord;
         });
@@ -848,36 +756,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error transferring to official data:", error);
       res.status(500).json({ message: "Error al transferir datos" });
-    }
-  });
-
-  // Tenant info endpoint for multi-tenant dashboard
-  app.get('/api/tenant/info/:clientSlug', async (req, res) => {
-    try {
-      const { clientSlug } = req.params;
-      const client = await storage.getClientBySlug(clientSlug);
-      
-      if (!client) {
-        return res.status(404).json({ message: 'Client not found' });
-      }
-
-      const settings = await storage.getClientSettings(client.id);
-      const features = await storage.getClientFeatureFlags(client.id);
-      
-      res.json({
-        client,
-        settings: settings.reduce((acc: any, setting) => {
-          acc[setting.key] = setting.value;
-          return acc;
-        }, {}),
-        features: features.reduce((acc: any, feature) => {
-          acc[feature.feature] = feature.enabled;
-          return acc;
-        }, {})
-      });
-    } catch (error) {
-      console.error("Error fetching tenant info:", error);
-      res.status(500).json({ message: "Failed to fetch tenant info" });
     }
   });
 
