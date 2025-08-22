@@ -13,7 +13,8 @@ import {
   RotateCcw,
   Table,
   Download,
-  Save
+  Save,
+  GitBranch
 } from "lucide-react";
 import logoEconova from "../../assets/Logo-ECONOVA-OF_Blanco.png";
 
@@ -86,6 +87,13 @@ export default function Sidebar() {
           isActive={location === "/trazabilidad-residuos"}
         >
           Trazabilidad Residuos
+        </SidebarItem>
+        <SidebarItem 
+          to="/flujo-materiales" 
+          icon={<GitBranch className="w-5 h-5" />} 
+          isActive={location === "/flujo-materiales"}
+        >
+          Flujo de Materiales
         </SidebarItem>
         <SidebarItem 
           to="/energia" 

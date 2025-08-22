@@ -15,6 +15,7 @@ import Energia from "@/pages/Energia";
 import Agua from "@/pages/Agua";
 import EconomiaCircular from "@/pages/EconomiaCircular";
 import DataExport from "@/pages/DataExport";
+import FlujoDeMateriales from "@/pages/FlujoDeMateriales";
 
 function Router() {
   return (
@@ -30,6 +31,7 @@ function Router() {
       <Route path="/analysis" component={Analysis} />
       <Route path="/data-entry" component={DataEntry} />
       <Route path="/export" component={DataExport} />
+      <Route path="/flujo-materiales" component={FlujoDeMateriales} />
       <Route component={NotFound} />
     </Switch>
   );
