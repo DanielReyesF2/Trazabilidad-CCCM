@@ -15,21 +15,50 @@ import Energia from "@/pages/Energia";
 import Agua from "@/pages/Agua";
 import EconomiaCircular from "@/pages/EconomiaCircular";
 import DataExport from "@/pages/DataExport";
+import AdminDashboard from "@/pages/AdminDashboard";
+import ClientSelector from "@/pages/ClientSelector";
+import TenantWrapper from "@/components/TenantWrapper";
 
 function Router() {
   return (
     <Switch>
-      <Route path="/" component={Dashboard} />
-      <Route path="/registro-diario" component={RegistroDiario} />
-      <Route path="/historial-mensual" component={HistorialMensual} />
-      <Route path="/trazabilidad-residuos" component={ResiduosExcel} />
-      <Route path="/energia" component={Energia} />
-      <Route path="/agua" component={Agua} />
-      <Route path="/economia-circular" component={EconomiaCircular} />
-      <Route path="/documents" component={Documents} />
-      <Route path="/analysis" component={Analysis} />
-      <Route path="/data-entry" component={DataEntry} />
-      <Route path="/export" component={DataExport} />
+      {/* Admin Routes */}
+      <Route path="/admin" component={AdminDashboard} />
+      
+      {/* Client Selector (landing page) */}
+      <Route path="/" component={ClientSelector} />
+      
+      {/* Tenant Routes */}
+      <Route path="/:clientSlug">
+        {(params: { clientSlug: string }) => (
+          <TenantWrapper clientSlug={params.clientSlug}>
+            <Switch>
+              <Route path="/:clientSlug" component={Dashboard} />
+              <Route path="/:clientSlug/dashboard" component={Dashboard} />
+              <Route path="/:clientSlug/registro-diario" component={RegistroDiario} />
+              <Route path="/:clientSlug/historial-mensual" component={HistorialMensual} />
+              <Route path="/:clientSlug/trazabilidad-residuos" component={ResiduosExcel} />
+              <Route path="/:clientSlug/energia" component={Energia} />
+              <Route path="/:clientSlug/agua" component={Agua} />
+              <Route path="/:clientSlug/economia-circular" component={EconomiaCircular} />
+              <Route path="/:clientSlug/documents" component={Documents} />
+              <Route path="/:clientSlug/analysis" component={Analysis} />
+              <Route path="/:clientSlug/data-entry" component={DataEntry} />
+              <Route path="/:clientSlug/export" component={DataExport} />
+              <Route component={NotFound} />
+            </Switch>
+          </TenantWrapper>
+        )}
+      </Route>
+      
+      {/* Legacy routes for backwards compatibility (redirect to CCCM) */}
+      <Route path="/registro-diario">
+        {() => {
+          window.location.href = "/cccm/registro-diario";
+          return null;
+        }}
+      </Route>
+      
       <Route component={NotFound} />
     </Switch>
   );

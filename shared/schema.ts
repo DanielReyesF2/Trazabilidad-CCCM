@@ -21,9 +21,10 @@ export const clients = pgTable("clients", {
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
-export const insertClientSchema = createInsertSchema(clients).pick({
-  name: true,
-  description: true,
+export const insertClientSchema = createInsertSchema(clients).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
 });
 
 // Define the document/file schema
@@ -251,6 +252,47 @@ export type RecyclingMaterial = typeof RECYCLING_MATERIALS[number];
 export type CompostCategory = typeof COMPOST_CATEGORIES[number];
 export type ReuseCategory = typeof REUSE_CATEGORIES[number];
 export type LandfillWasteType = typeof LANDFILL_WASTE_TYPES[number];
+
+// Multi-tenant tables
+export const clientSettings = pgTable("client_settings", {
+  clientId: integer("client_id").references(() => clients.id).notNull(),
+  key: text("key").notNull(),
+  value: json("value").$type<any>().notNull(),
+}, (table) => ({
+  pk: { columns: [table.clientId, table.key] }
+}));
+
+export const clientFeatureFlags = pgTable("client_feature_flags", {
+  clientId: integer("client_id").references(() => clients.id).notNull(),
+  feature: text("feature").notNull(),
+  enabled: boolean("enabled").notNull().default(false),
+}, (table) => ({
+  pk: { columns: [table.clientId, table.feature] }
+}));
+
+export const insertClientSettingSchema = createInsertSchema(clientSettings);
+export const insertClientFeatureFlagSchema = createInsertSchema(clientFeatureFlags);
+
+export type ClientSetting = typeof clientSettings.$inferSelect;
+export type InsertClientSetting = z.infer<typeof insertClientSettingSchema>;
+
+export type ClientFeatureFlag = typeof clientFeatureFlags.$inferSelect;
+export type InsertClientFeatureFlag = z.infer<typeof insertClientFeatureFlagSchema>;
+
+// Available features for feature flags
+export const AVAILABLE_FEATURES = [
+  "module.waste",
+  "module.energy", 
+  "module.water",
+  "module.circular_economy",
+  "module.zero_waste_events",
+  "module.procurement",
+  "advanced_reporting",
+  "export_data",
+  "api_access"
+] as const;
+
+export type FeatureName = typeof AVAILABLE_FEATURES[number];
 
 // Daily waste entries for security team registration
 export const dailyWasteEntries = pgTable("daily_waste_entries", {

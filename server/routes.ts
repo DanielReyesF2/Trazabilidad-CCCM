@@ -55,8 +55,143 @@ const upload = multer({
   }
 });
 
+// Multi-tenant middleware to resolve client from slug
+interface TenantRequest extends Request {
+  tenant?: { id: number; slug: string; name: string };
+  isAdmin?: boolean;
+}
+
+const resolveTenant = async (req: TenantRequest, res: Response, next: NextFunction) => {
+  const path = req.path;
+  
+  // Admin routes
+  if (path.startsWith('/api/admin')) {
+    req.isAdmin = true;
+    return next();
+  }
+  
+  // Extract client slug from path: /api/tenant/:slug/*
+  const tenantMatch = path.match(/^\/api\/tenant\/([^\/]+)/);
+  if (tenantMatch) {
+    const slug = tenantMatch[1];
+    
+    try {
+      const client = await storage.getClientBySlug(slug);
+      if (!client) {
+        return res.status(404).json({ message: `Tenant '${slug}' not found` });
+      }
+      
+      req.tenant = {
+        id: client.id,
+        slug: client.slug,
+        name: client.name
+      };
+      
+      return next();
+    } catch (error) {
+      console.error("Error resolving tenant:", error);
+      return res.status(500).json({ message: "Error resolving tenant" });
+    }
+  }
+  
+  // For backwards compatibility, assume CCCM for legacy routes
+  try {
+    const client = await storage.getClientBySlug('cccm');
+    if (client) {
+      req.tenant = {
+        id: client.id,
+        slug: client.slug,
+        name: client.name
+      };
+    }
+  } catch (error) {
+    console.error("Error resolving default tenant:", error);
+  }
+  
+  next();
+};
+
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Get all clients
+  // Apply tenant resolution middleware
+  app.use(resolveTenant);
+
+  // Admin Routes (global access)
+  app.get("/api/admin/clients", async (req: TenantRequest, res: Response) => {
+    try {
+      const clients = await storage.getClients();
+      res.json(clients);
+    } catch (error) {
+      console.error("Error fetching clients:", error);
+      res.status(500).json({ message: "Failed to fetch clients" });
+    }
+  });
+
+  app.get("/api/admin/clients/:id", async (req: TenantRequest, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      const client = await storage.getClient(id);
+      if (!client) {
+        return res.status(404).json({ message: "Client not found" });
+      }
+      res.json(client);
+    } catch (error) {
+      console.error("Error fetching client:", error);
+      res.status(500).json({ message: "Failed to fetch client" });
+    }
+  });
+
+  app.get("/api/admin/clients/:id/settings", async (req: TenantRequest, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      const settings = await storage.getClientSettings(id);
+      res.json(settings);
+    } catch (error) {
+      console.error("Error fetching client settings:", error);
+      res.status(500).json({ message: "Failed to fetch client settings" });
+    }
+  });
+
+  app.get("/api/admin/clients/:id/features", async (req: TenantRequest, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      const features = await storage.getClientFeatureFlags(id);
+      res.json(features);
+    } catch (error) {
+      console.error("Error fetching client features:", error);
+      res.status(500).json({ message: "Failed to fetch client features" });
+    }
+  });
+
+  // Tenant-specific routes
+  app.get("/api/tenant/:slug/info", async (req: TenantRequest, res: Response) => {
+    if (!req.tenant) {
+      return res.status(404).json({ message: "Tenant not found" });
+    }
+    
+    try {
+      const [settings, features] = await Promise.all([
+        storage.getClientSettings(req.tenant.id),
+        storage.getClientFeatureFlags(req.tenant.id)
+      ]);
+      
+      res.json({
+        client: req.tenant,
+        settings: settings.reduce((acc, setting) => {
+          acc[setting.key] = setting.value;
+          return acc;
+        }, {} as Record<string, any>),
+        features: features.reduce((acc, feature) => {
+          acc[feature.feature] = feature.enabled;
+          return acc;
+        }, {} as Record<string, boolean>)
+      });
+    } catch (error) {
+      console.error("Error fetching tenant info:", error);
+      res.status(500).json({ message: "Failed to fetch tenant info" });
+    }
+  });
+
+  // Legacy compatibility - Get all clients (keeping existing route)
   app.get("/api/clients", async (req: Request, res: Response) => {
     try {
       const clients = await storage.getClients();
@@ -190,12 +325,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get waste data with filters
-  app.get("/api/waste-data", async (req: Request, res: Response) => {
+  // Get waste data with filters (multi-tenant aware)
+  app.get("/api/waste-data", async (req: TenantRequest, res: Response) => {
     try {
       const filters: { clientId?: number, fromDate?: Date, toDate?: Date } = {};
       
-      if (req.query.clientId) {
+      // Use tenant from middleware if available
+      if (req.tenant) {
+        filters.clientId = req.tenant.id;
+      } else if (req.query.clientId) {
         filters.clientId = parseInt(req.query.clientId as string);
       }
       
@@ -215,8 +353,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get alerts
-  app.get("/api/alerts", async (req: Request, res: Response) => {
+  // Get alerts (multi-tenant aware)
+  app.get("/api/alerts", async (req: TenantRequest, res: Response) => {
     try {
       const clientId = req.query.clientId ? parseInt(req.query.clientId as string) : undefined;
       const alerts = await storage.getAlerts(clientId);
