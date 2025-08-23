@@ -133,11 +133,11 @@ export default function FlujoDeMateriales() {
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <h1 className="text-2xl font-bold text-[#273949]">
-                Flujo de Materiales
+              <h1 className="text-2xl font-bold text-[#b5e951]">
+                FLUJOS DE MATERIALES
               </h1>
               <p className="text-sm text-gray-600 mt-1">
-                Visualización Sankey del flujo de residuos desde origen hasta destino final
+                Diagrama Sankey Interactivo - Club Campestre Ciudad de México
               </p>
             </div>
             
@@ -273,11 +273,11 @@ export default function FlujoDeMateriales() {
         >
           <SankeyDiagram
             data={currentResult.data}
-            title="Diagrama de Flujo de Materiales"
-            subtitle="Visualización del recorrido de residuos desde generación hasta destino final"
+            title="FLUJOS DE MATERIALES"
+            subtitle={`Diagrama Sankey Interactivo - Club Campestre Ciudad de México`}
             period={currentResult.period}
-            height={600}
-            className="shadow-sm"
+            height={500}
+            className="shadow-sm bg-white rounded-lg"
             onNodeClick={(node) => {
               console.log('Node clicked:', node);
             }}

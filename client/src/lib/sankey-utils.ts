@@ -1,36 +1,36 @@
 import { SankeyData, SankeyNode, SankeyLink } from '@/components/SankeyDiagram';
 import { MonthlyDeviationData } from '@shared/schema';
 
-// Color mapping for different waste streams
+// Color mapping for different waste streams - Following reference design
 export const WASTE_STREAM_COLORS = {
-  // Sources
-  'generation': '#273949', // Navy
-  'club_general': '#374151', // Gray
-  'kitchen': '#4b5563', // Dark gray
-  'landscaping': '#6b7280', // Medium gray
-  'maintenance': '#9ca3af', // Light gray
+  // Sources - Orange/salmon gradient
+  'generation': '#FF8C5C', 
+  'club_general': '#FF9C6C', 
+  'kitchen': '#FFAC7C', 
+  'landscaping': '#81C784', 
+  'maintenance': '#90A4AE', 
   
-  // Processing/Categories
-  'recyclables': '#10b981', // Green
-  'organics': '#16a34a', // Dark green
-  'reuse': '#0ea5e9', // Blue
-  'inorganics': '#dc2626', // Red
+  // Processing/Categories - Smooth transitions
+  'recyclables': '#42A5F5', // Blue like reference
+  'organics': '#81C784', // Green like reference  
+  'reuse': '#4FC3F7', // Light blue
+  'inorganics': '#90A4AE', // Gray like reference
   
-  // Specific materials
-  'paper': '#059669',
-  'plastic': '#06b6d4',
-  'metal': '#78716c',
-  'glass': '#0891b2',
-  'cardboard': '#15803d',
-  'compost_materials': '#22c55e',
-  'donations': '#3b82f6',
+  // Specific materials - Blue spectrum
+  'paper': '#42A5F5',
+  'plastic': '#26C6DA',
+  'metal': '#66BB6A',
+  'glass': '#29B6F6',
+  'cardboard': '#5DADE2',
+  'compost_materials': '#81C784',
+  'donations': '#4FC3F7',
   
-  // Destinations
-  'recycling_center': '#10b981',
-  'composting_facility': '#16a34a',
-  'donation_center': '#0ea5e9',
-  'landfill': '#dc2626',
-  'specialized_processor': '#8b5cf6'
+  // Destinations - Final colors
+  'recycling_center': '#42A5F5',
+  'composting_facility': '#81C784',
+  'donation_center': '#4FC3F7',
+  'landfill': '#90A4AE',
+  'specialized_processor': '#64B5F6'
 } as const;
 
 interface WasteFlowData {
@@ -64,19 +64,20 @@ export function transformToSankeyData(data: WasteFlowData): SankeyData {
     }
   };
 
-  // Add source nodes
-  addNode('total_generated', 'Residuos Generados', 'source', WASTE_STREAM_COLORS.generation);
+  // Add source nodes - using Spanish labels like reference
+  addNode('total_generated', 'Eventos e Instalaciones', 'source', WASTE_STREAM_COLORS.generation);
 
-  // Add category processing nodes
+  // Add category processing nodes - like reference design
   addNode('recyclables_category', 'Reciclables', 'process', WASTE_STREAM_COLORS.recyclables);
   addNode('organics_category', 'Orgánicos', 'process', WASTE_STREAM_COLORS.organics);
-  addNode('reuse_category', 'Reutilización', 'process', WASTE_STREAM_COLORS.reuse);
+  addNode('reuse_category', 'Casa Club', 'process', WASTE_STREAM_COLORS.reuse);
+  addNode('inorganics_category', 'Inorgánicos', 'process', WASTE_STREAM_COLORS.inorganics);
 
-  // Add destination nodes
-  addNode('recycling_facility', 'Centro de Reciclaje', 'destination', WASTE_STREAM_COLORS.recycling_center);
-  addNode('composting_facility', 'Planta de Compostaje', 'destination', WASTE_STREAM_COLORS.composting_facility);
-  addNode('donation_center', 'Centro de Donación', 'destination', WASTE_STREAM_COLORS.donation_center);
-  addNode('landfill', 'Relleno Sanitario', 'destination', WASTE_STREAM_COLORS.landfill);
+  // Add destination nodes - like reference
+  addNode('recycling_facility', 'Reciclaje Recupera', 'destination', WASTE_STREAM_COLORS.recycling_center);
+  addNode('composting_facility', 'Biodegradación ORKA', 'destination', WASTE_STREAM_COLORS.composting_facility);
+  addNode('donation_center', 'Reciclaje Verde Ciudad', 'destination', WASTE_STREAM_COLORS.donation_center);
+  addNode('landfill', 'Disposición Controlada', 'destination', WASTE_STREAM_COLORS.landfill);
 
   // Calculate totals
   const recyclablesTotal = (monthlyData.mixedFile || 0) + 
