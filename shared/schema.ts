@@ -135,6 +135,8 @@ export const insertZeroWasteAuditSchema = createInsertSchema(zeroWasteAudits).om
   id: true,
   createdAt: true,
   updatedAt: true,
+}).extend({
+  auditDate: z.string().transform((str) => new Date(str)),
 });
 
 export const insertZeroWasteMaterialSchema = createInsertSchema(zeroWasteMaterials).omit({

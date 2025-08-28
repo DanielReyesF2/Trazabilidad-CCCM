@@ -799,6 +799,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const validatedData = insertZeroWasteAuditSchema.parse(req.body);
       console.log("Validated data:", JSON.stringify(validatedData, null, 2));
       const audit = await storage.createZeroWasteAudit(validatedData);
+      console.log("Audit created successfully:", audit);
       res.status(201).json(audit);
     } catch (error) {
       if (error instanceof z.ZodError) {
