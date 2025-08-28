@@ -10,9 +10,11 @@ import {
   LandfillEntry, InsertLandfillEntry,
   DailyWasteEntry, InsertDailyWasteEntry,
   MonthlySummary, InsertMonthlySummary,
+  ZeroWasteAudit, InsertZeroWasteAudit,
+  ZeroWasteMaterial, InsertZeroWasteMaterial,
   clients, documents, wasteData, alerts,
   months, recyclingEntries, compostEntries, reuseEntries, landfillEntries,
-  dailyWasteEntries, monthlySummaries,
+  dailyWasteEntries, monthlySummaries, zeroWasteAudits, zeroWasteMaterials,
   RECYCLING_MATERIALS, COMPOST_CATEGORIES, REUSE_CATEGORIES, LANDFILL_WASTE_TYPES
 } from "@shared/schema";
 import { db } from "./db";
@@ -73,12 +75,25 @@ export interface IStorage {
   createDailyWasteEntry(entry: InsertDailyWasteEntry): Promise<DailyWasteEntry>;
   
   // Monthly summary operations
+  getMonthlySummaries(clientId: number, year?: number): Promise<MonthlySummary[]>;
   getMonthlySummary(clientId: number, year: number, month: number): Promise<MonthlySummary | undefined>;
-  createMonthlySummary(clientId: number, year: number, month: number): Promise<MonthlySummary>;
-  updateMonthlySummary(id: number, updates: Partial<MonthlySummary>): Promise<MonthlySummary>;
-  closeMonthlySummary(id: number, closedBy: string): Promise<MonthlySummary>;
-  markAsTransferred(id: number): Promise<MonthlySummary>;
+  createMonthlySummary(summary: InsertMonthlySummary): Promise<MonthlySummary>;
+  updateMonthlySummary(id: number, updates: Partial<MonthlySummary>): Promise<MonthlySummary | undefined>;
+  closeMonthlySummary(id: number): Promise<MonthlySummary | undefined>;
+  reopenMonthlySummary(id: number): Promise<MonthlySummary | undefined>;
   transferToOfficialData(summary: MonthlySummary): Promise<void>;
+  markAsTransferred(id: number): Promise<MonthlySummary | undefined>;
+  
+  // Zero Waste Audit operations
+  getZeroWasteAudits(clientId?: number): Promise<ZeroWasteAudit[]>;
+  getZeroWasteAudit(id: number): Promise<ZeroWasteAudit | undefined>;
+  createZeroWasteAudit(audit: InsertZeroWasteAudit): Promise<ZeroWasteAudit>;
+  updateZeroWasteAudit(id: number, updates: Partial<InsertZeroWasteAudit>): Promise<ZeroWasteAudit | undefined>;
+  
+  // Zero Waste Material operations
+  getZeroWasteMaterials(auditId: number): Promise<ZeroWasteMaterial[]>;
+  createZeroWasteMaterial(material: InsertZeroWasteMaterial): Promise<ZeroWasteMaterial>;
+  completeZeroWasteAudit(auditId: number, materials: InsertZeroWasteMaterial[], notes?: string): Promise<ZeroWasteAudit>;
 }
 
 export class MemStorage implements IStorage {
@@ -746,6 +761,160 @@ export class DatabaseStorage implements IStorage {
     
     // Aquí implementaremos la lógica para mapear los datos del resumen mensual
     // a la estructura de monthly_deviation_data que usa el Excel de trazabilidad
+  }
+
+  // Zero Waste Audit operations
+  async getZeroWasteAudits(clientId?: number): Promise<ZeroWasteAudit[]> {
+    let query = db.select().from(zeroWasteAudits);
+    
+    if (clientId !== undefined) {
+      query = query.where(eq(zeroWasteAudits.clientId, clientId));
+    }
+    
+    return await query;
+  }
+
+  async getZeroWasteAudit(id: number): Promise<ZeroWasteAudit | undefined> {
+    const [audit] = await db
+      .select()
+      .from(zeroWasteAudits)
+      .where(eq(zeroWasteAudits.id, id));
+    
+    return audit;
+  }
+
+  async createZeroWasteAudit(audit: InsertZeroWasteAudit): Promise<ZeroWasteAudit> {
+    const [created] = await db
+      .insert(zeroWasteAudits)
+      .values(audit)
+      .returning();
+    
+    return created;
+  }
+
+  async updateZeroWasteAudit(id: number, updates: Partial<InsertZeroWasteAudit>): Promise<ZeroWasteAudit | undefined> {
+    const [updated] = await db
+      .update(zeroWasteAudits)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(zeroWasteAudits.id, id))
+      .returning();
+    
+    return updated;
+  }
+
+  // Zero Waste Material operations
+  async getZeroWasteMaterials(auditId: number): Promise<ZeroWasteMaterial[]> {
+    return await db
+      .select()
+      .from(zeroWasteMaterials)
+      .where(eq(zeroWasteMaterials.auditId, auditId));
+  }
+
+  async createZeroWasteMaterial(material: InsertZeroWasteMaterial): Promise<ZeroWasteMaterial> {
+    const [created] = await db
+      .insert(zeroWasteMaterials)
+      .values(material)
+      .returning();
+    
+    return created;
+  }
+
+  async completeZeroWasteAudit(auditId: number, materials: InsertZeroWasteMaterial[], notes?: string): Promise<ZeroWasteAudit> {
+    // Start a transaction to ensure data consistency
+    return await db.transaction(async (tx) => {
+      // Insert all materials
+      for (const material of materials) {
+        await tx.insert(zeroWasteMaterials).values({
+          ...material,
+          auditId
+        });
+      }
+
+      // Update audit status and notes
+      const [updatedAudit] = await tx
+        .update(zeroWasteAudits)
+        .set({
+          status: 'completed',
+          notes: notes || '',
+          updatedAt: new Date()
+        })
+        .where(eq(zeroWasteAudits.id, auditId))
+        .returning();
+
+      return updatedAudit;
+    });
+  }
+
+  // Missing methods for interface compliance
+  async getMonthlySummaries(clientId: number, year?: number): Promise<MonthlySummary[]> {
+    let query = db.select().from(monthlySummaries).where(eq(monthlySummaries.clientId, clientId));
+    
+    if (year !== undefined) {
+      query = query.where(and(eq(monthlySummaries.clientId, clientId), eq(monthlySummaries.year, year)));
+    }
+    
+    return await query;
+  }
+
+  async createMonthlySummary(summary: InsertMonthlySummary): Promise<MonthlySummary> {
+    const [created] = await db
+      .insert(monthlySummaries)
+      .values(summary)
+      .returning();
+    
+    return created;
+  }
+
+  async updateMonthlySummary(id: number, updates: Partial<MonthlySummary>): Promise<MonthlySummary | undefined> {
+    const [updated] = await db
+      .update(monthlySummaries)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(monthlySummaries.id, id))
+      .returning();
+    
+    return updated;
+  }
+
+  async closeMonthlySummary(id: number): Promise<MonthlySummary | undefined> {
+    const [updated] = await db
+      .update(monthlySummaries)
+      .set({
+        status: 'closed',
+        closedAt: new Date(),
+        updatedAt: new Date()
+      })
+      .where(eq(monthlySummaries.id, id))
+      .returning();
+    
+    return updated;
+  }
+
+  async reopenMonthlySummary(id: number): Promise<MonthlySummary | undefined> {
+    const [updated] = await db
+      .update(monthlySummaries)
+      .set({
+        status: 'open',
+        closedAt: null,
+        updatedAt: new Date()
+      })
+      .where(eq(monthlySummaries.id, id))
+      .returning();
+    
+    return updated;
+  }
+
+  async markAsTransferred(id: number): Promise<MonthlySummary | undefined> {
+    const [updated] = await db
+      .update(monthlySummaries)
+      .set({
+        transferredToOfficial: true,
+        transferredAt: new Date(),
+        updatedAt: new Date()
+      })
+      .where(eq(monthlySummaries.id, id))
+      .returning();
+    
+    return updated;
   }
 }
 

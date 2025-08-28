@@ -73,11 +73,80 @@ export const insertMonthlyDeviationDataSchema = createInsertSchema(monthlyDeviat
   id: true,
   createdAt: true,
   updatedAt: true,
-  totalRecyclables: true,
-  totalOrganics: true,
-  totalDiverted: true,
-  deviationPercentage: true,
 });
+
+// Tabla para auditorías Zero Waste con metodología de cuarteo
+export const zeroWasteAudits = pgTable("zero_waste_audits", {
+  id: serial("id").primaryKey(),
+  clientId: integer("client_id").references(() => clients.id),
+  
+  // Información general de la auditoría
+  auditDate: timestamp("audit_date").notNull(),
+  auditType: text("audit_type").notNull(), // "quarterly" | "monthly" | "special"
+  auditorName: text("auditor_name").notNull(),
+  auditorTitle: text("auditor_title").notNull(),
+  
+  // Información del cuarteo
+  totalWeightBefore: real("total_weight_before").notNull(), // Peso total antes del cuarteo
+  quadrantNumber: integer("quadrant_number").notNull(), // Número de cuadrante seleccionado (1-4)
+  quadrantWeight: real("quadrant_weight").notNull(), // Peso del cuadrante seleccionado
+  
+  // Condiciones climáticas y ambientales
+  weather: text("weather").notNull(),
+  temperature: real("temperature"), // Celsius
+  humidity: real("humidity"), // Porcentaje
+  
+  // Status de la auditoría
+  status: text("status").notNull().default("in_progress"), // "in_progress" | "completed" | "validated"
+  
+  // Notas y observaciones
+  notes: text("notes"),
+  photos: json("photos").$type<string[]>(), // URLs de fotos
+  
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+// Tabla para los materiales identificados en el cuarteo
+export const zeroWasteMaterials = pgTable("zero_waste_materials", {
+  id: serial("id").primaryKey(),
+  auditId: integer("audit_id").references(() => zeroWasteAudits.id),
+  
+  // Información del material
+  materialCategory: text("material_category").notNull(), // Según NOM: reciclables, orgánicos, etc.
+  materialType: text("material_type").notNull(), // Tipo específico (PET, cartón, etc.)
+  weight: real("weight").notNull(), // Peso en kg
+  percentage: real("percentage").notNull(), // Porcentaje del total del cuadrante
+  
+  // Clasificación TRUE Zero Waste
+  divertible: boolean("divertible").notNull(), // Si puede ser desviado del relleno sanitario
+  diversionMethod: text("diversion_method"), // "recycling" | "composting" | "reuse" | "energy_recovery"
+  
+  // Observaciones específicas del material
+  contamination: text("contamination"), // Nivel de contaminación
+  condition: text("condition"), // Estado del material
+  notes: text("notes"),
+  
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+// Esquemas de inserción
+export const insertZeroWasteAuditSchema = createInsertSchema(zeroWasteAudits).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertZeroWasteMaterialSchema = createInsertSchema(zeroWasteMaterials).omit({
+  id: true,
+  createdAt: true,
+});
+
+// Tipos derivados para TypeScript
+export type ZeroWasteAudit = typeof zeroWasteAudits.$inferSelect;
+export type InsertZeroWasteAudit = z.infer<typeof insertZeroWasteAuditSchema>;
+export type ZeroWasteMaterial = typeof zeroWasteMaterials.$inferSelect;
+export type InsertZeroWasteMaterial = z.infer<typeof insertZeroWasteMaterialSchema>;
 
 // Legacy waste data schema - keeping for existing data
 export const wasteData = pgTable("waste_data", {

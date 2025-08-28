@@ -8,6 +8,7 @@ import {
   insertDocumentSchema, insertWasteDataSchema, insertAlertSchema,
   insertRecyclingEntrySchema, insertCompostEntrySchema, insertReuseEntrySchema, insertLandfillEntrySchema,
   insertDailyWasteEntrySchema, DailyWasteEntry,
+  insertZeroWasteAuditSchema, insertZeroWasteMaterialSchema,
   RECYCLING_MATERIALS, COMPOST_CATEGORIES, REUSE_CATEGORIES, LANDFILL_WASTE_TYPES
 } from "@shared/schema";
 import { z } from "zod";
@@ -756,6 +757,144 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error transferring to official data:", error);
       res.status(500).json({ message: "Error al transferir datos" });
+    }
+  });
+
+  // ============================================
+  // AUDITORÍAS ZERO WASTE ROUTES
+  // ============================================
+
+  // Get all audits
+  app.get("/api/zero-waste-audits", async (req: Request, res: Response) => {
+    try {
+      const audits = await storage.getZeroWasteAudits();
+      res.json(audits);
+    } catch (error) {
+      console.error("Error fetching audits:", error);
+      res.status(500).json({ message: "Failed to fetch audits" });
+    }
+  });
+
+  // Get audit by ID
+  app.get("/api/zero-waste-audits/:id", async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      const audit = await storage.getZeroWasteAudit(id);
+      
+      if (!audit) {
+        return res.status(404).json({ message: "Audit not found" });
+      }
+      
+      res.json(audit);
+    } catch (error) {
+      console.error("Error fetching audit:", error);
+      res.status(500).json({ message: "Failed to fetch audit" });
+    }
+  });
+
+  // Create new audit
+  app.post("/api/zero-waste-audits", async (req: Request, res: Response) => {
+    try {
+      const validatedData = insertZeroWasteAuditSchema.parse(req.body);
+      const audit = await storage.createZeroWasteAudit(validatedData);
+      res.status(201).json(audit);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          message: "Validation error", 
+          errors: error.errors 
+        });
+      }
+      console.error("Error creating audit:", error);
+      res.status(500).json({ message: "Failed to create audit" });
+    }
+  });
+
+  // Update audit
+  app.put("/api/zero-waste-audits/:id", async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      const validatedData = insertZeroWasteAuditSchema.parse(req.body);
+      const audit = await storage.updateZeroWasteAudit(id, validatedData);
+      
+      if (!audit) {
+        return res.status(404).json({ message: "Audit not found" });
+      }
+      
+      res.json(audit);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          message: "Validation error", 
+          errors: error.errors 
+        });
+      }
+      console.error("Error updating audit:", error);
+      res.status(500).json({ message: "Failed to update audit" });
+    }
+  });
+
+  // Get materials for an audit
+  app.get("/api/zero-waste-audits/:auditId/materials", async (req: Request, res: Response) => {
+    try {
+      const auditId = parseInt(req.params.auditId);
+      const materials = await storage.getZeroWasteMaterials(auditId);
+      res.json(materials);
+    } catch (error) {
+      console.error("Error fetching materials:", error);
+      res.status(500).json({ message: "Failed to fetch materials" });
+    }
+  });
+
+  // Add material to audit
+  app.post("/api/zero-waste-audits/:auditId/materials", async (req: Request, res: Response) => {
+    try {
+      const auditId = parseInt(req.params.auditId);
+      const validatedData = insertZeroWasteMaterialSchema.parse({
+        ...req.body,
+        auditId
+      });
+      
+      const material = await storage.createZeroWasteMaterial(validatedData);
+      res.status(201).json(material);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          message: "Validation error", 
+          errors: error.errors 
+        });
+      }
+      console.error("Error creating material:", error);
+      res.status(500).json({ message: "Failed to create material" });
+    }
+  });
+
+  // Complete audit with all materials
+  app.post("/api/zero-waste-audits/:id/complete", async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { materials, notes } = req.body;
+      
+      // Validate materials
+      const validatedMaterials = materials.map((material: any) => 
+        insertZeroWasteMaterialSchema.parse({
+          ...material,
+          auditId: id
+        })
+      );
+      
+      // Complete the audit
+      const result = await storage.completeZeroWasteAudit(id, validatedMaterials, notes);
+      res.json(result);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          message: "Validation error", 
+          errors: error.errors 
+        });
+      }
+      console.error("Error completing audit:", error);
+      res.status(500).json({ message: "Failed to complete audit" });
     }
   });
 

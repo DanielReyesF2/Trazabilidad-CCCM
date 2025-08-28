@@ -14,7 +14,8 @@ import {
   Table,
   Download,
   Save,
-  GitBranch
+  GitBranch,
+  ClipboardCheck
 } from "lucide-react";
 import logoEconova from "../../assets/Logo-ECONOVA-OF_Blanco.png";
 
@@ -94,6 +95,13 @@ export default function Sidebar() {
           isActive={location === "/flujo-materiales"}
         >
           Flujo de Materiales
+        </SidebarItem>
+        <SidebarItem 
+          to="/auditoria-zero-waste" 
+          icon={<ClipboardCheck className="w-5 h-5" />} 
+          isActive={location === "/auditoria-zero-waste"}
+        >
+          Auditoría Zero Waste
         </SidebarItem>
         <SidebarItem 
           to="/energia" 

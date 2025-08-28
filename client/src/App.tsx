@@ -16,6 +16,7 @@ import Agua from "@/pages/Agua";
 import EconomiaCircular from "@/pages/EconomiaCircular";
 import DataExport from "@/pages/DataExport";
 import FlujoDeMateriales from "@/pages/FlujoDeMateriales";
+import AuditoriaZeroWaste from "@/pages/AuditoriaZeroWaste";
 
 function Router() {
   return (
@@ -32,6 +33,7 @@ function Router() {
       <Route path="/data-entry" component={DataEntry} />
       <Route path="/export" component={DataExport} />
       <Route path="/flujo-materiales" component={FlujoDeMateriales} />
+      <Route path="/auditoria-zero-waste" component={AuditoriaZeroWaste} />
       <Route component={NotFound} />
     </Switch>
   );
