@@ -59,11 +59,11 @@ export default function AuditoriaZeroWaste() {
   const [selectedAudit, setSelectedAudit] = useState<number | null>(null);
   const { toast } = useToast();
 
-  const { data: audits, isLoading: auditsLoading, refetch } = useQuery({
+  const { data: audits, isLoading: auditsLoading, refetch } = useQuery<ZeroWasteAudit[]>({
     queryKey: ['/api/zero-waste-audits'],
   });
 
-  const { data: materials } = useQuery({
+  const { data: materials } = useQuery<ZeroWasteMaterial[]>({
     queryKey: ['/api/zero-waste-audits', selectedAudit, 'materials'],
     enabled: !!selectedAudit,
   });
@@ -201,7 +201,7 @@ export default function AuditoriaZeroWaste() {
                   <div>
                     <p className="text-sm text-gray-600">Completadas</p>
                     <p className="text-2xl font-bold text-green-600">
-                      {audits.filter((a: ZeroWasteAudit) => a.status === 'completed').length}
+                      {audits?.filter((a: ZeroWasteAudit) => a.status === 'completed').length || 0}
                     </p>
                   </div>
                   <CheckCircle className="h-8 w-8 text-green-600" />
@@ -215,7 +215,7 @@ export default function AuditoriaZeroWaste() {
                   <div>
                     <p className="text-sm text-gray-600">En Progreso</p>
                     <p className="text-2xl font-bold text-yellow-600">
-                      {audits.filter((a: ZeroWasteAudit) => a.status === 'in_progress').length}
+                      {audits?.filter((a: ZeroWasteAudit) => a.status === 'in_progress').length || 0}
                     </p>
                   </div>
                   <AlertCircle className="h-8 w-8 text-yellow-600" />
@@ -229,7 +229,7 @@ export default function AuditoriaZeroWaste() {
                   <div>
                     <p className="text-sm text-gray-600">Peso Total</p>
                     <p className="text-2xl font-bold text-[#b5e951]">
-                      {audits.reduce((sum: number, a: ZeroWasteAudit) => sum + a.totalWeightBefore, 0).toFixed(0)} kg
+                      {audits?.reduce((sum: number, a: ZeroWasteAudit) => sum + a.totalWeightBefore, 0).toFixed(0) || 0} kg
                     </p>
                   </div>
                   <TrendingUp className="h-8 w-8 text-[#b5e951]" />
@@ -319,7 +319,7 @@ export default function AuditoriaZeroWaste() {
 
               const diversionRate = calculateDiversionRate(materials || []);
               const destinationBreakdown = getMaterialsByDestination(materials || []);
-              const totalCharacterizedWeight = materials?.reduce((sum, m) => sum + m.weight, 0) || 0;
+              const totalCharacterizedWeight = materials?.reduce((sum: number, m: ZeroWasteMaterial) => sum + m.weight, 0) || 0;
 
               return (
                 <div className="space-y-6">
