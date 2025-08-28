@@ -1250,6 +1250,258 @@ export default function AuditoriaZeroWaste() {
                   </CardContent>
                 </Card>
               )}
+
+              {/* Paso 6: Documentación Final */}
+              {currentStep === 6 && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <FileText className="h-5 w-5" />
+                      Documentación Final y Reporte
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    <Alert>
+                      <AlertCircle className="h-4 w-4" />
+                      <AlertDescription>
+                        <strong>Finalización de Auditoría:</strong><br />
+                        • Documentar observaciones generales<br />
+                        • Registrar tiempo de transporte (máx. 8 horas)<br />
+                        • Cargar fotografías del proceso<br />
+                        • Generar reporte de auditoría según NMX-AA-61
+                      </AlertDescription>
+                    </Alert>
+
+                    {/* Resumen ejecutivo */}
+                    <Card className="bg-blue-50">
+                      <CardHeader>
+                        <CardTitle className="text-lg">Resumen Ejecutivo de la Auditoría</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          <div className="text-center">
+                            <p className="text-sm text-gray-600">Peso Total Procesado</p>
+                            <p className="text-2xl font-bold text-[#273949]">
+                              {auditData.totalWeightBefore} kg
+                            </p>
+                          </div>
+                          <div className="text-center">
+                            <p className="text-sm text-gray-600">Material Caracterizado</p>
+                            <p className="text-2xl font-bold text-[#b5e951]">
+                              {getTotalCharacterizedWeight().toFixed(1)} kg
+                            </p>
+                          </div>
+                          <div className="text-center">
+                            <p className="text-sm text-gray-600">Tasa de Desviación</p>
+                            <p className="text-2xl font-bold text-green-600">
+                              {((auditData.bags.filter(b => b.divertible).reduce((s, b) => s + b.weight, 0) / 
+                                 getTotalCharacterizedWeight()) * 100 || 0).toFixed(1)}%
+                            </p>
+                          </div>
+                        </div>
+
+                        <Separator className="my-4" />
+
+                        <div className="space-y-2">
+                          <h4 className="font-semibold">Distribución por Destino Final:</h4>
+                          {Object.entries(getBagsByDestination()).map(([destination, bags]) => (
+                            <div key={destination} className="flex justify-between items-center">
+                              <div className="flex items-center gap-2">
+                                <div className={`w-3 h-3 rounded-full ${
+                                  destination === 'landfill' ? 'bg-red-500' :
+                                  destination === 'recycling' ? 'bg-blue-500' :
+                                  destination === 'composting' ? 'bg-green-500' :
+                                  destination === 'reuse' ? 'bg-purple-500' :
+                                  'bg-orange-500'
+                                }`}></div>
+                                <span>{DESTINATIONS[destination as keyof typeof DESTINATIONS]}</span>
+                              </div>
+                              <div className="text-right">
+                                <span className="font-medium">
+                                  {bags.reduce((s, b) => s + b.weight, 0).toFixed(1)} kg
+                                </span>
+                                <span className="text-sm text-gray-600 ml-2">
+                                  ({bags.length} bolsas)
+                                </span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* Observaciones y notas */}
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="generalNotes">Observaciones Generales</Label>
+                        <Textarea
+                          id="generalNotes"
+                          value={auditData.notes}
+                          onChange={(e) => setAuditData(prev => ({ ...prev, notes: e.target.value }))}
+                          placeholder="Registre observaciones sobre el proceso, hallazgos importantes, recomendaciones..."
+                          rows={6}
+                        />
+                      </div>
+
+                      {/* Tiempo de transporte */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="transportTime">Tiempo de Transporte (horas)</Label>
+                          <Input
+                            id="transportTime"
+                            type="number"
+                            step="0.5"
+                            max="8"
+                            value={auditData.transportTime || ''}
+                            onChange={(e) => setAuditData(prev => ({ 
+                              ...prev, 
+                              transportTime: parseFloat(e.target.value) || 0 
+                            }))}
+                            placeholder="0.0"
+                          />
+                          {auditData.transportTime > 8 && (
+                            <p className="text-sm text-red-600">
+                              ¡Atención! Tiempo máximo de transporte según NOM es 8 horas
+                            </p>
+                          )}
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Estado de Cumplimiento NOM</Label>
+                          <div className={`p-3 rounded-lg ${
+                            auditData.transportTime <= 8 && auditData.remainingWeight >= 50 
+                              ? 'bg-green-50 border border-green-200' 
+                              : 'bg-red-50 border border-red-200'
+                          }`}>
+                            <div className="flex items-center gap-2">
+                              {auditData.transportTime <= 8 && auditData.remainingWeight >= 50 ? (
+                                <CheckCircle className="h-5 w-5 text-green-600" />
+                              ) : (
+                                <AlertCircle className="h-5 w-5 text-red-600" />
+                              )}
+                              <span className="font-medium">
+                                {auditData.transportTime <= 8 && auditData.remainingWeight >= 50
+                                  ? 'Cumple NMX-AA-61'
+                                  : 'No cumple requisitos'
+                                }
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Carga de fotografías */}
+                    <div className="space-y-4">
+                      <h3 className="font-semibold">Documentación Fotográfica</h3>
+                      <div className="border-2 border-dashed border-gray-300 rounded-lg p-6">
+                        <div className="text-center">
+                          <Camera className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                          <p className="text-sm text-gray-600 mb-4">
+                            Cargar fotografías del proceso de cuarteo
+                          </p>
+                          <Button variant="outline" className="flex items-center gap-2">
+                            <Camera className="h-4 w-4" />
+                            Seleccionar Fotos
+                          </Button>
+                        </div>
+                      </div>
+                      {auditData.photos.length > 0 && (
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                          {auditData.photos.map((photo, index) => (
+                            <div key={index} className="relative">
+                              <img 
+                                src={photo} 
+                                alt={`Foto ${index + 1}`}
+                                className="w-full h-24 object-cover rounded-lg"
+                              />
+                              <Button
+                                size="sm"
+                                variant="destructive"
+                                className="absolute top-1 right-1 h-6 w-6 p-0"
+                                onClick={() => setAuditData(prev => ({
+                                  ...prev,
+                                  photos: prev.photos.filter((_, i) => i !== index)
+                                }))}
+                              >
+                                <X className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Botones de acción */}
+                    <div className="flex gap-4 pt-6">
+                      <Button 
+                        className="flex-1 bg-[#b5e951] text-black hover:bg-[#a5d941]"
+                        onClick={() => {
+                          toast({
+                            title: "Auditoría Guardada",
+                            description: "Los datos han sido guardados exitosamente",
+                          });
+                        }}
+                      >
+                        <FileText className="h-4 w-4 mr-2" />
+                        Guardar Auditoría
+                      </Button>
+                      <Button 
+                        variant="outline"
+                        onClick={() => {
+                          toast({
+                            title: "Generando Reporte",
+                            description: "El reporte PDF se está generando...",
+                          });
+                        }}
+                      >
+                        <FileText className="h-4 w-4 mr-2" />
+                        Generar Reporte PDF
+                      </Button>
+                    </div>
+
+                    {/* Checklist final */}
+                    <Card className="bg-gray-50">
+                      <CardHeader>
+                        <CardTitle className="text-lg">Checklist de Finalización</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2">
+                            <CheckCircle className={`h-4 w-4 ${auditData.teamMembers ? 'text-green-600' : 'text-gray-400'}`} />
+                            <span className={auditData.teamMembers ? 'text-green-800' : 'text-gray-600'}>
+                              Equipo de trabajo registrado (mín. 3 personas)
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <CheckCircle className={`h-4 w-4 ${auditData.homogenizationComplete ? 'text-green-600' : 'text-gray-400'}`} />
+                            <span className={auditData.homogenizationComplete ? 'text-green-800' : 'text-gray-600'}>
+                              Homogeneización completada
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <CheckCircle className={`h-4 w-4 ${auditData.eliminatedQuadrants.length > 0 ? 'text-green-600' : 'text-gray-400'}`} />
+                            <span className={auditData.eliminatedQuadrants.length > 0 ? 'text-green-800' : 'text-gray-600'}>
+                              Eliminación de partes opuestas
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <CheckCircle className={`h-4 w-4 ${auditData.bags.length > 0 ? 'text-green-600' : 'text-gray-400'}`} />
+                            <span className={auditData.bags.length > 0 ? 'text-green-800' : 'text-gray-600'}>
+                              Caracterización de materiales
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <CheckCircle className={`h-4 w-4 ${auditData.transportTime <= 8 ? 'text-green-600' : 'text-gray-400'}`} />
+                            <span className={auditData.transportTime <= 8 ? 'text-green-800' : 'text-gray-600'}>
+                              Tiempo de transporte ≤ 8 horas
+                            </span>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </CardContent>
+                </Card>
+              )}
             </div>
 
             {/* Botones de navegación */}
