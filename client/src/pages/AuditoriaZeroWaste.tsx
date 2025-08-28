@@ -134,7 +134,6 @@ interface AuditData {
   // Paso 4: Eliminación de Partes Opuestas
   eliminatedQuadrants: string[]; // A y C ó B y D
   remainingWeight: number; // Debe ser mínimo 50 kg
-  laboratoryWeight: number; // Aproximadamente 10 kg para análisis
   
   // Paso 5: Segundo Cuarteo y Caracterización
   finalSampleWeight: number;
@@ -190,7 +189,6 @@ export default function AuditoriaZeroWasteForm({ onSaved, onCancel }: AuditoriaZ
     quadrantWeights: { A: 0, B: 0, C: 0, D: 0 },
     eliminatedQuadrants: [],
     remainingWeight: 0,
-    laboratoryWeight: 10,
     finalSampleWeight: 0,
     bags: [],
     notes: '',
@@ -938,43 +936,24 @@ export default function AuditoriaZeroWasteForm({ onSaved, onCancel }: AuditoriaZ
                         </div>
                       )}
 
-                      {/* Muestra para laboratorio */}
+                      {/* Muestra final para caracterización */}
                       {auditData.remainingWeight >= 50 && (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div className="space-y-2">
-                            <Label htmlFor="laboratoryWeight">Muestra para Laboratorio (kg)</Label>
-                            <Input
-                              id="laboratoryWeight"
-                              type="number"
-                              step="0.1"
-                              value={auditData.laboratoryWeight}
-                              onChange={(e) => setAuditData(prev => ({ 
-                                ...prev, 
-                                laboratoryWeight: parseFloat(e.target.value) || 10 
-                              }))}
-                              placeholder="10.0"
-                            />
-                            <p className="text-xs text-gray-600">
-                              Aproximadamente 10 kg según NOM
-                            </p>
-                          </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="finalSample">Muestra Final para Análisis (kg)</Label>
-                            <Input
-                              id="finalSample"
-                              type="number"
-                              step="0.1"
-                              value={auditData.finalSampleWeight}
-                              onChange={(e) => setAuditData(prev => ({ 
-                                ...prev, 
-                                finalSampleWeight: parseFloat(e.target.value) || 0 
-                              }))}
-                              placeholder={(auditData.remainingWeight - auditData.laboratoryWeight).toFixed(1)}
-                            />
-                            <p className="text-xs text-gray-600">
-                              Resto para selección de subproductos según NMX-AA-22
-                            </p>
-                          </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="finalSample">Peso Total para Caracterización (kg)</Label>
+                          <Input
+                            id="finalSample"
+                            type="number"
+                            step="0.1"
+                            value={auditData.finalSampleWeight || auditData.remainingWeight}
+                            onChange={(e) => setAuditData(prev => ({ 
+                              ...prev, 
+                              finalSampleWeight: parseFloat(e.target.value) || auditData.remainingWeight 
+                            }))}
+                            placeholder={auditData.remainingWeight.toFixed(1)}
+                          />
+                          <p className="text-xs text-gray-600">
+                            Peso total de residuos para caracterización según NMX-AA-22
+                          </p>
                         </div>
                       )}
                     </div>
