@@ -159,7 +159,12 @@ interface AuditData {
   transportTime: number; // Máximo 8 horas según NOM
 }
 
-export default function AuditoriaZeroWaste() {
+interface AuditoriaZeroWasteFormProps {
+  onSaved: () => void;
+  onCancel: () => void;
+}
+
+export default function AuditoriaZeroWasteForm({ onSaved, onCancel }: AuditoriaZeroWasteFormProps) {
   const [currentStep, setCurrentStep] = useState(1);
   const [showBagForm, setShowBagForm] = useState(false);
   const [editingBag, setEditingBag] = useState<string | null>(null);
@@ -1493,10 +1498,7 @@ export default function AuditoriaZeroWaste() {
                                 }
                               }
 
-                              toast({
-                                title: "Auditoría Guardada",
-                                description: "Los datos han sido guardados exitosamente",
-                              });
+                              onSaved();
                             } else {
                               throw new Error('Error al guardar');
                             }
