@@ -355,6 +355,628 @@ export default function AuditoriaZeroWaste() {
           {/* Contenido principal */}
           <div className="lg:col-span-3 space-y-6">
             <div className="min-h-[600px]">
+              {/* Paso 1: Información General y Equipo */}
+              {currentStep === 1 && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <ClipboardList className="h-5 w-5" />
+                      Información General y Equipo (NMX-AA-61)
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    <Alert>
+                      <AlertCircle className="h-4 w-4" />
+                      <AlertDescription>
+                        <strong>Requisitos NOM:</strong><br />
+                        • Mínimo 3 personas para efectuar el cuarteo<br />
+                        • Máximo 250 bolsas de polietileno<br />
+                        • Residuos resultado del estudio de generación según NMX-AA-61
+                      </AlertDescription>
+                    </Alert>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-2">
+                        <Label htmlFor="auditDate">Fecha de Auditoría</Label>
+                        <Input
+                          id="auditDate"
+                          type="date"
+                          value={auditData.auditDate}
+                          onChange={(e) => setAuditData(prev => ({ ...prev, auditDate: e.target.value }))}
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="auditType">Tipo de Auditoría</Label>
+                        <Select
+                          value={auditData.auditType}
+                          onValueChange={(value) => setAuditData(prev => ({ ...prev, auditType: value as any }))}
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="quarterly">Trimestral</SelectItem>
+                            <SelectItem value="monthly">Mensual</SelectItem>
+                            <SelectItem value="special">Especial</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="auditorName">Auditor Responsable</Label>
+                        <Input
+                          id="auditorName"
+                          value={auditData.auditorName}
+                          onChange={(e) => setAuditData(prev => ({ ...prev, auditorName: e.target.value }))}
+                          placeholder="Nombre completo del responsable"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="auditorTitle">Cargo/Título</Label>
+                        <Input
+                          id="auditorTitle"
+                          value={auditData.auditorTitle}
+                          onChange={(e) => setAuditData(prev => ({ ...prev, auditorTitle: e.target.value }))}
+                          placeholder="Especialista en Sostenibilidad, etc."
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="teamMembers">Equipo de Trabajo (mín. 3 personas)</Label>
+                        <Textarea
+                          id="teamMembers"
+                          value={auditData.teamMembers}
+                          onChange={(e) => setAuditData(prev => ({ ...prev, teamMembers: e.target.value }))}
+                          placeholder="Nombre de los 3 participantes mínimo..."
+                          rows={3}
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="numberOfBags">Número de Bolsas (máx. 250)</Label>
+                        <Input
+                          id="numberOfBags"
+                          type="number"
+                          max="250"
+                          value={auditData.numberOfBags || ''}
+                          onChange={(e) => setAuditData(prev => ({ 
+                            ...prev, 
+                            numberOfBags: parseInt(e.target.value) || 0 
+                          }))}
+                          placeholder="Cantidad de bolsas de polietileno"
+                        />
+                        {auditData.numberOfBags > 250 && (
+                          <p className="text-sm text-red-600">
+                            Máximo 250 bolsas según NMX-AA-61
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Paso 2: Preparación del Área */}
+              {currentStep === 2 && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Scale className="h-5 w-5" />
+                      Preparación del Área de Trabajo (NMX-AA-61)
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    <Alert>
+                      <AlertCircle className="h-4 w-4" />
+                      <AlertDescription>
+                        <strong>Requisitos de Área según NOM:</strong><br />
+                        • Área plana horizontal de 4m x 4m<br />
+                        • Superficie de cemento pulido o similar<br />
+                        • Debe estar bajo techo<br />
+                        • Vaciar contenido de bolsas formando un montón
+                      </AlertDescription>
+                    </Alert>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-4">
+                        <h3 className="font-semibold">Especificaciones del Área</h3>
+                        
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="areaLength">Largo (m)</Label>
+                            <Input
+                              id="areaLength"
+                              type="number"
+                              step="0.1"
+                              value={auditData.areaLength}
+                              onChange={(e) => setAuditData(prev => ({ 
+                                ...prev, 
+                                areaLength: parseFloat(e.target.value) || 4 
+                              }))}
+                              placeholder="4.0"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="areaWidth">Ancho (m)</Label>
+                            <Input
+                              id="areaWidth"
+                              type="number"
+                              step="0.1"
+                              value={auditData.areaWidth}
+                              onChange={(e) => setAuditData(prev => ({ 
+                                ...prev, 
+                                areaWidth: parseFloat(e.target.value) || 4 
+                              }))}
+                              placeholder="4.0"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="surfaceType">Tipo de Superficie</Label>
+                          <Select
+                            value={auditData.surfaceType}
+                            onValueChange={(value) => setAuditData(prev => ({ ...prev, surfaceType: value }))}
+                          >
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Cemento pulido">Cemento pulido</SelectItem>
+                              <SelectItem value="Concreto">Concreto</SelectItem>
+                              <SelectItem value="Asfalto">Asfalto</SelectItem>
+                              <SelectItem value="Otro similar">Otro similar</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div className="flex items-center space-x-2">
+                          <input
+                            type="checkbox"
+                            id="underRoof"
+                            checked={auditData.underRoof}
+                            onChange={(e) => setAuditData(prev => ({ ...prev, underRoof: e.target.checked }))}
+                            className="rounded"
+                          />
+                          <Label htmlFor="underRoof">Área bajo techo (requerido)</Label>
+                        </div>
+                      </div>
+
+                      <div className="space-y-4">
+                        <h3 className="font-semibold">Condiciones Ambientales</h3>
+                        
+                        <div className="space-y-2">
+                          <Label htmlFor="totalWeight">Peso Total de Residuos (kg)</Label>
+                          <Input
+                            id="totalWeight"
+                            type="number"
+                            step="0.1"
+                            value={auditData.totalWeightBefore || ''}
+                            onChange={(e) => setAuditData(prev => ({ 
+                              ...prev, 
+                              totalWeightBefore: parseFloat(e.target.value) || 0 
+                            }))}
+                            placeholder="0.0"
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="weather">Condiciones Climáticas</Label>
+                          <Select
+                            value={auditData.weather}
+                            onValueChange={(value) => setAuditData(prev => ({ ...prev, weather: value }))}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Seleccionar clima" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="sunny">Soleado</SelectItem>
+                              <SelectItem value="cloudy">Nublado</SelectItem>
+                              <SelectItem value="rainy">Lluvioso</SelectItem>
+                              <SelectItem value="overcast">Parcialmente nublado</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="temperature">Temperatura (°C)</Label>
+                            <Input
+                              id="temperature"
+                              type="number"
+                              value={auditData.temperature || ''}
+                              onChange={(e) => setAuditData(prev => ({ 
+                                ...prev, 
+                                temperature: parseFloat(e.target.value) || 0 
+                              }))}
+                              placeholder="25"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="humidity">Humedad (%)</Label>
+                            <Input
+                              id="humidity"
+                              type="number"
+                              min="0"
+                              max="100"
+                              value={auditData.humidity || ''}
+                              onChange={(e) => setAuditData(prev => ({ 
+                                ...prev, 
+                                humidity: parseFloat(e.target.value) || 0 
+                              }))}
+                              placeholder="60"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Visualización del área */}
+                    <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+                      <div className="text-center">
+                        <h4 className="font-semibold mb-2">Vista del Área de Trabajo</h4>
+                        <div 
+                          className="mx-auto border-2 border-dashed border-gray-400 bg-gray-200 relative"
+                          style={{ width: '200px', height: '200px' }}
+                        >
+                          <div className="absolute inset-0 flex items-center justify-center text-gray-600">
+                            {auditData.areaLength}m × {auditData.areaWidth}m<br/>
+                            {auditData.surfaceType}<br/>
+                            {auditData.underRoof ? '✓ Bajo techo' : '✗ Sin techo'}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Paso 3: Homogeneización y Primer Cuarteo */}
+              {currentStep === 3 && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Grid3X3 className="h-5 w-5" />
+                      Homogeneización y Primer Cuarteo (NMX-AA-61)
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    <Alert>
+                      <AlertCircle className="h-4 w-4" />
+                      <AlertDescription>
+                        <strong>Procedimiento según NOM:</strong><br />
+                        1. Traspalear con pala y/o bieldo hasta homogeneizar<br />
+                        2. Dividir en 4 partes aproximadamente iguales (A, B, C, D)<br />
+                        3. Pesar cada cuadrante por separado<br />
+                        4. Preparar para eliminación de partes opuestas
+                      </AlertDescription>
+                    </Alert>
+
+                    {/* Proceso de homogeneización */}
+                    <div className="space-y-4">
+                      <div className="flex items-center space-x-2">
+                        <input
+                          type="checkbox"
+                          id="homogenization"
+                          checked={auditData.homogenizationComplete}
+                          onChange={(e) => setAuditData(prev => ({ 
+                            ...prev, 
+                            homogenizationComplete: e.target.checked 
+                          }))}
+                          className="rounded"
+                        />
+                        <Label htmlFor="homogenization">
+                          Homogeneización completada (traspaleo con pala/bieldo)
+                        </Label>
+                      </div>
+
+                      <div className="flex items-center space-x-2">
+                        <input
+                          type="checkbox"
+                          id="quadrantsCreated"
+                          checked={auditData.quadrantsCreated}
+                          onChange={(e) => setAuditData(prev => ({ 
+                            ...prev, 
+                            quadrantsCreated: e.target.checked 
+                          }))}
+                          className="rounded"
+                          disabled={!auditData.homogenizationComplete}
+                        />
+                        <Label htmlFor="quadrantsCreated">
+                          División en 4 partes aproximadamente iguales
+                        </Label>
+                      </div>
+                    </div>
+
+                    {/* Visualización de cuadrantes con pesos */}
+                    {auditData.quadrantsCreated && (
+                      <div className="bg-gray-50 p-6 rounded-lg">
+                        <h3 className="font-semibold mb-4 text-center">
+                          Cuadrantes A, B, C, D (Primer Cuarteo)
+                        </h3>
+                        
+                        <div className="grid grid-cols-2 gap-4 max-w-md mx-auto">
+                          {/* Cuadrante A */}
+                          <div className="border-2 border-gray-300 rounded-lg p-4 bg-white">
+                            <div className="text-center font-bold text-lg mb-2">A</div>
+                            <div className="space-y-2">
+                              <Label htmlFor="weightA" className="text-sm">Peso (kg)</Label>
+                              <Input
+                                id="weightA"
+                                type="number"
+                                step="0.1"
+                                value={auditData.quadrantWeights.A || ''}
+                                onChange={(e) => setAuditData(prev => ({ 
+                                  ...prev, 
+                                  quadrantWeights: {
+                                    ...prev.quadrantWeights,
+                                    A: parseFloat(e.target.value) || 0
+                                  }
+                                }))}
+                                placeholder="0.0"
+                              />
+                            </div>
+                          </div>
+
+                          {/* Cuadrante B */}
+                          <div className="border-2 border-gray-300 rounded-lg p-4 bg-white">
+                            <div className="text-center font-bold text-lg mb-2">B</div>
+                            <div className="space-y-2">
+                              <Label htmlFor="weightB" className="text-sm">Peso (kg)</Label>
+                              <Input
+                                id="weightB"
+                                type="number"
+                                step="0.1"
+                                value={auditData.quadrantWeights.B || ''}
+                                onChange={(e) => setAuditData(prev => ({ 
+                                  ...prev, 
+                                  quadrantWeights: {
+                                    ...prev.quadrantWeights,
+                                    B: parseFloat(e.target.value) || 0
+                                  }
+                                }))}
+                                placeholder="0.0"
+                              />
+                            </div>
+                          </div>
+
+                          {/* Cuadrante C */}
+                          <div className="border-2 border-gray-300 rounded-lg p-4 bg-white">
+                            <div className="text-center font-bold text-lg mb-2">C</div>
+                            <div className="space-y-2">
+                              <Label htmlFor="weightC" className="text-sm">Peso (kg)</Label>
+                              <Input
+                                id="weightC"
+                                type="number"
+                                step="0.1"
+                                value={auditData.quadrantWeights.C || ''}
+                                onChange={(e) => setAuditData(prev => ({ 
+                                  ...prev, 
+                                  quadrantWeights: {
+                                    ...prev.quadrantWeights,
+                                    C: parseFloat(e.target.value) || 0
+                                  }
+                                }))}
+                                placeholder="0.0"
+                              />
+                            </div>
+                          </div>
+
+                          {/* Cuadrante D */}
+                          <div className="border-2 border-gray-300 rounded-lg p-4 bg-white">
+                            <div className="text-center font-bold text-lg mb-2">D</div>
+                            <div className="space-y-2">
+                              <Label htmlFor="weightD" className="text-sm">Peso (kg)</Label>
+                              <Input
+                                id="weightD"
+                                type="number"
+                                step="0.1"
+                                value={auditData.quadrantWeights.D || ''}
+                                onChange={(e) => setAuditData(prev => ({ 
+                                  ...prev, 
+                                  quadrantWeights: {
+                                    ...prev.quadrantWeights,
+                                    D: parseFloat(e.target.value) || 0
+                                  }
+                                }))}
+                                placeholder="0.0"
+                              />
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Resumen de pesos */}
+                        <div className="mt-6 text-center">
+                          <p className="text-sm text-gray-600">
+                            <strong>Total cuadrantes:</strong> {' '}
+                            {(auditData.quadrantWeights.A + auditData.quadrantWeights.B + 
+                              auditData.quadrantWeights.C + auditData.quadrantWeights.D).toFixed(1)} kg
+                          </p>
+                          <p className="text-sm text-gray-600">
+                            <strong>Peso original:</strong> {auditData.totalWeightBefore} kg
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Paso 4: Eliminación de Partes Opuestas */}
+              {currentStep === 4 && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Target className="h-5 w-5" />
+                      Eliminación de Partes Opuestas (NMX-AA-61)
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    <Alert>
+                      <AlertCircle className="h-4 w-4" />
+                      <AlertDescription>
+                        <strong>Procedimiento según NOM:</strong><br />
+                        • Eliminar partes opuestas: A y C ó B y D<br />
+                        • Repetir operación hasta dejar mínimo 50 kg<br />
+                        • Tomar 10 kg aprox. para análisis de laboratorio<br />
+                        • Resto para análisis físicos, químicos y biológicos
+                      </AlertDescription>
+                    </Alert>
+
+                    {/* Selección de partes a eliminar */}
+                    <div className="space-y-4">
+                      <h3 className="font-semibold">Seleccionar partes opuestas a eliminar:</h3>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-4">
+                          <div className="border rounded-lg p-4">
+                            <div className="flex items-center space-x-2 mb-4">
+                              <input
+                                type="radio"
+                                id="elimateAC"
+                                name="elimination"
+                                checked={JSON.stringify(auditData.eliminatedQuadrants) === JSON.stringify(['A', 'C'])}
+                                onChange={() => setAuditData(prev => ({ 
+                                  ...prev, 
+                                  eliminatedQuadrants: ['A', 'C'],
+                                  remainingWeight: prev.quadrantWeights.B + prev.quadrantWeights.D
+                                }))}
+                              />
+                              <Label htmlFor="elimateAC">Eliminar A y C</Label>
+                            </div>
+                            <div className="grid grid-cols-2 gap-2 text-sm">
+                              <div className="bg-red-100 p-2 rounded text-center">
+                                A: {auditData.quadrantWeights.A} kg
+                              </div>
+                              <div className="bg-green-100 p-2 rounded text-center">
+                                B: {auditData.quadrantWeights.B} kg
+                              </div>
+                              <div className="bg-red-100 p-2 rounded text-center">
+                                C: {auditData.quadrantWeights.C} kg
+                              </div>
+                              <div className="bg-green-100 p-2 rounded text-center">
+                                D: {auditData.quadrantWeights.D} kg
+                              </div>
+                            </div>
+                            <p className="text-sm text-center mt-2">
+                              <strong>Quedan:</strong> {(auditData.quadrantWeights.B + auditData.quadrantWeights.D).toFixed(1)} kg
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="space-y-4">
+                          <div className="border rounded-lg p-4">
+                            <div className="flex items-center space-x-2 mb-4">
+                              <input
+                                type="radio"
+                                id="eliminateBD"
+                                name="elimination"
+                                checked={JSON.stringify(auditData.eliminatedQuadrants) === JSON.stringify(['B', 'D'])}
+                                onChange={() => setAuditData(prev => ({ 
+                                  ...prev, 
+                                  eliminatedQuadrants: ['B', 'D'],
+                                  remainingWeight: prev.quadrantWeights.A + prev.quadrantWeights.C
+                                }))}
+                              />
+                              <Label htmlFor="eliminateBD">Eliminar B y D</Label>
+                            </div>
+                            <div className="grid grid-cols-2 gap-2 text-sm">
+                              <div className="bg-green-100 p-2 rounded text-center">
+                                A: {auditData.quadrantWeights.A} kg
+                              </div>
+                              <div className="bg-red-100 p-2 rounded text-center">
+                                B: {auditData.quadrantWeights.B} kg
+                              </div>
+                              <div className="bg-green-100 p-2 rounded text-center">
+                                C: {auditData.quadrantWeights.C} kg
+                              </div>
+                              <div className="bg-red-100 p-2 rounded text-center">
+                                D: {auditData.quadrantWeights.D} kg
+                              </div>
+                            </div>
+                            <p className="text-sm text-center mt-2">
+                              <strong>Quedan:</strong> {(auditData.quadrantWeights.A + auditData.quadrantWeights.C).toFixed(1)} kg
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Validación de peso mínimo */}
+                      {auditData.remainingWeight > 0 && (
+                        <div className={`p-4 rounded-lg ${
+                          auditData.remainingWeight >= 50 
+                            ? 'bg-green-50 border border-green-200' 
+                            : 'bg-red-50 border border-red-200'
+                        }`}>
+                          <div className="flex items-center gap-2">
+                            {auditData.remainingWeight >= 50 ? (
+                              <CheckCircle className="h-5 w-5 text-green-600" />
+                            ) : (
+                              <AlertCircle className="h-5 w-5 text-red-600" />
+                            )}
+                            <p className="font-semibold">
+                              Peso restante: {auditData.remainingWeight.toFixed(1)} kg
+                            </p>
+                          </div>
+                          {auditData.remainingWeight < 50 ? (
+                            <p className="text-sm text-red-600 mt-2">
+                              <strong>¡Atención!</strong> Peso insuficiente. Se requiere mínimo 50 kg según NOM.
+                              Debe repetir la operación de cuarteo.
+                            </p>
+                          ) : (
+                            <p className="text-sm text-green-600 mt-2">
+                              ✓ Peso suficiente para continuar con la selección de subproductos.
+                            </p>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Muestra para laboratorio */}
+                      {auditData.remainingWeight >= 50 && (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="laboratoryWeight">Muestra para Laboratorio (kg)</Label>
+                            <Input
+                              id="laboratoryWeight"
+                              type="number"
+                              step="0.1"
+                              value={auditData.laboratoryWeight}
+                              onChange={(e) => setAuditData(prev => ({ 
+                                ...prev, 
+                                laboratoryWeight: parseFloat(e.target.value) || 10 
+                              }))}
+                              placeholder="10.0"
+                            />
+                            <p className="text-xs text-gray-600">
+                              Aproximadamente 10 kg según NOM
+                            </p>
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="finalSample">Muestra Final para Análisis (kg)</Label>
+                            <Input
+                              id="finalSample"
+                              type="number"
+                              step="0.1"
+                              value={auditData.finalSampleWeight}
+                              onChange={(e) => setAuditData(prev => ({ 
+                                ...prev, 
+                                finalSampleWeight: parseFloat(e.target.value) || 0 
+                              }))}
+                              placeholder={(auditData.remainingWeight - auditData.laboratoryWeight).toFixed(1)}
+                            />
+                            <p className="text-xs text-gray-600">
+                              Resto para selección de subproductos según NMX-AA-22
+                            </p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
               {/* Paso 5: Segundo Cuarteo y Caracterización */}
               {currentStep === 5 && (
                 <Card>
