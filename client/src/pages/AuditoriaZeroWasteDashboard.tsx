@@ -65,6 +65,9 @@ export default function AuditoriaZeroWaste() {
 
   const { data: materials } = useQuery<ZeroWasteMaterial[]>({
     queryKey: ['/api/zero-waste-audits', selectedAudit, 'materials'],
+    queryFn: () => selectedAudit ? 
+      fetch(`/api/zero-waste-audits/${selectedAudit}/materials`).then(res => res.json()) : 
+      Promise.resolve([]),
     enabled: !!selectedAudit,
   });
 
@@ -229,7 +232,7 @@ export default function AuditoriaZeroWaste() {
                   <div>
                     <p className="text-sm text-gray-600">Peso Total</p>
                     <p className="text-2xl font-bold text-[#b5e951]">
-                      {audits?.reduce((sum: number, a: ZeroWasteAudit) => sum + a.totalWeightBefore, 0).toFixed(0) || 0} kg
+                      {audits?.reduce((sum: number, a: ZeroWasteAudit) => sum + a.totalWeightBefore, 0)?.toFixed(0) || '0'} kg
                     </p>
                   </div>
                   <TrendingUp className="h-8 w-8 text-[#b5e951]" />
@@ -456,7 +459,7 @@ export default function AuditoriaZeroWaste() {
                                 <p className="text-sm text-gray-600">
                                   {totalCharacterizedWeight > 0 
                                     ? ((data.weight / totalCharacterizedWeight) * 100).toFixed(1)
-                                    : 0}%
+                                    : '0.0'}%
                                 </p>
                               </div>
                             </div>
@@ -485,7 +488,7 @@ export default function AuditoriaZeroWaste() {
                                   </div>
                                   <div className="text-right">
                                     <p className="text-sm font-semibold">{material.weight} kg</p>
-                                    <p className="text-xs text-gray-600">{material.percentage.toFixed(1)}%</p>
+                                    <p className="text-xs text-gray-600">{material.percentage?.toFixed(1) || '0.0'}%</p>
                                   </div>
                                 </div>
                               ))}
