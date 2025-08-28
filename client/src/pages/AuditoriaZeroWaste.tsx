@@ -1435,11 +1435,78 @@ export default function AuditoriaZeroWaste() {
                     <div className="flex gap-4 pt-6">
                       <Button 
                         className="flex-1 bg-[#b5e951] text-black hover:bg-[#a5d941]"
-                        onClick={() => {
-                          toast({
-                            title: "Auditoría Guardada",
-                            description: "Los datos han sido guardados exitosamente",
-                          });
+                        onClick={async () => {
+                          try {
+                            // Calcular métricas antes de guardar
+                            const totalCharacterizedWeight = getTotalCharacterizedWeight();
+                            const diversionRate = totalCharacterizedWeight > 0 
+                              ? (auditData.bags.filter(b => b.divertible).reduce((s, b) => s + b.weight, 0) / totalCharacterizedWeight) * 100 
+                              : 0;
+                            
+                            const auditPayload = {
+                              clientId: 4, // Club Campestre
+                              auditDate: new Date(auditData.auditDate),
+                              auditType: auditData.auditType,
+                              auditorName: auditData.auditorName,
+                              auditorTitle: auditData.auditorTitle,
+                              totalWeightBefore: auditData.totalWeightBefore,
+                              quadrantNumber: 1, // Simplificado por ahora
+                              quadrantWeight: auditData.remainingWeight,
+                              weather: auditData.weather,
+                              temperature: auditData.temperature,
+                              humidity: auditData.humidity,
+                              status: 'completed',
+                              notes: auditData.notes,
+                              photos: auditData.photos
+                            };
+
+                            const response = await fetch('/api/zero-waste-audits', {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify(auditPayload)
+                            });
+
+                            if (response.ok) {
+                              const savedAudit = await response.json();
+                              
+                              // Guardar materiales si hay bolsas caracterizadas
+                              if (auditData.bags.length > 0) {
+                                for (const bag of auditData.bags) {
+                                  const materialPayload = {
+                                    auditId: savedAudit.id,
+                                    materialCategory: bag.category,
+                                    materialType: bag.materialType,
+                                    weight: bag.weight,
+                                    percentage: totalCharacterizedWeight > 0 ? (bag.weight / totalCharacterizedWeight) * 100 : 0,
+                                    divertible: bag.divertible,
+                                    diversionMethod: bag.destination === 'landfill' ? null : bag.destination,
+                                    contamination: bag.contamination,
+                                    condition: bag.condition,
+                                    notes: bag.notes
+                                  };
+                                  
+                                  await fetch('/api/zero-waste-materials', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify(materialPayload)
+                                  });
+                                }
+                              }
+
+                              toast({
+                                title: "Auditoría Guardada",
+                                description: "Los datos han sido guardados exitosamente",
+                              });
+                            } else {
+                              throw new Error('Error al guardar');
+                            }
+                          } catch (error) {
+                            toast({
+                              title: "Error",
+                              description: "No se pudo guardar la auditoría",
+                              variant: "destructive"
+                            });
+                          }
                         }}
                       >
                         <FileText className="h-4 w-4 mr-2" />

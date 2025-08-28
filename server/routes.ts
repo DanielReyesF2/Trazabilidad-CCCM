@@ -898,6 +898,77 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Zero Waste Audit routes
+  app.post('/api/zero-waste-audits', async (req, res) => {
+    try {
+      const { db } = await import('./db');
+      const { zeroWasteAudits } = await import('../shared/schema');
+      
+      const [audit] = await db
+        .insert(zeroWasteAudits)
+        .values(req.body)
+        .returning();
+      
+      res.json(audit);
+    } catch (error) {
+      console.error('Error creating audit:', error);
+      res.status(500).json({ message: 'Failed to create audit' });
+    }
+  });
+
+  app.get('/api/zero-waste-audits', async (req, res) => {
+    try {
+      const { db } = await import('./db');
+      const { zeroWasteAudits } = await import('../shared/schema');
+      const { desc } = await import('drizzle-orm');
+      
+      const audits = await db
+        .select()
+        .from(zeroWasteAudits)
+        .orderBy(desc(zeroWasteAudits.createdAt));
+      
+      res.json(audits);
+    } catch (error) {
+      console.error('Error fetching audits:', error);
+      res.status(500).json({ message: 'Failed to fetch audits' });
+    }
+  });
+
+  app.post('/api/zero-waste-materials', async (req, res) => {
+    try {
+      const { db } = await import('./db');
+      const { zeroWasteMaterials } = await import('../shared/schema');
+      
+      const [material] = await db
+        .insert(zeroWasteMaterials)
+        .values(req.body)
+        .returning();
+      
+      res.json(material);
+    } catch (error) {
+      console.error('Error creating material:', error);
+      res.status(500).json({ message: 'Failed to create material' });
+    }
+  });
+
+  app.get('/api/zero-waste-audits/:id/materials', async (req, res) => {
+    try {
+      const { db } = await import('./db');
+      const { zeroWasteMaterials } = await import('../shared/schema');
+      const { eq } = await import('drizzle-orm');
+      
+      const materials = await db
+        .select()
+        .from(zeroWasteMaterials)
+        .where(eq(zeroWasteMaterials.auditId, parseInt(req.params.id)));
+      
+      res.json(materials);
+    } catch (error) {
+      console.error('Error fetching materials:', error);
+      res.status(500).json({ message: 'Failed to fetch materials' });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
