@@ -6,7 +6,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
-import { TrendingUp, TrendingDown, BarChart3, Recycle, Leaf, Gift, Trash2, AlertTriangle } from 'lucide-react';
+import { TrendingUp, TrendingDown, BarChart3, Recycle, Leaf, Gift, Trash2, AlertTriangle, Home } from 'lucide-react';
+import { Link } from 'wouter';
 import { motion } from 'framer-motion';
 
 export default function FlujoDeMateriales() {
@@ -132,13 +133,21 @@ export default function FlujoDeMateriales() {
       <div className="bg-white border-b sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div>
-              <h1 className="text-2xl font-bold text-[#b5e951]">
-                FLUJOS DE MATERIALES
-              </h1>
-              <p className="text-sm text-gray-600 mt-1">
-                Diagrama Sankey Interactivo - Club Campestre Ciudad de México
-              </p>
+            <div className="flex items-center gap-4">
+              <Link href="/">
+                <Button variant="ghost" size="sm" className="flex items-center gap-2">
+                  <Home className="h-4 w-4" />
+                  Dashboard
+                </Button>
+              </Link>
+              <div>
+                <h1 className="text-2xl font-bold text-[#b5e951]">
+                  FLUJOS DE MATERIALES
+                </h1>
+                <p className="text-sm text-gray-600 mt-1">
+                  Diagrama Sankey Interactivo - Club Campestre Ciudad de México
+                </p>
+              </div>
             </div>
             
             <div className="flex items-center gap-3">

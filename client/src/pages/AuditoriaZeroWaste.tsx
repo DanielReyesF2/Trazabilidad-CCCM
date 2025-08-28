@@ -25,8 +25,10 @@ import {
   Target,
   Recycle,
   Leaf,
-  Trash2
+  Trash2,
+  Home
 } from 'lucide-react';
+import { Link } from 'wouter';
 import { useToast } from '@/hooks/use-toast';
 
 // Definir los pasos de la auditoría
@@ -216,13 +218,21 @@ export default function AuditoriaZeroWaste() {
       <div className="bg-white border-b sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-[#273949]">
-                Auditoría Zero Waste
-              </h1>
-              <p className="text-sm text-gray-600 mt-1">
-                Metodología de cuarteo según NOM - TRUE Zero Waste Certification
-              </p>
+            <div className="flex items-center gap-4">
+              <Link href="/">
+                <Button variant="ghost" size="sm" className="flex items-center gap-2">
+                  <Home className="h-4 w-4" />
+                  Dashboard
+                </Button>
+              </Link>
+              <div>
+                <h1 className="text-2xl font-bold text-[#273949]">
+                  Auditoría Zero Waste
+                </h1>
+                <p className="text-sm text-gray-600 mt-1">
+                  Metodología de cuarteo según NOM - TRUE Zero Waste Certification
+                </p>
+              </div>
             </div>
             <Badge variant="outline" className="text-sm">
               Paso {currentStep} de {AUDIT_STEPS.length}
