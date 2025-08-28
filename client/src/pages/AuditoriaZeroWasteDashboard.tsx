@@ -20,8 +20,14 @@ import {
   Eye,
   Download,
   Home,
-  Trash2
+  Trash2,
+  BarChart3,
+  PieChart,
+  Activity,
+  Target,
+  Gauge
 } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart as RechartsPieChart, Cell, LineChart, Line, Area, AreaChart, Pie } from 'recharts';
 
 interface ZeroWasteAudit {
   id: number;
@@ -323,6 +329,43 @@ export default function AuditoriaZeroWaste() {
               const diversionRate = calculateDiversionRate(materials || []);
               const destinationBreakdown = getMaterialsByDestination(materials || []);
               const totalCharacterizedWeight = materials?.reduce((sum: number, m: ZeroWasteMaterial) => sum + m.weight, 0) || 0;
+              
+              // Preparar datos para gráficos
+              const chartData = Object.entries(destinationBreakdown)
+                .filter(([_, data]) => data.weight > 0)
+                .map(([key, data]) => ({
+                  name: data.label,
+                  weight: data.weight,
+                  percentage: totalCharacterizedWeight > 0 ? (data.weight / totalCharacterizedWeight) * 100 : 0,
+                  color: data.color.replace('bg-', '#').replace('-500', ''),
+                  isSustainable: key !== 'landfill'
+                }));
+
+              const pieData = chartData.map((item, index) => ({
+                ...item,
+                fill: ['#3b82f6', '#10b981', '#8b5cf6', '#f59e0b', '#ef4444'][index] || '#6b7280'
+              }));
+
+              const categoryBreakdown = materials?.reduce((acc: any, material) => {
+                const category = material.materialCategory;
+                if (!acc[category]) {
+                  acc[category] = { total: 0, diverted: 0, materials: [] };
+                }
+                acc[category].total += material.weight;
+                if (material.divertible) {
+                  acc[category].diverted += material.weight;
+                }
+                acc[category].materials.push(material);
+                return acc;
+              }, {}) || {};
+
+              const categoryChartData = Object.entries(categoryBreakdown).map(([category, data]: [string, any]) => ({
+                category,
+                total: data.total,
+                diverted: data.diverted,
+                landfill: data.total - data.diverted,
+                diversionRate: data.total > 0 ? (data.diverted / data.total) * 100 : 0
+              }));
 
               return (
                 <div className="space-y-6">
@@ -436,68 +479,281 @@ export default function AuditoriaZeroWaste() {
                     </CardContent>
                   </Card>
 
-                  {/* Distribución por destino */}
+                  {/* Análisis Visual Avanzado */}
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {/* Gráfico de Barras - Distribución por Destino */}
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <BarChart3 className="h-5 w-5" />
+                          Distribución por Destino Final
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="h-64">
+                          <ResponsiveContainer width="100%" height="100%">
+                            <BarChart data={chartData}>
+                              <CartesianGrid strokeDasharray="3 3" />
+                              <XAxis 
+                                dataKey="name" 
+                                angle={-45}
+                                textAnchor="end"
+                                height={80}
+                                fontSize={12}
+                              />
+                              <YAxis />
+                              <Tooltip 
+                                formatter={(value: any, name: string) => [
+                                  `${value.toFixed(1)} kg`, 
+                                  name === 'weight' ? 'Peso' : name
+                                ]}
+                              />
+                              <Bar 
+                                dataKey="weight" 
+                                fill="#b5e951"
+                                radius={[4, 4, 0, 0]}
+                              />
+                            </BarChart>
+                          </ResponsiveContainer>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* Gráfico Circular - Porcentajes */}
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <PieChart className="h-5 w-5" />
+                          Composición Porcentual
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="h-64">
+                          <ResponsiveContainer width="100%" height="100%">
+                            <RechartsPieChart>
+                              <Pie
+                                data={pieData}
+                                cx="50%"
+                                cy="50%"
+                                labelLine={false}
+                                label={({ name, percentage }: any) => `${name}: ${percentage.toFixed(1)}%`}
+                                outerRadius={80}
+                                fill="#8884d8"
+                                dataKey="percentage"
+                              >
+                                {pieData.map((entry, index) => (
+                                  <Cell key={`cell-${index}`} fill={entry.fill} />
+                                ))}
+                              </Pie>
+                              <Tooltip 
+                                formatter={(value: any) => [`${value.toFixed(1)}%`, 'Porcentaje']}
+                              />
+                            </RechartsPieChart>
+                          </ResponsiveContainer>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  {/* Análisis por Categoría de Materiales */}
                   <Card>
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
-                        <Recycle className="h-5 w-5" />
-                        Distribución por Destino Final
+                        <Activity className="h-5 w-5" />
+                        Análisis por Categoría de Material
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <div className="space-y-4">
-                        {Object.entries(destinationBreakdown).map(([key, data]) => {
-                          if (data.weight === 0) return null;
-                          return (
-                            <div key={key} className="flex items-center justify-between">
-                              <div className="flex items-center gap-3">
-                                <div className={`w-4 h-4 rounded-full ${data.color}`}></div>
-                                <span className="font-medium">{data.label}</span>
-                              </div>
-                              <div className="text-right">
-                                <p className="font-semibold">{data.weight.toFixed(1)} kg</p>
-                                <p className="text-sm text-gray-600">
-                                  {totalCharacterizedWeight > 0 
-                                    ? ((data.weight / totalCharacterizedWeight) * 100).toFixed(1)
-                                    : '0.0'}%
-                                </p>
-                              </div>
-                            </div>
-                          );
-                        })}
+                      <div className="h-80">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <BarChart data={categoryChartData}>
+                            <CartesianGrid strokeDasharray="3 3" />
+                            <XAxis 
+                              dataKey="category"
+                              angle={-45}
+                              textAnchor="end"
+                              height={100}
+                              fontSize={12}
+                            />
+                            <YAxis />
+                            <Tooltip 
+                              formatter={(value: any, name: string) => {
+                                const labels: any = {
+                                  'diverted': 'Desviado',
+                                  'landfill': 'Relleno Sanitario',
+                                  'total': 'Total'
+                                };
+                                return [`${value.toFixed(1)} kg`, labels[name] || name];
+                              }}
+                            />
+                            <Legend />
+                            <Bar 
+                              dataKey="diverted" 
+                              stackId="a" 
+                              fill="#10b981" 
+                              name="Desviado"
+                              radius={[0, 0, 0, 0]}
+                            />
+                            <Bar 
+                              dataKey="landfill" 
+                              stackId="a" 
+                              fill="#ef4444" 
+                              name="Relleno Sanitario"
+                              radius={[4, 4, 0, 0]}
+                            />
+                          </BarChart>
+                        </ResponsiveContainer>
                       </div>
-
-                      {materials && materials.length > 0 && (
-                        <>
-                          <Separator className="my-4" />
-                          <div>
-                            <h4 className="font-semibold mb-3">Materiales Identificados ({materials.length})</h4>
-                            <div className="space-y-2 max-h-60 overflow-y-auto">
-                              {materials.map((material: ZeroWasteMaterial) => (
-                                <div key={material.id} className="flex items-center justify-between py-2 px-3 bg-gray-50 rounded">
-                                  <div className="flex items-center gap-2">
-                                    {material.divertible ? (
-                                      <CheckCircle className="h-4 w-4 text-green-600" />
-                                    ) : (
-                                      <Trash2 className="h-4 w-4 text-red-600" />
-                                    )}
-                                    <div>
-                                      <p className="text-sm font-medium">{material.materialType}</p>
-                                      <p className="text-xs text-gray-600">{material.materialCategory}</p>
-                                    </div>
-                                  </div>
-                                  <div className="text-right">
-                                    <p className="text-sm font-semibold">{material.weight} kg</p>
-                                    <p className="text-xs text-gray-600">{material.percentage?.toFixed(1) || '0.0'}%</p>
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        </>
-                      )}
                     </CardContent>
                   </Card>
+
+                  {/* Indicadores de Rendimiento */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <Card className="bg-gradient-to-r from-green-50 to-green-100 border-green-200">
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-sm text-green-700">Tasa de Desviación</p>
+                            <p className="text-2xl font-bold text-green-900">
+                              {diversionRate.toFixed(1)}%
+                            </p>
+                            <p className="text-xs text-green-600">
+                              {diversionRate >= 90 ? '🎯 Objetivo TRUE alcanzado' : `Falta ${(90 - diversionRate).toFixed(1)}% para TRUE`}
+                            </p>
+                          </div>
+                          <Gauge className="h-8 w-8 text-green-600" />
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    <Card className="bg-gradient-to-r from-blue-50 to-blue-100 border-blue-200">
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-sm text-blue-700">Materiales Únicos</p>
+                            <p className="text-2xl font-bold text-blue-900">
+                              {materials?.length || 0}
+                            </p>
+                            <p className="text-xs text-blue-600">
+                              Tipos caracterizados
+                            </p>
+                          </div>
+                          <Target className="h-8 w-8 text-blue-600" />
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    <Card className="bg-gradient-to-r from-purple-50 to-purple-100 border-purple-200">
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-sm text-purple-700">Eficiencia del Cuarteo</p>
+                            <p className="text-2xl font-bold text-purple-900">
+                              {audit.totalWeightBefore > 0 ? ((totalCharacterizedWeight / audit.totalWeightBefore) * 100).toFixed(1) : '0'}%
+                            </p>
+                            <p className="text-xs text-purple-600">
+                              del peso total procesado
+                            </p>
+                          </div>
+                          <Activity className="h-8 w-8 text-purple-600" />
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  {/* Resumen tabular detallado */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <FileText className="h-5 w-5" />
+                        Resumen Detallado por Destino
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-sm">
+                          <thead>
+                            <tr className="border-b">
+                              <th className="text-left p-2">Destino Final</th>
+                              <th className="text-right p-2">Peso (kg)</th>
+                              <th className="text-right p-2">Porcentaje</th>
+                              <th className="text-right p-2">Materiales</th>
+                              <th className="text-center p-2">Impacto TRUE</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {Object.entries(destinationBreakdown).map(([key, data]) => {
+                              if (data.weight === 0) return null;
+                              return (
+                                <tr key={key} className="border-b hover:bg-gray-50">
+                                  <td className="p-2">
+                                    <div className="flex items-center gap-2">
+                                      <div className={`w-3 h-3 rounded-full ${data.color}`}></div>
+                                      <span className="font-medium">{data.label}</span>
+                                    </div>
+                                  </td>
+                                  <td className="text-right p-2 font-semibold">
+                                    {data.weight.toFixed(1)}
+                                  </td>
+                                  <td className="text-right p-2">
+                                    {totalCharacterizedWeight > 0 
+                                      ? ((data.weight / totalCharacterizedWeight) * 100).toFixed(1)
+                                      : '0.0'}%
+                                  </td>
+                                  <td className="text-right p-2">
+                                    {data.materials.length}
+                                  </td>
+                                  <td className="text-center p-2">
+                                    {key === 'landfill' ? (
+                                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-red-100 text-red-800">
+                                        ❌ No cuenta
+                                      </span>
+                                    ) : (
+                                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">
+                                        ✅ Cuenta para TRUE
+                                      </span>
+                                    )}
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Lista de Materiales */}
+                  {materials && materials.length > 0 && (
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>Materiales Identificados ({materials.length})</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-2 max-h-60 overflow-y-auto">
+                          {materials.map((material: ZeroWasteMaterial) => (
+                            <div key={material.id} className="flex items-center justify-between py-2 px-3 bg-gray-50 rounded">
+                              <div className="flex items-center gap-2">
+                                {material.divertible ? (
+                                  <CheckCircle className="h-4 w-4 text-green-600" />
+                                ) : (
+                                  <Trash2 className="h-4 w-4 text-red-600" />
+                                )}
+                                <div>
+                                  <p className="text-sm font-medium">{material.materialType}</p>
+                                  <p className="text-xs text-gray-600">{material.materialCategory}</p>
+                                </div>
+                              </div>
+                              <div className="text-right">
+                                <p className="text-sm font-semibold">{material.weight} kg</p>
+                                <p className="text-xs text-gray-600">{material.percentage?.toFixed(1) || '0.0'}%</p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
 
                   {/* Observaciones */}
                   {audit.notes && (
