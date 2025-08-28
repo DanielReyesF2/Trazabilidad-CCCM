@@ -795,14 +795,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create new audit
   app.post("/api/zero-waste-audits", async (req: Request, res: Response) => {
     try {
+      console.log("Received audit data:", JSON.stringify(req.body, null, 2));
       const validatedData = insertZeroWasteAuditSchema.parse(req.body);
+      console.log("Validated data:", JSON.stringify(validatedData, null, 2));
       const audit = await storage.createZeroWasteAudit(validatedData);
       res.status(201).json(audit);
     } catch (error) {
       if (error instanceof z.ZodError) {
+        console.error("Validation errors:", error.errors);
         return res.status(400).json({ 
           message: "Validation error", 
-          errors: error.errors 
+          errors: error.errors,
+          receivedData: req.body
         });
       }
       console.error("Error creating audit:", error);

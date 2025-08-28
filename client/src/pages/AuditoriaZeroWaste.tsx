@@ -1450,19 +1450,19 @@ export default function AuditoriaZeroWasteForm({ onSaved, onCancel }: AuditoriaZ
                             
                             const auditPayload = {
                               clientId: 4, // Club Campestre
-                              auditDate: new Date(auditData.auditDate),
-                              auditType: auditData.auditType,
-                              auditorName: auditData.auditorName,
-                              auditorTitle: auditData.auditorTitle,
-                              totalWeightBefore: auditData.totalWeightBefore,
+                              auditDate: new Date(auditData.auditDate).toISOString(),
+                              auditType: auditData.auditType || 'quarterly',
+                              auditorName: auditData.auditorName || 'Auditor',
+                              auditorTitle: auditData.auditorTitle || 'Coordinador Ambiental',
+                              totalWeightBefore: parseFloat(auditData.totalWeightBefore?.toString() || '0'),
                               quadrantNumber: 1, // Simplificado por ahora
-                              quadrantWeight: auditData.remainingWeight,
-                              weather: auditData.weather,
-                              temperature: auditData.temperature,
-                              humidity: auditData.humidity,
+                              quadrantWeight: parseFloat(auditData.remainingWeight?.toString() || '0'),
+                              weather: auditData.weather || 'soleado',
+                              temperature: auditData.temperature ? parseFloat(auditData.temperature.toString()) : null,
+                              humidity: auditData.humidity ? parseFloat(auditData.humidity.toString()) : null,
                               status: 'completed',
-                              notes: auditData.notes,
-                              photos: auditData.photos
+                              notes: auditData.notes || '',
+                              photos: auditData.photos || []
                             };
 
                             const response = await fetch('/api/zero-waste-audits', {
