@@ -28,8 +28,14 @@ import {
   Home,
   Plus,
   Edit,
-  X
+  X,
+  Calculator,
+  TrendingUp,
+  Gauge,
+  BarChart3,
+  PieChart
 } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart as RechartsPieChart, Cell, Pie } from 'recharts';
 import { Link } from 'wouter';
 import { useToast } from '@/hooks/use-toast';
 
@@ -196,6 +202,57 @@ export default function AuditoriaZeroWasteForm({ onSaved, onCancel }: AuditoriaZ
     transportTime: 0
   });
 
+  // Funciones de cálculo automático
+  const calculateEfficiency = () => {
+    const fieldsCompleted = [
+      auditData.auditDate,
+      auditData.auditorName,
+      auditData.auditorTitle,
+      auditData.teamMembers,
+      auditData.numberOfBags > 0,
+      auditData.totalWeightBefore > 0,
+      auditData.quadrantWeights.A + auditData.quadrantWeights.B + auditData.quadrantWeights.C + auditData.quadrantWeights.D > 0
+    ].filter(Boolean).length;
+    return Math.round((fieldsCompleted / 7) * 100);
+  };
+
+  const calculateNormCompliance = () => {
+    const checks = [
+      auditData.numberOfBags <= 250,
+      auditData.areaLength >= 3.5 && auditData.areaLength <= 4.5,
+      auditData.areaWidth >= 3.5 && auditData.areaWidth <= 4.5,
+      auditData.underRoof,
+      auditData.teamMembers.split(',').length >= 3,
+      auditData.remainingWeight >= 50
+    ];
+    const passed = checks.filter(Boolean).length;
+    return Math.round((passed / checks.length) * 100);
+  };
+
+  const calculateTotalCharacterizedWeight = () => {
+    return auditData.bags.reduce((sum, bag) => sum + bag.weight, 0);
+  };
+
+  const calculateDiversionRate = () => {
+    const totalWeight = calculateTotalCharacterizedWeight();
+    if (totalWeight === 0) return 0;
+    const divertedWeight = auditData.bags
+      .filter(bag => bag.divertible)
+      .reduce((sum, bag) => sum + bag.weight, 0);
+    return Math.round((divertedWeight / totalWeight) * 100);
+  };
+
+  const getQuadrantData = () => {
+    const total = auditData.quadrantWeights.A + auditData.quadrantWeights.B + 
+                  auditData.quadrantWeights.C + auditData.quadrantWeights.D;
+    return [
+      { name: 'A', weight: auditData.quadrantWeights.A, percentage: total > 0 ? (auditData.quadrantWeights.A / total) * 100 : 0, fill: '#ef4444' },
+      { name: 'B', weight: auditData.quadrantWeights.B, percentage: total > 0 ? (auditData.quadrantWeights.B / total) * 100 : 0, fill: '#3b82f6' },
+      { name: 'C', weight: auditData.quadrantWeights.C, percentage: total > 0 ? (auditData.quadrantWeights.C / total) * 100 : 0, fill: '#10b981' },
+      { name: 'D', weight: auditData.quadrantWeights.D, percentage: total > 0 ? (auditData.quadrantWeights.D / total) * 100 : 0, fill: '#f59e0b' }
+    ];
+  };
+
   const nextStep = () => {
     if (currentStep < AUDIT_STEPS.length) {
       setCurrentStep(currentStep + 1);
@@ -327,13 +384,55 @@ export default function AuditoriaZeroWasteForm({ onSaved, onCancel }: AuditoriaZ
                 ))}
               </CardContent>
 
-              {/* Resumen actual */}
+              {/* Métricas en tiempo real */}
+              <CardHeader>
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <Gauge className="h-4 w-4" />
+                  Métricas en Tiempo Real
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {/* Eficiencia de completado */}
+                <div className="space-y-2">
+                  <div className="flex justify-between text-xs">
+                    <span>Completado</span>
+                    <span>{calculateEfficiency()}%</span>
+                  </div>
+                  <Progress value={calculateEfficiency()} className="h-2" />
+                </div>
+
+                {/* Cumplimiento normativo */}
+                <div className="space-y-2">
+                  <div className="flex justify-between text-xs">
+                    <span>Cumplimiento NMX</span>
+                    <span>{calculateNormCompliance()}%</span>
+                  </div>
+                  <Progress value={calculateNormCompliance()} className="h-2 bg-blue-100" />
+                </div>
+
+                {/* Tasa de desviación actual */}
+                {calculateTotalCharacterizedWeight() > 0 && (
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-xs">
+                      <span>Desviación TRUE</span>
+                      <span className={calculateDiversionRate() >= 90 ? 'text-green-600 font-bold' : 'text-orange-600'}>
+                        {calculateDiversionRate()}%
+                      </span>
+                    </div>
+                    <Progress 
+                      value={calculateDiversionRate()} 
+                      className={`h-2 ${calculateDiversionRate() >= 90 ? 'bg-green-100' : 'bg-orange-100'}`} 
+                    />
+                  </div>
+                )}
+              </CardContent>
+
               <CardHeader>
                 <CardTitle className="text-sm">Resumen</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 <div className="text-sm">
-                  <p><strong>Auditor:</strong> {auditData.auditorName}</p>
+                  <p><strong>Auditor:</strong> {auditData.auditorName || 'Sin definir'}</p>
                   <p><strong>Fecha:</strong> {auditData.auditDate}</p>
                   {auditData.totalWeightBefore > 0 && (
                     <p><strong>Peso total:</strong> {auditData.totalWeightBefore} kg</p>
@@ -349,6 +448,9 @@ export default function AuditoriaZeroWasteForm({ onSaved, onCancel }: AuditoriaZ
                   )}
                   {auditData.bags.length > 0 && (
                     <p><strong>Bolsas caracterizadas:</strong> {auditData.bags.length}</p>
+                  )}
+                  {calculateTotalCharacterizedWeight() > 0 && (
+                    <p><strong>Peso caracterizado:</strong> {calculateTotalCharacterizedWeight().toFixed(1)} kg</p>
                   )}
                 </div>
               </CardContent>
@@ -790,16 +892,45 @@ export default function AuditoriaZeroWasteForm({ onSaved, onCancel }: AuditoriaZ
                           </div>
                         </div>
 
-                        {/* Resumen de pesos */}
-                        <div className="mt-6 text-center">
-                          <p className="text-sm text-gray-600">
-                            <strong>Total cuadrantes:</strong> {' '}
-                            {(auditData.quadrantWeights.A + auditData.quadrantWeights.B + 
-                              auditData.quadrantWeights.C + auditData.quadrantWeights.D).toFixed(1)} kg
-                          </p>
-                          <p className="text-sm text-gray-600">
-                            <strong>Peso original:</strong> {auditData.totalWeightBefore} kg
-                          </p>
+                        {/* Visualización en tiempo real de cuadrantes */}
+                        <div className="mt-6 space-y-4">
+                          <div className="text-center">
+                            <p className="text-sm text-gray-600">
+                              <strong>Total cuadrantes:</strong> {' '}
+                              {(auditData.quadrantWeights.A + auditData.quadrantWeights.B + 
+                                auditData.quadrantWeights.C + auditData.quadrantWeights.D).toFixed(1)} kg
+                            </p>
+                            <p className="text-sm text-gray-600">
+                              <strong>Peso original:</strong> {auditData.totalWeightBefore} kg
+                            </p>
+                          </div>
+
+                          {/* Gráfico de cuadrantes */}
+                          {(auditData.quadrantWeights.A + auditData.quadrantWeights.B + 
+                            auditData.quadrantWeights.C + auditData.quadrantWeights.D) > 0 && (
+                            <div className="bg-white p-4 rounded-lg border">
+                              <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
+                                <BarChart3 className="h-4 w-4" />
+                                Distribución por Cuadrante
+                              </h4>
+                              <div className="h-32">
+                                <ResponsiveContainer width="100%" height="100%">
+                                  <BarChart data={getQuadrantData()}>
+                                    <CartesianGrid strokeDasharray="3 3" />
+                                    <XAxis dataKey="name" />
+                                    <YAxis />
+                                    <Tooltip 
+                                      formatter={(value: any, name: string) => [
+                                        `${value.toFixed(1)} kg`, 
+                                        name === 'weight' ? 'Peso' : name
+                                      ]}
+                                    />
+                                    <Bar dataKey="weight" fill="#b5e951" radius={[2, 2, 0, 0]} />
+                                  </BarChart>
+                                </ResponsiveContainer>
+                              </div>
+                            </div>
+                          )}
                         </div>
                       </div>
                     )}
