@@ -8,6 +8,7 @@ import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { Link } from 'wouter';
 import AuditoriaZeroWasteForm from './AuditoriaZeroWaste';
+import TRUEAuditDashboard from '@/components/TRUEAuditDashboard';
 import { 
   Plus,
   FileText,
@@ -63,6 +64,7 @@ interface ZeroWasteMaterial {
 export default function AuditoriaZeroWaste() {
   const [showNewAuditForm, setShowNewAuditForm] = useState(false);
   const [selectedAudit, setSelectedAudit] = useState<number | null>(null);
+  const [showDetailedView, setShowDetailedView] = useState(false);
   const { toast } = useToast();
 
   const { data: audits, isLoading: auditsLoading, refetch } = useQuery<ZeroWasteAudit[]>({
@@ -367,6 +369,34 @@ export default function AuditoriaZeroWaste() {
                 diversionRate: data.total > 0 ? (data.diverted / data.total) * 100 : 0
               }));
 
+              // Vista avanzada TRUE Dashboard
+              if (showDetailedView && materials) {
+                return (
+                  <div className="bg-white rounded-lg border p-1">
+                    <TRUEAuditDashboard 
+                      auditData={{
+                        auditorName: audit.auditorName,
+                        auditDate: audit.auditDate,
+                        totalWeightBefore: audit.totalWeightBefore,
+                        remainingWeight: audit.quadrantWeight || (audit.totalWeightBefore * 0.25),
+                        bags: materials.map((material, index) => ({
+                          id: material.id.toString(),
+                          bagNumber: index + 1,
+                          materialType: material.materialType,
+                          category: material.materialCategory,
+                          weight: material.weight,
+                          divertible: material.divertible,
+                          destination: material.divertible ? 'recycling' : 'landfill'
+                        })),
+                        weather: audit.weather,
+                        temperature: audit.temperature,
+                        humidity: audit.humidity
+                      }}
+                    />
+                  </div>
+                );
+              }
+
               return (
                 <div className="space-y-6">
                   {/* Información general */}
@@ -378,6 +408,14 @@ export default function AuditoriaZeroWaste() {
                           Detalles de Auditoría
                         </div>
                         <div className="flex gap-2">
+                          <Button 
+                            size="sm" 
+                            variant={showDetailedView ? "default" : "outline"}
+                            onClick={() => setShowDetailedView(!showDetailedView)}
+                          >
+                            <Eye className="h-4 w-4 mr-2" />
+                            {showDetailedView ? 'Vista Simple' : 'Dashboard Avanzado'}
+                          </Button>
                           <Button variant="outline" size="sm">
                             <Download className="h-4 w-4 mr-2" />
                             Descargar PDF

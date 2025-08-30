@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import TRUEAuditDashboard from '@/components/TRUEAuditDashboard';
 import { 
   ClipboardList, 
   Scale, 

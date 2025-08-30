@@ -1,0 +1,288 @@
+import React, { useMemo, useState } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import {
+  PieChart,
+  Pie,
+  Cell,
+  Tooltip,
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Legend,
+  LabelList,
+} from "recharts";
+import { motion } from "framer-motion";
+import { CheckCircle, AlertTriangle, Download } from "lucide-react";
+
+/**
+ * TRUE Zero Waste – Audit Dashboard
+ * Single‑file React component ready to drop in your app.
+ * - Tailwind UI classes used for layout/styling
+ * - Uses shadcn/ui Card & Button, lucide-react icons, recharts for charts
+ * - All figures are derived from the sample you provided
+ *
+ * How to use:
+ * <AuditDashboard />
+ */
+
+// ---------------------------
+// 1) Raw input (from audit)
+// ---------------------------
+const RAW = {
+  site: "Club Campestre CDMX",
+  date: "2025-08-28",
+  auditor: "Daniel Reyes",
+  weather: { climate: "cloudy", tempC: 18, humidity: 10 },
+  preQuarterLoadKg: 441.25, // Peso total previo al cuarteo
+  sampleKg: 63.0, // Muestra caracterizada
+  discardedBagsCount: 68, // Conteo de bolsas descartadas (cuadrantes no elegidos)
+  // Material lines captured in the sample (kg)
+  materialsSample: [
+    { key: "sanitarios_1", name: "Residuos sanitarios (1)", kg: 24, flow: "no" },
+    { key: "sanitarios_2", name: "Residuos sanitarios (2)", kg: 18, flow: "no" },
+    { key: "papel_sucio", name: "Papel sucio/contaminado", kg: 2, flow: "no" },
+    { key: "pet", name: "PET (#1)", kg: 3.5, flow: "si" },
+    { key: "hdpe", name: "HDPE (#2)", kg: 5, flow: "si" },
+    { key: "aluminio", name: "Aluminio (otros)", kg: 1, flow: "si" },
+    { key: "acero", name: "Acero (latas)", kg: 2.5, flow: "si" },
+    { key: "vidrio_ambar", name: "Vidrio ámbar", kg: 6, flow: "si" },
+    { key: "papel_periodico", name: "Papel periódico", kg: 1, flow: "si" },
+  ] as { key: string; name: string; kg: number; flow: "si" | "no" }[],
+};
+
+// ---------------------------
+// 2) Helpers
+// ---------------------------
+const fmt = (n: number, d = 1) =>
+  new Intl.NumberFormat("es-MX", { minimumFractionDigits: d, maximumFractionDigits: d }).format(n);
+
+function useAuditCalculations() {
+  const F = useMemo(() => RAW.preQuarterLoadKg / RAW.sampleKg, []); // factor de extrapolación
+
+  const byMaterial = useMemo(() => {
+    return RAW.materialsSample.map((m) => ({
+      ...m,
+      kgTotal: m.kg * F,
+    }));
+  }, [F]);
+
+  const totals = useMemo(() => {
+    const deviable = byMaterial
+      .filter((m) => m.flow === "si")
+      .reduce((s, m) => s + m.kgTotal, 0);
+    const nonDeviable = RAW.preQuarterLoadKg - deviable;
+    const rate = (deviable / RAW.preQuarterLoadKg) * 100;
+    return { deviable, nonDeviable, rate };
+  }, [byMaterial]);
+
+  // Simple quality flags
+  const sampleShare = (RAW.sampleKg / RAW.preQuarterLoadKg) * 100; // % del total
+  const flags = {
+    smallSample: RAW.sampleKg < 75 || sampleShare < 10, // criterio operativo sugerido
+    rateBelowTRUE: (totals.rate || 0) < 90,
+  };
+
+  return { F, byMaterial, totals, sampleShare, flags };
+}
+
+// ---------------------------
+// 3) Charts data
+// ---------------------------
+function useCharts() {
+  const { byMaterial, totals } = useAuditCalculations();
+
+  const pieFlow = [
+    { name: "Desviable", value: Number(totals.deviable.toFixed(2)) },
+    { name: "No desviable", value: Number(totals.nonDeviable.toFixed(2)) },
+  ];
+
+  const barMaterials = byMaterial
+    .slice()
+    .sort((a, b) => b.kgTotal - a.kgTotal)
+    .map((m) => ({ name: m.name, kg: Number(m.kgTotal.toFixed(1)), flow: m.flow }));
+
+  return { pieFlow, barMaterials };
+}
+
+// ---------------------------
+// 4) UI Component
+// ---------------------------
+export default function AuditDashboard() {
+  const { F, totals, sampleShare, flags } = useAuditCalculations();
+  const { pieFlow, barMaterials } = useCharts();
+  const [tableMode, setTableMode] = useState<"muestra" | "total">("total");
+
+  return (
+    <div className="w-full p-6 md:p-10 space-y-8">
+      {/* Header */}
+      <div className="flex items-start justify-between gap-4 flex-wrap">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Auditoría TRUE Zero Waste</h1>
+          <p className="text-sm text-muted-foreground">
+            {RAW.site} — {new Date(RAW.date).toLocaleDateString("es-MX")}
+          </p>
+          <p className="text-sm text-muted-foreground">
+            Auditor: {RAW.auditor} • Clima: {RAW.weather.climate}, {RAW.weather.tempC}°C, Humedad {RAW.weather.humidity}%
+          </p>
+        </div>
+        <div className="flex items-center gap-3">
+          <Button variant="outline"><Download className="w-4 h-4 mr-2"/>Descargar PDF</Button>
+        </div>
+      </div>
+
+      {/* KPI Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <KpiCard title="Peso total procesado" value={`${fmt(RAW.preQuarterLoadKg, 2)} kg`} subtitle="Previo al cuarteo" />
+        <KpiCard title="Muestra caracterizada" value={`${fmt(RAW.sampleKg, 1)} kg`} subtitle={`${fmt(sampleShare,1)}% del total`} />
+        <KpiCard title="Factor de extrapolación" value={fmt(F, 3)} subtitle="Total / Muestra" />
+        <KpiCard title="Tasa de desviación" value={`${fmt(totals.rate, 1)}%`} subtitle={`Progreso a 90%: ${fmt((totals.rate/90)*100,1)}%`} accent />
+      </div>
+
+      {/* Alerts */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {flags.smallSample && (
+          <AlertCard
+            title="Muestra pequeña vs. carga total"
+            text={`La muestra es de ${fmt(RAW.sampleKg,1)} kg (${fmt(sampleShare,1)}% del total). Sugerido: ≥ 75–100 kg o ≥ 10% del total.`}
+          />
+        )}
+        {flags.rateBelowTRUE && (
+          <AlertCard
+            title="Desviación por debajo del objetivo TRUE"
+            text={`Desviación actual: ${fmt(totals.rate,1)}%. Objetivo: 90%.`}
+          />
+        )}
+      </div>
+
+      {/* Charts */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card className="rounded-2xl">
+          <CardContent className="p-6 h-80">
+            <h3 className="font-semibold mb-2">Composición por flujo (extrapolado)</h3>
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie data={pieFlow} dataKey="value" nameKey="name" outerRadius={110}>
+                  {pieFlow.map((_, idx) => (
+                    <Cell key={idx} />
+                  ))}
+                  <LabelList dataKey={(v: any) => `${fmt(v.value,1)} kg`} position="outside" />
+                </Pie>
+                <Tooltip formatter={(v: any) => `${fmt(Number(v),1)} kg`} />
+                <Legend />
+              </PieChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+        <Card className="rounded-2xl">
+          <CardContent className="p-6 h-80">
+            <h3 className="font-semibold mb-2">Top materiales (kg extrapolados)</h3>
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={barMaterials} margin={{ left: 16, right: 16 }}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" tick={{ fontSize: 12 }} interval={0} angle={-15} height={70} />
+                <YAxis />
+                <Tooltip formatter={(v: any) => `${fmt(Number(v),1)} kg`} />
+                <Bar dataKey="kg">
+                  <LabelList dataKey="kg" formatter={(v: any) => fmt(Number(v),1)} position="top" />
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Table */}
+      <Card className="rounded-2xl">
+        <CardContent className="p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-semibold">Materiales identificados</h3>
+            <div className="flex gap-2">
+              <Button variant={tableMode === "muestra" ? "default" : "outline"} onClick={() => setTableMode("muestra")}>Ver muestra</Button>
+              <Button variant={tableMode === "total" ? "default" : "outline"} onClick={() => setTableMode("total")}>Ver extrapolado</Button>
+            </div>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="min-w-full text-sm">
+              <thead>
+                <tr className="text-left text-muted-foreground">
+                  <th className="py-2 pr-4">Material</th>
+                  <th className="py-2 pr-4">Flujo</th>
+                  <th className="py-2 pr-4">Peso (kg)</th>
+                  <th className="py-2 pr-4">% del total</th>
+                </tr>
+              </thead>
+              <tbody>
+                {getTableRows(tableMode).map((row) => (
+                  <tr key={row.key} className="border-t">
+                    <td className="py-2 pr-4">{row.name}</td>
+                    <td className="py-2 pr-4">{row.flow === "si" ? "Desviable" : "No desviable"}</td>
+                    <td className="py-2 pr-4">{fmt(row.kg, 1)}</td>
+                    <td className="py-2 pr-4">{fmt(row.share, 1)}%</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <p className="text-xs text-muted-foreground mt-3">
+            Bolsas de cuadrantes descartados: <strong>{RAW.discardedBagsCount}</strong>
+          </p>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+// ---------------------------
+// Subcomponents
+// ---------------------------
+function KpiCard({ title, value, subtitle, accent }: { title: string; value: string; subtitle?: string; accent?: boolean }) {
+  return (
+    <Card className={`rounded-2xl ${accent ? "border-l-8" : ""}`}> 
+      <CardContent className="p-5">
+        <p className="text-xs uppercase tracking-wider text-muted-foreground">{title}</p>
+        <div className="text-2xl font-semibold mt-1">{value}</div>
+        {subtitle && <p className="text-xs text-muted-foreground mt-1">{subtitle}</p>}
+      </CardContent>
+    </Card>
+  );
+}
+
+function AlertCard({ title, text }: { title: string; text: string }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="rounded-2xl border bg-amber-50/70 text-amber-900 p-4 flex items-start gap-3"
+    >
+      <AlertTriangle className="w-5 h-5 mt-0.5" />
+      <div>
+        <div className="font-semibold">{title}</div>
+        <div className="text-sm leading-relaxed">{text}</div>
+      </div>
+    </motion.div>
+  );
+}
+
+// ---------------------------
+// Table data builder
+// ---------------------------
+function getTableRows(mode: "muestra" | "total") {
+  const F = RAW.preQuarterLoadKg / RAW.sampleKg;
+  const lines = RAW.materialsSample.map((m) => {
+    const kg = mode === "muestra" ? m.kg : m.kg * F;
+    const total = mode === "muestra" ? RAW.sampleKg : RAW.preQuarterLoadKg;
+    return {
+      key: m.key,
+      name: m.name,
+      flow: m.flow,
+      kg,
+      share: (kg / total) * 100,
+    };
+  });
+  return lines.sort((a, b) => b.kg - a.kg);
+}
