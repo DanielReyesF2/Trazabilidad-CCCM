@@ -1,19 +1,87 @@
 import { useState, useMemo } from 'react';
-import { SankeyDiagram } from '@/components/SankeyDiagram';
+import { SankeyDiagram, SankeyData, SankeyNode, SankeyLink } from '@/components/SankeyDiagram';
 import { useSankeyData, useYearlySankeyData } from '@/hooks/useSankeyData';
+import { useTrueYearData } from '@/hooks/useTrueYearData';
+import { generateTrueYearPdfReport } from '@/lib/trueYearReportPdf';
+import { WASTE_STREAM_COLORS } from '@/lib/sankey-utils';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
-import { TrendingUp, TrendingDown, BarChart3, Recycle, Leaf, Gift, Trash2, AlertTriangle, Home } from 'lucide-react';
+import { TrendingUp, TrendingDown, BarChart3, Recycle, Leaf, Gift, Trash2, AlertTriangle, Home, Download, Award, FileText } from 'lucide-react';
 import { Link } from 'wouter';
 import { motion } from 'framer-motion';
+
+// Transform TRUE Year totals to Sankey data
+function transformTrueYearToSankey(totals: {
+  totalRecycling: number;
+  totalCompost: number;
+  totalReuse: number;
+  totalLandfill: number;
+  totalDiverted: number;
+  totalGenerated: number;
+}): SankeyData {
+  const nodes: SankeyNode[] = [];
+  const links: SankeyLink[] = [];
+
+  // Helper functions
+  const addNode = (id: string, label: string, category: 'source' | 'process' | 'destination', color?: string) => {
+    if (!nodes.find(n => n.id === id)) {
+      nodes.push({ id, label, category, color });
+    }
+  };
+
+  const addLink = (source: string, target: string, value: number, color?: string) => {
+    if (value > 0 && isFinite(value) && !isNaN(value)) {
+      links.push({ source, target, value, color });
+    }
+  };
+
+  // Source node
+  addNode('total_generated', 'Eventos e Instalaciones', 'source', WASTE_STREAM_COLORS.generation);
+
+  // Category nodes
+  addNode('recyclables_category', 'Reciclables', 'process', WASTE_STREAM_COLORS.recyclables);
+  addNode('organics_category', 'Orgánicos', 'process', WASTE_STREAM_COLORS.organics);
+  addNode('reuse_category', 'Casa Club', 'process', WASTE_STREAM_COLORS.reuse);
+  addNode('inorganics_category', 'Inorgánicos', 'process', WASTE_STREAM_COLORS.inorganics);
+
+  // Destination nodes
+  addNode('recycling_facility', 'Reciclaje Recupera', 'destination', WASTE_STREAM_COLORS.recycling_center);
+  addNode('composting_facility', 'Biodegradación ORKA', 'destination', WASTE_STREAM_COLORS.composting_facility);
+  addNode('donation_center', 'Reciclaje Verde Ciudad', 'destination', WASTE_STREAM_COLORS.donation_center);
+  addNode('landfill', 'Disposición Controlada', 'destination', WASTE_STREAM_COLORS.landfill);
+
+  // Links from source to categories
+  if (totals.totalRecycling > 0) {
+    addLink('total_generated', 'recyclables_category', totals.totalRecycling, WASTE_STREAM_COLORS.recyclables);
+    addLink('recyclables_category', 'recycling_facility', totals.totalRecycling, WASTE_STREAM_COLORS.recycling_center);
+  }
+
+  if (totals.totalCompost > 0) {
+    addLink('total_generated', 'organics_category', totals.totalCompost, WASTE_STREAM_COLORS.organics);
+    addLink('organics_category', 'composting_facility', totals.totalCompost, WASTE_STREAM_COLORS.composting_facility);
+  }
+
+  if (totals.totalReuse > 0) {
+    addLink('total_generated', 'reuse_category', totals.totalReuse, WASTE_STREAM_COLORS.reuse);
+    addLink('reuse_category', 'donation_center', totals.totalReuse, WASTE_STREAM_COLORS.donation_center);
+  }
+
+  if (totals.totalLandfill > 0) {
+    addLink('total_generated', 'inorganics_category', totals.totalLandfill, WASTE_STREAM_COLORS.inorganics);
+    addLink('inorganics_category', 'landfill', totals.totalLandfill, WASTE_STREAM_COLORS.landfill);
+  }
+
+  return { nodes, links };
+}
 
 export default function FlujoDeMateriales() {
   const [selectedYear, setSelectedYear] = useState<number>(2025);
   const [selectedMonth, setSelectedMonth] = useState<number | undefined>(8); // August 2025 as default
-  const [viewMode, setViewMode] = useState<'monthly' | 'yearly'>('monthly');
+  const [viewMode, setViewMode] = useState<'monthly' | 'yearly' | 'trueYear'>('monthly');
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
 
   // Get data based on view mode
   const monthlyResult = useSankeyData({
@@ -22,8 +90,51 @@ export default function FlujoDeMateriales() {
   });
 
   const yearlyResult = useYearlySankeyData(4, selectedYear);
+  
+  // TRUE Year data (Oct 2024 - Sep 2025)
+  const trueYearResult = useTrueYearData();
 
-  const currentResult = viewMode === 'monthly' ? monthlyResult : yearlyResult;
+  // Transform TRUE Year data to Sankey format
+  const trueYearSankeyData = useMemo(() => {
+    if (!trueYearResult.data) {
+      return { nodes: [], links: [] };
+    }
+    return transformTrueYearToSankey(trueYearResult.totals);
+  }, [trueYearResult.data, trueYearResult.totals]);
+
+  // Select appropriate result based on view mode
+  const currentResult = viewMode === 'trueYear' 
+    ? {
+        data: trueYearSankeyData,
+        isLoading: trueYearResult.isLoading,
+        error: trueYearResult.error,
+        validation: { isValid: true, errors: [], warnings: [], sourceTotal: trueYearResult.totals.totalGenerated, destinationTotal: trueYearResult.totals.totalGenerated },
+        period: trueYearResult.period,
+        diversionStats: {
+          totalGenerated: trueYearResult.totals.totalGenerated,
+          totalDiverted: trueYearResult.totals.totalDiverted,
+          diversionRate: trueYearResult.totals.diversionRate,
+          breakdown: {
+            recycled: trueYearResult.totals.totalRecycling,
+            composted: trueYearResult.totals.totalCompost,
+            reused: trueYearResult.totals.totalReuse,
+            landfilled: trueYearResult.totals.totalLandfill,
+          }
+        }
+      }
+    : viewMode === 'monthly' ? monthlyResult : yearlyResult;
+
+  const handleDownloadTrueYearPdf = async () => {
+    if (!trueYearResult.data) return;
+    setIsGeneratingPdf(true);
+    try {
+      await generateTrueYearPdfReport(trueYearResult.data);
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+    } finally {
+      setIsGeneratingPdf(false);
+    }
+  };
 
   const monthNames = [
     '', 'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
@@ -150,7 +261,7 @@ export default function FlujoDeMateriales() {
               </div>
             </div>
             
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 flex-wrap">
               {/* View Mode Toggle */}
               <div className="flex bg-gray-100 rounded-lg p-1">
                 <Button
@@ -158,6 +269,7 @@ export default function FlujoDeMateriales() {
                   size="sm"
                   onClick={() => setViewMode('monthly')}
                   className="h-8 px-3"
+                  data-testid="btn-monthly-view"
                 >
                   Mensual
                 </Button>
@@ -166,27 +278,40 @@ export default function FlujoDeMateriales() {
                   size="sm"
                   onClick={() => setViewMode('yearly')}
                   className="h-8 px-3"
+                  data-testid="btn-yearly-view"
                 >
                   Anual
                 </Button>
+                <Button
+                  variant={viewMode === 'trueYear' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setViewMode('trueYear')}
+                  className="h-8 px-3 flex items-center gap-1"
+                  data-testid="btn-true-year-view"
+                >
+                  <Award className="h-3 w-3" />
+                  Año TRUE
+                </Button>
               </div>
 
-              {/* Year Selector */}
-              <Select
-                value={selectedYear.toString()}
-                onValueChange={(value) => setSelectedYear(parseInt(value))}
-              >
-                <SelectTrigger className="w-24">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {availableYears.map(year => (
-                    <SelectItem key={year} value={year.toString()}>
-                      {year}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              {/* Year Selector - Hide in TRUE Year mode */}
+              {viewMode !== 'trueYear' && (
+                <Select
+                  value={selectedYear.toString()}
+                  onValueChange={(value) => setSelectedYear(parseInt(value))}
+                >
+                  <SelectTrigger className="w-24" data-testid="select-year">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableYears.map(year => (
+                      <SelectItem key={year} value={year.toString()}>
+                        {year}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
 
               {/* Month Selector - Only show in monthly view */}
               {viewMode === 'monthly' && (
@@ -194,7 +319,7 @@ export default function FlujoDeMateriales() {
                   value={selectedMonth?.toString() || ''}
                   onValueChange={(value) => setSelectedMonth(value ? parseInt(value) : undefined)}
                 >
-                  <SelectTrigger className="w-32">
+                  <SelectTrigger className="w-32" data-testid="select-month">
                     <SelectValue placeholder="Mes" />
                   </SelectTrigger>
                   <SelectContent>
@@ -205,6 +330,21 @@ export default function FlujoDeMateriales() {
                     ))}
                   </SelectContent>
                 </Select>
+              )}
+
+              {/* TRUE Year PDF Download Button */}
+              {viewMode === 'trueYear' && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleDownloadTrueYearPdf}
+                  disabled={isGeneratingPdf || !trueYearResult.data}
+                  className="h-8 flex items-center gap-2 border-[#b5e951] text-[#273949] hover:bg-[#b5e951]/10"
+                  data-testid="btn-download-true-year-pdf"
+                >
+                  <FileText className="h-4 w-4" />
+                  {isGeneratingPdf ? 'Generando...' : 'Reporte PDF'}
+                </Button>
               )}
             </div>
           </div>
@@ -232,6 +372,54 @@ export default function FlujoDeMateriales() {
                       {currentResult.validation.warnings.map((warning, i) => (
                         <div key={i} className="text-orange-600">⚠ {warning}</div>
                       ))}
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
+
+        {/* TRUE Year Summary Banner */}
+        {viewMode === 'trueYear' && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-6"
+          >
+            <Card className={`border-2 ${currentResult.diversionStats.diversionRate >= 90 ? 'border-green-400 bg-green-50' : 'border-amber-400 bg-amber-50'}`}>
+              <CardContent className="p-6">
+                <div className="flex items-start gap-4">
+                  <div className={`p-3 rounded-full ${currentResult.diversionStats.diversionRate >= 90 ? 'bg-green-100' : 'bg-amber-100'}`}>
+                    <Award className={`h-8 w-8 ${currentResult.diversionStats.diversionRate >= 90 ? 'text-green-600' : 'text-amber-600'}`} />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                      Año TRUE Zero Waste
+                      <Badge className={currentResult.diversionStats.diversionRate >= 90 ? 'bg-green-600' : 'bg-amber-600'}>
+                        {currentResult.diversionStats.diversionRate >= 90 ? 'Certificación Alcanzada' : 'En Proceso'}
+                      </Badge>
+                    </h3>
+                    <p className="text-sm text-gray-600 mt-1">
+                      Período: Octubre 2024 - Septiembre 2025 (12 meses)
+                    </p>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
+                      <div className="text-center p-3 bg-white rounded-lg">
+                        <p className="text-2xl font-bold text-gray-900">{currentResult.diversionStats.diversionRate.toFixed(1)}%</p>
+                        <p className="text-xs text-gray-500">Tasa de Desviación</p>
+                      </div>
+                      <div className="text-center p-3 bg-white rounded-lg">
+                        <p className="text-2xl font-bold text-gray-900">{(currentResult.diversionStats.totalGenerated / 1000).toFixed(1)}</p>
+                        <p className="text-xs text-gray-500">Toneladas Totales</p>
+                      </div>
+                      <div className="text-center p-3 bg-white rounded-lg">
+                        <p className="text-2xl font-bold text-green-600">{(currentResult.diversionStats.totalDiverted / 1000).toFixed(1)}</p>
+                        <p className="text-xs text-gray-500">Toneladas Desviadas</p>
+                      </div>
+                      <div className="text-center p-3 bg-white rounded-lg">
+                        <p className="text-2xl font-bold text-red-600">{(currentResult.diversionStats.breakdown.landfilled / 1000).toFixed(1)}</p>
+                        <p className="text-xs text-gray-500">Toneladas a Relleno</p>
+                      </div>
                     </div>
                   </div>
                 </div>

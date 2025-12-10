@@ -298,6 +298,121 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Detailed waste tracking routes (Excel replication)
   
+  // TRUE Year data endpoint (October 2024 - September 2025)
+  // IMPORTANT: This route must come BEFORE the :year route to avoid "true-year" being parsed as year
+  app.get("/api/waste-excel/true-year", async (req: Request, res: Response) => {
+    try {
+      // TRUE Year: October 2024 to September 2025
+      const months2024 = await storage.getMonths(2024);
+      const months2025 = await storage.getMonths(2025);
+      
+      const monthsData = [];
+      const monthOrder = [
+        { year: 2024, month: 10, label: 'Oct 2024' },
+        { year: 2024, month: 11, label: 'Nov 2024' },
+        { year: 2024, month: 12, label: 'Dec 2024' },
+        { year: 2025, month: 1, label: 'Jan 2025' },
+        { year: 2025, month: 2, label: 'Feb 2025' },
+        { year: 2025, month: 3, label: 'Mar 2025' },
+        { year: 2025, month: 4, label: 'Apr 2025' },
+        { year: 2025, month: 5, label: 'May 2025' },
+        { year: 2025, month: 6, label: 'Jun 2025' },
+        { year: 2025, month: 7, label: 'Jul 2025' },
+        { year: 2025, month: 8, label: 'Aug 2025' },
+        { year: 2025, month: 9, label: 'Sep 2025' },
+      ];
+
+      for (const mo of monthOrder) {
+        const allMonths = mo.year === 2024 ? months2024 : months2025;
+        let monthRecord = allMonths.find(m => m.month === mo.month);
+        
+        if (!monthRecord) {
+          const monthNames = [
+            'Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun',
+            'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'
+          ];
+          
+          monthRecord = await storage.createMonth({
+            year: mo.year,
+            month: mo.month,
+            label: `${monthNames[mo.month - 1]} ${mo.year}`
+          });
+        }
+        
+        const recycling = await storage.getRecyclingEntries(monthRecord.id);
+        const compost = await storage.getCompostEntries(monthRecord.id);
+        const reuse = await storage.getReuseEntries(monthRecord.id);
+        const landfill = await storage.getLandfillEntries(monthRecord.id);
+        
+        // Calculate totals for this month
+        const totalRecycling = recycling.reduce((sum, r) => sum + (r.kg || 0), 0);
+        const totalCompost = compost.reduce((sum, c) => sum + (c.kg || 0), 0);
+        const totalReuse = reuse.reduce((sum, r) => sum + (r.kg || 0), 0);
+        const totalLandfill = landfill.reduce((sum, l) => sum + (l.kg || 0), 0);
+        const totalDiverted = totalRecycling + totalCompost + totalReuse;
+        const totalGenerated = totalDiverted + totalLandfill;
+        const diversionRate = totalGenerated > 0 ? (totalDiverted / totalGenerated) * 100 : 0;
+        
+        monthsData.push({
+          month: monthRecord,
+          year: mo.year,
+          monthNum: mo.month,
+          label: mo.label,
+          recycling,
+          compost,
+          reuse,
+          landfill,
+          totalRecycling,
+          totalCompost,
+          totalReuse,
+          totalLandfill,
+          totalDiverted,
+          totalGenerated,
+          diversionRate
+        });
+      }
+      
+      // Calculate overall totals for TRUE Year
+      const totals = monthsData.reduce((acc, m) => ({
+        totalRecycling: acc.totalRecycling + m.totalRecycling,
+        totalCompost: acc.totalCompost + m.totalCompost,
+        totalReuse: acc.totalReuse + m.totalReuse,
+        totalLandfill: acc.totalLandfill + m.totalLandfill,
+        totalDiverted: acc.totalDiverted + m.totalDiverted,
+        totalGenerated: acc.totalGenerated + m.totalGenerated,
+      }), {
+        totalRecycling: 0,
+        totalCompost: 0,
+        totalReuse: 0,
+        totalLandfill: 0,
+        totalDiverted: 0,
+        totalGenerated: 0,
+      });
+      
+      const overallDiversionRate = totals.totalGenerated > 0 
+        ? (totals.totalDiverted / totals.totalGenerated) * 100 
+        : 0;
+      
+      res.json({
+        period: 'TRUE Year Oct 2024 - Sep 2025',
+        months: monthsData,
+        totals: {
+          ...totals,
+          diversionRate: overallDiversionRate
+        },
+        materials: {
+          recycling: RECYCLING_MATERIALS,
+          compost: COMPOST_CATEGORIES,
+          reuse: REUSE_CATEGORIES,
+          landfill: LANDFILL_WASTE_TYPES
+        }
+      });
+    } catch (error) {
+      console.error("Error fetching TRUE year data:", error);
+      res.status(500).json({ message: "Failed to fetch TRUE year data" });
+    }
+  });
+  
   // Get waste data for a specific year (structured like Excel)
   app.get("/api/waste-excel/:year", async (req: Request, res: Response) => {
     try {
