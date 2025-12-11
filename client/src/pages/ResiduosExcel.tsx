@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
+import i18n from '@/lib/i18n';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line } from 'recharts';
 import { Button } from '@/components/ui/button';
@@ -11,6 +12,7 @@ import { useToast } from '@/hooks/use-toast';
 import AppLayout from '@/components/layout/AppLayout';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { generateTrueMonthPdfReport } from '@/lib/trueMonthReportPdf';
 import { 
   ChevronDown, 
   ChevronRight, 
@@ -73,6 +75,7 @@ export default function ResiduosExcel() {
   const { t } = useTranslation();
   const [selectedYear, setSelectedYear] = useState(2025);
   const [isTrueMode, setIsTrueMode] = useState(false);
+  const [selectedMonthIndex, setSelectedMonthIndex] = useState<number | null>(null);
   const [editedData, setEditedData] = useState<Record<string, any>>({});
   const [openSections, setOpenSections] = useState({
     recycling: true,
@@ -801,6 +804,19 @@ export default function ResiduosExcel() {
     generatePremiumPDF();
   };
 
+  // Generate Monthly PDF Report for TRUE Year
+  const handleGenerateMonthlyPDF = async () => {
+    if (!trueYearData || selectedMonthIndex === null) return;
+    
+    const selectedMonth = trueYearData.months[selectedMonthIndex];
+    if (!selectedMonth) return;
+
+    await generateTrueMonthPdfReport({
+      month: selectedMonth,
+      materials: trueYearData.materials
+    });
+  };
+
   // Chart labels based on current language
   const chartLabels = useMemo(() => ({
     recycling: t('chart.recycling'),
@@ -901,6 +917,7 @@ export default function ResiduosExcel() {
                   onClick={() => {
                     setIsTrueMode(!isTrueMode);
                     setEditedData({}); // Clear edits when switching modes
+                    setSelectedMonthIndex(null); // Reset month selection
                   }}
                   variant={isTrueMode ? "default" : "outline"}
                   className={isTrueMode ? "bg-green-600 hover:bg-green-700 text-white" : "border-green-600 text-green-600 hover:bg-green-50"}
@@ -908,6 +925,37 @@ export default function ResiduosExcel() {
                   <CheckCircle className="h-4 w-4 mr-2" />
                   {t('common.trueYear')}
                 </Button>
+                
+                {isTrueMode && trueYearData && (
+                  <>
+                    <Select 
+                      value={selectedMonthIndex !== null ? selectedMonthIndex.toString() : ""} 
+                      onValueChange={(value) => setSelectedMonthIndex(parseInt(value))}
+                    >
+                      <SelectTrigger className="w-40">
+                        <SelectValue placeholder={t('common.selectMonth')} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {trueYearData.months.map((month, index) => (
+                          <SelectItem key={index} value={index.toString()}>
+                            {month.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    
+                    <Button
+                      onClick={handleGenerateMonthlyPDF}
+                      disabled={selectedMonthIndex === null || !trueYearData}
+                      className="bg-blue-600 hover:bg-blue-700 text-white"
+                    >
+                      <div className="flex items-center gap-2">
+                        <Download className="h-4 w-4" />
+                        {t('common.monthlyPdf')}
+                      </div>
+                    </Button>
+                  </>
+                )}
                 
                 <Button
                   onClick={generateCleanPDF}

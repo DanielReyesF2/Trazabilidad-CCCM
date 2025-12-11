@@ -17,7 +17,9 @@
     "save": "Save Changes",
     "saving": "Saving...",
     "total": "Total",
-    "language": "Language"
+    "language": "Language",
+    "selectMonth": "Select month",
+    "monthlyPdf": "Monthly PDF"
   },
   "traceability": {
     "title": "WASTE TRACEABILITY",

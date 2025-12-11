@@ -17,7 +17,9 @@
     "save": "Guardar Cambios",
     "saving": "Guardando...",
     "total": "Total",
-    "language": "Idioma"
+    "language": "Idioma",
+    "selectMonth": "Seleccionar mes",
+    "monthlyPdf": "PDF Mensual"
   },
   "traceability": {
     "title": "TRAZABILIDAD RESIDUOS",
