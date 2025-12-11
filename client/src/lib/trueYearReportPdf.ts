@@ -1,8 +1,12 @@
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import i18n from './i18n';
 import logoPath from '@assets/Logo-ECONOVA-OF_Blanco.png';
 import cccmLogo from '@assets/CCCM_1754423231662.png';
 import type { TrueYearData, TrueYearMonthData } from '@/hooks/useTrueYearData';
+
+// Get translation function
+const t = (key: string): string => i18n.t(key);
 
 const COLORS = {
   navy: '#273949',
@@ -66,9 +70,9 @@ function addFooter(doc: jsPDF, pageNumber: number, totalPages: number) {
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(8);
   doc.setTextColor(255, 255, 255);
-  doc.text(`Página ${pageNumber} de ${totalPages}`, 105, pageHeight - 4, { align: 'center' });
-  doc.text('ECONOVA - Gestión Ambiental Integral', 15, pageHeight - 4);
-  doc.text(new Date().toLocaleDateString('es-MX'), 195, pageHeight - 4, { align: 'right' });
+  doc.text(`${t('pdf.page')} ${pageNumber} ${t('pdf.of')} ${totalPages}`, 105, pageHeight - 4, { align: 'center' });
+  doc.text(t('pdf.econova'), 15, pageHeight - 4);
+  doc.text(new Date().toLocaleDateString(i18n.language === 'es' ? 'es-MX' : 'en-US'), 195, pageHeight - 4, { align: 'right' });
 }
 
 export async function generateTrueYearPdfReport(data: TrueYearData): Promise<void> {
@@ -81,7 +85,7 @@ export async function generateTrueYearPdfReport(data: TrueYearData): Promise<voi
   const totalPages = 4;
 
   // ===== PAGE 1: COVER AND SUMMARY =====
-  addHeader(doc, 'REPORTE AÑO TRUE ZERO WASTE');
+  addHeader(doc, t('pdf.trueYearReport'));
   
   let y = 32;
   
@@ -89,17 +93,18 @@ export async function generateTrueYearPdfReport(data: TrueYearData): Promise<voi
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(20);
   doc.setTextColor(...parseHexColor(COLORS.navy));
-  doc.text('CERTIFICACIÓN TRUE ZERO WASTE', 105, y, { align: 'center' });
+  doc.text(t('pdf.trueZeroWaste'), 105, y, { align: 'center' });
   y += 10;
   
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(14);
   doc.setTextColor(...parseHexColor(COLORS.darkGray));
-  doc.text('Período: Octubre 2024 - Septiembre 2025', 105, y, { align: 'center' });
+  const periodText = i18n.language === 'es' ? 'Período: Octubre 2024 - Septiembre 2025' : 'Period: October 2024 - September 2025';
+  doc.text(periodText, 105, y, { align: 'center' });
   y += 8;
   
   doc.setFontSize(12);
-  doc.text('Club Campestre Ciudad de México', 105, y, { align: 'center' });
+  doc.text(t('pdf.clubName'), 105, y, { align: 'center' });
   y += 15;
 
   // Diversion Rate Panel
@@ -121,19 +126,19 @@ export async function generateTrueYearPdfReport(data: TrueYearData): Promise<voi
   doc.text(`${formatNumber(diversionRate)}%`, circleX, circleY + 2, { align: 'center' });
   
   doc.setFontSize(9);
-  doc.text('DESVIACIÓN', circleX, circleY + 9, { align: 'center' });
+  doc.text(t('pdf.diversion'), circleX, circleY + 9, { align: 'center' });
   
   // Status badge
   doc.setFontSize(11);
   doc.setTextColor(...parseHexColor(isPassing ? COLORS.green : COLORS.red));
-  const statusText = isPassing ? 'CERTIFICACIÓN ALCANZADA' : 'EN PROCESO';
+  const statusText = isPassing ? t('pdf.certificationAchieved') : t('pdf.inProgress');
   doc.text(statusText, 140, y + 15, { align: 'center' });
   
   doc.setFontSize(9);
   doc.setTextColor(...parseHexColor(COLORS.darkGray));
-  doc.text('Meta TRUE: 90% mínimo', 140, y + 22);
-  doc.text(`Estado actual: ${formatNumber(diversionRate)}%`, 140, y + 29);
-  doc.text(`Diferencia: ${formatNumber(diversionRate - 90, 1)}%`, 140, y + 36);
+  doc.text(t('pdf.trueGoal'), 140, y + 22);
+  doc.text(`${t('pdf.currentStatus')}: ${formatNumber(diversionRate)}%`, 140, y + 29);
+  doc.text(`${t('pdf.difference')}: ${formatNumber(diversionRate - 90, 1)}%`, 140, y + 36);
   
   y += 58;
 
@@ -141,21 +146,21 @@ export async function generateTrueYearPdfReport(data: TrueYearData): Promise<voi
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(12);
   doc.setTextColor(...parseHexColor(COLORS.navy));
-  doc.text('RESUMEN DE MATERIALES (kg)', 15, y);
+  doc.text(t('pdf.materialsSummary'), 15, y);
   y += 8;
 
   const metricsData = [
-    ['Total Reciclado', formatNumber(data.totals.totalRecycling, 2), 'kg'],
-    ['Total Compostado', formatNumber(data.totals.totalCompost, 2), 'kg'],
-    ['Total Reutilizado', formatNumber(data.totals.totalReuse, 2), 'kg'],
-    ['Total Desviado', formatNumber(data.totals.totalDiverted, 2), 'kg'],
-    ['Total No Desviado (Relleno)', formatNumber(data.totals.totalLandfill, 2), 'kg'],
-    ['Total Generado', formatNumber(data.totals.totalGenerated, 2), 'kg'],
+    [t('pdf.totalRecycled'), formatNumber(data.totals.totalRecycling, 2), 'kg'],
+    [t('pdf.totalComposted'), formatNumber(data.totals.totalCompost, 2), 'kg'],
+    [t('pdf.totalReused'), formatNumber(data.totals.totalReuse, 2), 'kg'],
+    [t('pdf.totalDiverted'), formatNumber(data.totals.totalDiverted, 2), 'kg'],
+    [t('pdf.totalLandfill'), formatNumber(data.totals.totalLandfill, 2), 'kg'],
+    [t('pdf.totalGenerated'), formatNumber(data.totals.totalGenerated, 2), 'kg'],
   ];
 
   autoTable(doc, {
     startY: y,
-    head: [['Categoría', 'Cantidad', 'Unidad']],
+    head: [[t('pdf.category'), t('pdf.quantity'), t('pdf.unit')]],
     body: metricsData,
     theme: 'striped',
     headStyles: { 
@@ -177,7 +182,7 @@ export async function generateTrueYearPdfReport(data: TrueYearData): Promise<voi
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(12);
   doc.setTextColor(...parseHexColor(COLORS.navy));
-  doc.text('COMPOSICIÓN DE DESVIACIÓN', 15, y);
+  doc.text(t('pdf.diversionComposition'), 15, y);
   y += 8;
 
   const totalDiverted = data.totals.totalDiverted;
@@ -196,32 +201,32 @@ export async function generateTrueYearPdfReport(data: TrueYearData): Promise<voi
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(9);
   doc.setTextColor(...parseHexColor(COLORS.darkGray));
-  doc.text(`Reciclaje: ${formatNumber(recyclingPct)}%`, barX + barWidth + 5, y + 6);
+  doc.text(`${t('pdf.recyclingPercent')}: ${formatNumber(recyclingPct)}%`, barX + barWidth + 5, y + 6);
   y += 12;
 
   // Compost bar
   doc.setFillColor(...parseHexColor(COLORS.green));
   doc.rect(barX, y, (barWidth * compostPct) / 100, barHeight, 'F');
-  doc.text(`Compostaje: ${formatNumber(compostPct)}%`, barX + barWidth + 5, y + 6);
+  doc.text(`${t('pdf.compostPercent')}: ${formatNumber(compostPct)}%`, barX + barWidth + 5, y + 6);
   y += 12;
 
   // Reuse bar
   doc.setFillColor(...parseHexColor(COLORS.lime));
   doc.rect(barX, y, (barWidth * reusePct) / 100, barHeight, 'F');
-  doc.text(`Reutilización: ${formatNumber(reusePct)}%`, barX + barWidth + 5, y + 6);
+  doc.text(`${t('pdf.reusePercent')}: ${formatNumber(reusePct)}%`, barX + barWidth + 5, y + 6);
 
   addFooter(doc, 1, totalPages);
 
   // ===== PAGE 2: MONTHLY BREAKDOWN TABLE =====
   doc.addPage();
-  addHeader(doc, 'DESGLOSE MENSUAL - AÑO TRUE');
+  addHeader(doc, t('pdf.monthlyBreakdown'));
   
   y = 32;
   
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(14);
   doc.setTextColor(...parseHexColor(COLORS.navy));
-  doc.text('DATOS MENSUALES (Oct 2024 - Sep 2025)', 15, y);
+  doc.text(t('pdf.monthlyData') + ' (Oct 2024 - Sep 2025)', 15, y);
   y += 10;
 
   // Monthly data table
@@ -248,9 +253,18 @@ export async function generateTrueYearPdfReport(data: TrueYearData): Promise<voi
     `${formatNumber(data.totals.diversionRate)}%`
   ]);
 
+  const monthHeader = i18n.language === 'es' ? 'Mes' : 'Month';
+  const recycleHeader = i18n.language === 'es' ? 'Reciclaje' : 'Recycling';
+  const compostHeader = i18n.language === 'es' ? 'Compost' : 'Compost';
+  const reuseHeader = i18n.language === 'es' ? 'Reúso' : 'Reuse';
+  const divertedHeader = i18n.language === 'es' ? 'Desviado' : 'Diverted';
+  const landfillHeader = i18n.language === 'es' ? 'Relleno' : 'Landfill';
+  const totalHeader = 'Total';
+  const rateHeader = i18n.language === 'es' ? 'Tasa' : 'Rate';
+
   autoTable(doc, {
     startY: y,
-    head: [['Mes', 'Reciclaje', 'Compost', 'Reúso', 'Desviado', 'Relleno', 'Total', 'Tasa']],
+    head: [[monthHeader, recycleHeader, compostHeader, reuseHeader, divertedHeader, landfillHeader, totalHeader, rateHeader]],
     body: monthlyTableData,
     theme: 'grid',
     headStyles: { 
@@ -286,14 +300,15 @@ export async function generateTrueYearPdfReport(data: TrueYearData): Promise<voi
 
   // ===== PAGE 3: RECYCLING DETAILS =====
   doc.addPage();
-  addHeader(doc, 'DETALLE DE MATERIALES RECICLABLES');
+  const recycleMaterialsHeader = i18n.language === 'es' ? 'DETALLE DE MATERIALES RECICLABLES' : 'RECYCLABLE MATERIALS DETAIL';
+  addHeader(doc, recycleMaterialsHeader);
   
   y = 32;
   
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(14);
   doc.setTextColor(...parseHexColor(COLORS.navy));
-  doc.text('MATERIALES RECICLABLES POR MES (kg)', 15, y);
+  doc.text(t('pdf.recycleMaterials'), 15, y);
   y += 10;
 
   // Aggregate recycling materials across all months
@@ -344,7 +359,7 @@ export async function generateTrueYearPdfReport(data: TrueYearData): Promise<voi
 
   // ===== PAGE 4: TRUE CERTIFICATION STATUS =====
   doc.addPage();
-  addHeader(doc, 'ESTADO DE CERTIFICACIÓN TRUE');
+  addHeader(doc, t('pdf.certificationStatus'));
   
   y = 35;
 
@@ -352,18 +367,25 @@ export async function generateTrueYearPdfReport(data: TrueYearData): Promise<voi
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(16);
   doc.setTextColor(...parseHexColor(COLORS.navy));
-  doc.text('TRUE Zero Waste Certification', 105, y, { align: 'center' });
+  doc.text(t('pdf.trueZeroWaste'), 105, y, { align: 'center' });
   y += 10;
 
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(10);
   doc.setTextColor(...parseHexColor(COLORS.darkGray));
-  const trueDesc = [
+  const trueDescEs = [
     'La certificación TRUE (Total Resource Use and Efficiency) reconoce a las instalaciones',
     'que demuestran un compromiso con la minimización de residuos y la maximización de la',
     'eficiencia de recursos. El requisito mínimo es desviar el 90% de los residuos sólidos',
     'del relleno sanitario, incineración y medio ambiente.'
   ];
+  const trueDescEn = [
+    'TRUE (Total Resource Use and Efficiency) certification recognizes facilities',
+    'that demonstrate a commitment to waste minimization and resource efficiency',
+    'maximization. The minimum requirement is to divert 90% of solid waste from',
+    'landfill, incineration, and the environment.'
+  ];
+  const trueDesc = i18n.language === 'es' ? trueDescEs : trueDescEn;
   trueDesc.forEach(line => {
     doc.text(line, 105, y, { align: 'center' });
     y += 5;
@@ -377,13 +399,13 @@ export async function generateTrueYearPdfReport(data: TrueYearData): Promise<voi
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(14);
   doc.setTextColor(...parseHexColor(isPassing ? COLORS.green : COLORS.red));
-  doc.text(isPassing ? 'CERTIFICACIÓN ALCANZADA' : 'EN PROCESO DE CERTIFICACIÓN', 105, y + 12, { align: 'center' });
+  doc.text(isPassing ? t('pdf.certificationReached') : t('pdf.pendingCertification'), 105, y + 12, { align: 'center' });
   
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(11);
   doc.setTextColor(...parseHexColor(COLORS.darkGray));
-  doc.text(`Tasa de desviación actual: ${formatNumber(diversionRate)}%`, 105, y + 22, { align: 'center' });
-  doc.text(`Meta requerida: 90%`, 105, y + 30, { align: 'center' });
+  doc.text(`${t('pdf.currentDiversionRate')}: ${formatNumber(diversionRate)}%`, 105, y + 22, { align: 'center' });
+  doc.text(`${t('pdf.requiredGoal')}: 90%`, 105, y + 30, { align: 'center' });
   
   y += 50;
 
@@ -391,20 +413,20 @@ export async function generateTrueYearPdfReport(data: TrueYearData): Promise<voi
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(12);
   doc.setTextColor(...parseHexColor(COLORS.navy));
-  doc.text('RESUMEN DE DESEMPEÑO', 15, y);
+  doc.text(t('pdf.performanceSummary'), 15, y);
   y += 8;
 
   const performanceData = [
-    ['Peso Total Generado', `${formatNumber(data.totals.totalGenerated / 1000, 2)} toneladas`],
-    ['Peso Total Desviado', `${formatNumber(data.totals.totalDiverted / 1000, 2)} toneladas`],
-    ['Peso Enviado a Relleno', `${formatNumber(data.totals.totalLandfill / 1000, 2)} toneladas`],
-    ['Tasa de Desviación', `${formatNumber(diversionRate)}%`],
-    ['Estado de Certificación', isPassing ? 'Cumple requisitos' : 'Pendiente de mejora'],
+    [t('pdf.totalWeightGenerated'), `${formatNumber(data.totals.totalGenerated / 1000, 2)} ${t('pdf.tons')}`],
+    [t('pdf.totalWeightDiverted'), `${formatNumber(data.totals.totalDiverted / 1000, 2)} ${t('pdf.tons')}`],
+    [t('pdf.weightToLandfill'), `${formatNumber(data.totals.totalLandfill / 1000, 2)} ${t('pdf.tons')}`],
+    [t('pdf.diversionRate'), `${formatNumber(diversionRate)}%`],
+    [t('pdf.certStatus'), isPassing ? t('pdf.meetsRequirements') : t('pdf.pendingImprovement')],
   ];
 
   autoTable(doc, {
     startY: y,
-    head: [['Métrica', 'Valor']],
+    head: [[t('pdf.metric'), t('pdf.value')]],
     body: performanceData,
     theme: 'striped',
     headStyles: { 
@@ -430,8 +452,8 @@ export async function generateTrueYearPdfReport(data: TrueYearData): Promise<voi
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(9);
   doc.setTextColor(...parseHexColor(COLORS.darkGray));
-  doc.text('Responsable Ambiental', 60, y + 26, { align: 'center' });
-  doc.text('Fecha de Emisión', 150, y + 26, { align: 'center' });
+  doc.text(t('pdf.environmentalManager'), 60, y + 26, { align: 'center' });
+  doc.text(t('pdf.issueDate'), 150, y + 26, { align: 'center' });
 
   addFooter(doc, 4, totalPages);
 

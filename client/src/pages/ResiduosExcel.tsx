@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line } from 'recharts';
 import { Button } from '@/components/ui/button';
@@ -62,13 +63,14 @@ interface WasteExcelData {
 
 const MONTH_LABELS = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
 
-// TRUE Year labels (Aug 2024 - Aug 2025)
+// TRUE Year labels (Oct 2024 - Sep 2025) - Período de certificación TRUE
 const TRUE_MONTH_LABELS = [
-  'Ago 24', 'Sep 24', 'Oct 24', 'Nov 24', 'Dic 24', 
-  'Ene 25', 'Feb 25', 'Mar 25', 'Abr 25', 'May 25', 'Jun 25', 'Jul 25', 'Ago 25'
-].slice(0, 12); // Take only first 12 months
+  'Oct 24', 'Nov 24', 'Dic 24', 
+  'Ene 25', 'Feb 25', 'Mar 25', 'Abr 25', 'May 25', 'Jun 25', 'Jul 25', 'Ago 25', 'Sep 25'
+];
 
 export default function ResiduosExcel() {
+  const { t } = useTranslation();
   const [selectedYear, setSelectedYear] = useState(2025);
   const [isTrueMode, setIsTrueMode] = useState(false);
   const [editedData, setEditedData] = useState<Record<string, any>>({});
@@ -94,55 +96,56 @@ export default function ResiduosExcel() {
     enabled: !isTrueMode
   });
 
-  // Fetch data for both years when in TRUE mode (Aug 2024 - Aug 2025)
-  const { data: trueData2024, isLoading: isLoading2024 } = useQuery<WasteExcelData>({
-    queryKey: ['/api/waste-excel', 2024],
-    queryFn: async () => {
-      const response = await fetch('/api/waste-excel/2024');
-      if (!response.ok) throw new Error('Failed to fetch 2024 data');
-      return response.json();
-    },
-    refetchOnWindowFocus: false,
-    enabled: isTrueMode
-  });
-
-  const { data: trueData2025, isLoading: isLoading2025 } = useQuery<WasteExcelData>({
-    queryKey: ['/api/waste-excel', 2025],
-    queryFn: async () => {
-      const response = await fetch('/api/waste-excel/2025');
-      if (!response.ok) throw new Error('Failed to fetch 2025 data');
-      return response.json();
-    },
-    refetchOnWindowFocus: false,
-    enabled: isTrueMode
-  });
-
-  // Combine data for TRUE mode (last 12 months: Aug 2024 - Aug 2025)
-  const combineTrueData = useMemo(() => {
-    if (!isTrueMode || !trueData2024 || !trueData2025) return null;
-    
-    // Get Aug-Dec 2024 (months 8-12) and Jan-Jul 2025 (months 1-7)  
-    const months2024 = trueData2024.months.filter(m => m.month.month >= 8); // Aug-Dec 2024
-    const months2025 = trueData2025.months.filter(m => m.month.month <= 7); // Jan-Jul 2025
-    
-    // Combine materials from both years
-    const combinedMaterials = {
-      recycling: Array.from(new Set([...trueData2024.materials.recycling, ...trueData2025.materials.recycling])),
-      compost: Array.from(new Set([...trueData2024.materials.compost, ...trueData2025.materials.compost])),
-      reuse: Array.from(new Set([...trueData2024.materials.reuse, ...trueData2025.materials.reuse])),
-      landfill: Array.from(new Set([...trueData2024.materials.landfill, ...trueData2025.materials.landfill]))
+  // Fetch TRUE Year data directly from API (Oct 2024 - Sep 2025)
+  const { data: trueYearData, isLoading: isLoadingTrueYear } = useQuery<{
+    period: string;
+    months: MonthData[];
+    totals: {
+      totalRecycling: number;
+      totalCompost: number;
+      totalReuse: number;
+      totalLandfill: number;
+      totalDiverted: number;
+      totalGenerated: number;
+      diversionRate: number;
     };
+    materials: {
+      recycling: string[];
+      compost: string[];
+      reuse: string[];
+      landfill: string[];
+    };
+  }>({
+    queryKey: ['/api/waste-excel/true-year'],
+    queryFn: async () => {
+      const response = await fetch('/api/waste-excel/true-year');
+      if (!response.ok) throw new Error('Failed to fetch TRUE year data');
+      return response.json();
+    },
+    refetchOnWindowFocus: false,
+    enabled: isTrueMode
+  });
+
+  // Transform TRUE Year data to match WasteExcelData format
+  const trueDataTransformed = useMemo(() => {
+    if (!isTrueMode || !trueYearData) return null;
     
     return {
-      year: 'TRUE', // Special identifier for TRUE mode
-      months: [...months2024, ...months2025],
-      materials: combinedMaterials
+      year: 'TRUE' as any,
+      months: trueYearData.months.map(m => ({
+        month: m.month,
+        recycling: m.recycling,
+        compost: m.compost,
+        reuse: m.reuse,
+        landfill: m.landfill
+      })),
+      materials: trueYearData.materials
     };
-  }, [isTrueMode, trueData2024, trueData2025]);
+  }, [isTrueMode, trueYearData]);
 
   // Determine which data to use
-  const currentData = isTrueMode ? combineTrueData : wasteData;
-  const currentIsLoading = isTrueMode ? (isLoading2024 || isLoading2025) : isLoading;
+  const currentData = isTrueMode ? trueDataTransformed : wasteData;
+  const currentIsLoading = isTrueMode ? isLoadingTrueYear : isLoading;
 
   // Update mutation
   const updateMutation = useMutation({
@@ -858,16 +861,16 @@ export default function ResiduosExcel() {
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
                 <h1 className="text-2xl font-anton uppercase tracking-wide text-navy">
-                  Trazabilidad Residuos
+                  {t('traceability.title')}
                 </h1>
                 <p className="text-gray-600 mt-1">
-                  Sistema integral de seguimiento y trazabilidad de residuos
+                  {t('traceability.subtitle')}
                 </p>
               </div>
               
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-2">
-                  <label className="text-sm font-medium text-gray-700">Período:</label>
+                  <label className="text-sm font-medium text-gray-700">{t('common.period')}:</label>
                   {!isTrueMode ? (
                     <Select value={selectedYear.toString()} onValueChange={(value) => setSelectedYear(parseInt(value))}>
                       <SelectTrigger className="w-24">
@@ -881,7 +884,7 @@ export default function ResiduosExcel() {
                     </Select>
                   ) : (
                     <div className="bg-green-100 text-green-800 px-3 py-2 rounded-md text-sm font-medium">
-                      Últimos 12 meses (Ago 2024 - Ago 2025)
+                      {t('traceability.truePeriod')}
                     </div>
                   )}
                 </div>
@@ -895,7 +898,7 @@ export default function ResiduosExcel() {
                   className={isTrueMode ? "bg-green-600 hover:bg-green-700 text-white" : "border-green-600 text-green-600 hover:bg-green-50"}
                 >
                   <CheckCircle className="h-4 w-4 mr-2" />
-                  Año TRUE
+                  {t('common.trueYear')}
                 </Button>
                 
                 <Button
@@ -905,7 +908,7 @@ export default function ResiduosExcel() {
                 >
                   <div className="flex items-center gap-2">
                     <Download className="h-4 w-4" />
-                    Descargar PDF
+                    {t('common.downloadPdf')}
                   </div>
                 </Button>
               </div>
@@ -918,7 +921,7 @@ export default function ResiduosExcel() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-green-100">Toneladas Circulares</p>
+                    <p className="text-green-100">{t('traceability.circularTons')}</p>
                     <p className="text-2xl font-bold">
                       {(kpis.totalCircular / 1000).toFixed(1)} ton
                     </p>
@@ -932,7 +935,7 @@ export default function ResiduosExcel() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-red-100">Relleno Sanitario</p>
+                    <p className="text-red-100">{t('traceability.landfill')}</p>
                     <p className="text-2xl font-bold">
                       {(kpis.totalLandfill / 1000).toFixed(1)} ton
                     </p>
@@ -946,7 +949,7 @@ export default function ResiduosExcel() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-blue-100">Total Generado</p>
+                    <p className="text-blue-100">{t('traceability.totalGenerated')}</p>
                     <p className="text-2xl font-bold">
                       {(kpis.totalWeight / 1000).toFixed(1)} ton
                     </p>
@@ -985,7 +988,7 @@ export default function ResiduosExcel() {
             {/* Waste Distribution Chart */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-navy">Distribución de Residuos por Destino Final</CardTitle>
+                <CardTitle className="text-navy">{t('traceability.distributionChart')}</CardTitle>
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={300}>
@@ -1007,7 +1010,7 @@ export default function ResiduosExcel() {
             {/* Deviation Trend Chart */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-navy">Evolución % Desviación de Relleno Sanitario</CardTitle>
+                <CardTitle className="text-navy">{t('traceability.evolutionChart')}</CardTitle>
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={300}>
@@ -1028,8 +1031,8 @@ export default function ResiduosExcel() {
             <CardHeader>
               <div className="flex justify-between items-start">
                 <div>
-                  <CardTitle className="text-navy">Tabla Interactiva de Trazabilidad</CardTitle>
-                  <p className="text-gray-600">Datos editables por categoría y mes</p>
+                  <CardTitle className="text-navy">{t('traceability.interactiveTable')}</CardTitle>
+                  <p className="text-gray-600">{t('traceability.editableData')}</p>
                 </div>
                 <div className="flex gap-2">
                   <Button
@@ -1040,12 +1043,12 @@ export default function ResiduosExcel() {
                     {updateMutation.isPending ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Guardando...
+                        {t('common.saving')}
                       </>
                     ) : (
                       <>
                         <Save className="mr-2 h-4 w-4" />
-                        Guardar Cambios
+                        {t('common.save')}
                       </>
                     )}
                   </Button>
@@ -1076,7 +1079,7 @@ export default function ResiduosExcel() {
                           className="flex items-center gap-2 font-bold text-green-700 text-lg w-full"
                         >
                           {openSections.recycling ? <ChevronDown className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
-                          RECICLAJE
+                          {t('categories.recycling')}
                         </button>
                       </td>
                     </tr>
@@ -1117,7 +1120,7 @@ export default function ResiduosExcel() {
                           className="flex items-center gap-2 font-bold text-amber-700 text-lg w-full"
                         >
                           {openSections.compost ? <ChevronDown className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
-                          COMPOSTA / ORGÁNICOS
+                          {t('categories.compost')}
                         </button>
                       </td>
                     </tr>
@@ -1158,7 +1161,7 @@ export default function ResiduosExcel() {
                           className="flex items-center gap-2 font-bold text-blue-700 text-lg w-full"
                         >
                           {openSections.reuse ? <ChevronDown className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
-                          REÚSO
+                          {t('categories.reuse')}
                         </button>
                       </td>
                     </tr>
@@ -1199,7 +1202,7 @@ export default function ResiduosExcel() {
                           className="flex items-center gap-2 font-bold text-red-700 text-lg w-full"
                         >
                           {openSections.landfill ? <ChevronDown className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
-                          RELLENO SANITARIO
+                          {t('categories.landfill')}
                         </button>
                       </td>
                     </tr>

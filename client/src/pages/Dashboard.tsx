@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'wouter';
 import AppLayout from '@/components/layout/AppLayout';
@@ -41,6 +42,7 @@ interface WasteExcelData {
 }
 
 export default function Dashboard() {
+  const { t } = useTranslation();
   const currentYear = 2025;
   
   // Obtener datos de residuos (legacy)
@@ -178,12 +180,12 @@ export default function Dashboard() {
                     </div>
                     <div className="text-right">
                       <div className="text-2xl font-bold text-green-600">{processedData.wasteDeviation.toFixed(1)}%</div>
-                      <div className="text-xs text-gray-500 uppercase tracking-wide">Desviación</div>
+                      <div className="text-xs text-gray-500 uppercase tracking-wide">{t('dashboard.deviation')}</div>
                     </div>
                   </div>
                   <div className="space-y-1">
-                    <h3 className="text-lg font-semibold text-gray-900">Residuos</h3>
-                    <p className="text-sm text-gray-600">TRUE Zero Waste en progreso</p>
+                    <h3 className="text-lg font-semibold text-gray-900">{t('dashboard.waste')}</h3>
+                    <p className="text-sm text-gray-600">{t('dashboard.trueInProgress')}</p>
                   </div>
                   <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-green-500 group-hover:translate-x-1 transition-all absolute bottom-6 right-6" />
                 </div>
@@ -201,12 +203,12 @@ export default function Dashboard() {
                     </div>
                     <div className="text-right">
                       <div className="text-2xl font-bold text-yellow-600">{processedData.energyRenewable}%</div>
-                      <div className="text-xs text-gray-500 uppercase tracking-wide">Renovable</div>
+                      <div className="text-xs text-gray-500 uppercase tracking-wide">{t('dashboard.renewable')}</div>
                     </div>
                   </div>
                   <div className="space-y-1">
-                    <h3 className="text-lg font-semibold text-gray-900">Energía</h3>
-                    <p className="text-sm text-gray-600">Paneles solares en desarrollo</p>
+                    <h3 className="text-lg font-semibold text-gray-900">{t('dashboard.energyLabel')}</h3>
+                    <p className="text-sm text-gray-600">{t('dashboard.solarPanels')}</p>
                   </div>
                   <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-yellow-500 group-hover:translate-x-1 transition-all absolute bottom-6 right-6" />
                 </div>
@@ -224,12 +226,12 @@ export default function Dashboard() {
                     </div>
                     <div className="text-right">
                       <div className="text-2xl font-bold text-blue-600">{processedData.waterRecycled}%</div>
-                      <div className="text-xs text-gray-500 uppercase tracking-wide">Reciclada</div>
+                      <div className="text-xs text-gray-500 uppercase tracking-wide">{t('dashboard.recycled')}</div>
                     </div>
                   </div>
                   <div className="space-y-1">
-                    <h3 className="text-lg font-semibold text-gray-900">Agua</h3>
-                    <p className="text-sm text-gray-600">PTAR y sistema de laguna</p>
+                    <h3 className="text-lg font-semibold text-gray-900">{t('dashboard.waterLabel')}</h3>
+                    <p className="text-sm text-gray-600">{t('dashboard.ptarSystem')}</p>
                   </div>
                   <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-blue-500 group-hover:translate-x-1 transition-all absolute bottom-6 right-6" />
                 </div>
@@ -247,12 +249,12 @@ export default function Dashboard() {
                     </div>
                     <div className="text-right">
                       <div className="text-2xl font-bold text-purple-600">{processedData.circularityIndex}%</div>
-                      <div className="text-xs text-gray-500 uppercase tracking-wide">Circularidad</div>
+                      <div className="text-xs text-gray-500 uppercase tracking-wide">{t('dashboard.circularity')}</div>
                     </div>
                   </div>
                   <div className="space-y-1">
-                    <h3 className="text-lg font-semibold text-gray-900">Economía Circular</h3>
-                    <p className="text-sm text-gray-600">Sustentabilidad integral</p>
+                    <h3 className="text-lg font-semibold text-gray-900">{t('dashboard.circularEconomy')}</h3>
+                    <p className="text-sm text-gray-600">{t('dashboard.integratedSustainability')}</p>
                   </div>
                   <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-purple-500 group-hover:translate-x-1 transition-all absolute bottom-6 right-6" />
                 </div>
@@ -326,10 +328,10 @@ export default function Dashboard() {
           <div className="bg-gradient-to-br from-white to-gray-50 rounded-3xl p-10 shadow-xl border border-gray-200">
             <div className="flex items-center justify-between mb-8">
               <h3 className="text-3xl font-anton text-gray-800 uppercase tracking-wide">
-                Metodología de Cálculo Certificada
+                {t('dashboard.certifiedMethodology')}
               </h3>
               <Button variant="outline" size="sm" className="hover:bg-[#b5e951] hover:text-white hover:border-[#b5e951] transition-colors">
-                Ver certificaciones
+                {t('dashboard.viewCertifications')}
               </Button>
             </div>
             

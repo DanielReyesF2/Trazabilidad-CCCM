@@ -1,4 +1,5 @@
 import { Link, useLocation } from "wouter";
+import { useTranslation } from "react-i18next";
 import { 
   LayoutDashboard, 
   BarChart2, 
@@ -15,7 +16,8 @@ import {
   Download,
   Save,
   GitBranch,
-  ClipboardCheck
+  ClipboardCheck,
+  Languages
 } from "lucide-react";
 import logoEconova from "../../assets/Logo-ECONOVA-OF_Blanco.png";
 
@@ -41,6 +43,12 @@ const SidebarItem = ({ to, icon, children, isActive }: SidebarItemProps) => {
 
 export default function Sidebar() {
   const [location] = useLocation();
+  const { t, i18n } = useTranslation();
+  
+  const toggleLanguage = () => {
+    const newLang = i18n.language === 'es' ? 'en' : 'es';
+    i18n.changeLanguage(newLang);
+  };
   
   // User data
   const user = {
@@ -51,87 +59,95 @@ export default function Sidebar() {
   return (
     <div className="flex flex-col w-64 bg-navy text-white">
       {/* Logo and brand */}
-      <div className="flex items-center justify-center h-24 px-4 border-b border-navy-light">
-        <div className="flex items-center">
-          <img 
-            src={logoEconova} 
-            alt="Logo ECONOVA" 
-            className="h-20 w-auto" 
-          />
-        </div>
+      <div className="flex flex-col items-center justify-center px-4 py-4 border-b border-navy-light">
+        <img 
+          src={logoEconova} 
+          alt="Logo ECONOVA" 
+          className="h-16 w-auto mb-3" 
+        />
+        {/* Language Toggle - Visible button */}
+        <button 
+          onClick={toggleLanguage}
+          className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-navy-light hover:bg-lime hover:text-navy transition-colors w-full"
+        >
+          <Languages className="w-4 h-4" />
+          <span className={i18n.language === 'es' ? 'font-bold' : 'opacity-70'}>🇲🇽</span>
+          <span className="text-gray-400">/</span>
+          <span className={i18n.language === 'en' ? 'font-bold' : 'opacity-70'}>🇺🇸</span>
+        </button>
       </div>
       
       {/* Navigation */}
       <nav className="flex-1 pt-4 pb-4">
-        <div className="px-4 py-2 text-xs uppercase tracking-wider text-gray-400">Sistema Ambiental</div>
+        <div className="px-4 py-2 text-xs uppercase tracking-wider text-gray-400">{i18n.language === 'es' ? 'Sistema Ambiental' : 'Environmental System'}</div>
         <SidebarItem 
           to="/" 
           icon={<LayoutDashboard className="w-5 h-5" />} 
           isActive={location === "/"}
         >
-          Dashboard General
+          {t('nav.dashboard')}
         </SidebarItem>
         
-        <div className="px-4 py-2 mt-4 text-xs uppercase tracking-wider text-gray-400">Registro</div>
+        <div className="px-4 py-2 mt-4 text-xs uppercase tracking-wider text-gray-400">{i18n.language === 'es' ? 'Registro' : 'Registry'}</div>
         <SidebarItem 
           to="/registro-diario" 
           icon={<Save className="w-5 h-5" />} 
           isActive={location === "/registro-diario"}
         >
-          Registro Diario
+          {t('nav.dailyRegister')}
         </SidebarItem>
         
-        <div className="px-4 py-2 mt-4 text-xs uppercase tracking-wider text-gray-400">Módulos</div>
+        <div className="px-4 py-2 mt-4 text-xs uppercase tracking-wider text-gray-400">{i18n.language === 'es' ? 'Módulos' : 'Modules'}</div>
         <SidebarItem 
           to="/trazabilidad-residuos" 
           icon={<Table className="w-5 h-5" />} 
           isActive={location === "/trazabilidad-residuos"}
         >
-          Trazabilidad Residuos
+          {t('nav.wasteTraceability')}
         </SidebarItem>
         <SidebarItem 
           to="/flujo-materiales" 
           icon={<GitBranch className="w-5 h-5" />} 
           isActive={location === "/flujo-materiales"}
         >
-          Flujo de Materiales
+          {t('nav.materialFlow')}
         </SidebarItem>
         <SidebarItem 
           to="/auditoria-zero-waste" 
           icon={<ClipboardCheck className="w-5 h-5" />} 
           isActive={location === "/auditoria-zero-waste"}
         >
-          Auditoría Zero Waste
+          {t('nav.zeroWasteAudit')}
         </SidebarItem>
         <SidebarItem 
           to="/energia" 
           icon={<Zap className="w-5 h-5" />} 
           isActive={location === "/energia"}
         >
-          Energía
+          {t('nav.energy')}
         </SidebarItem>
         <SidebarItem 
           to="/agua" 
           icon={<Droplets className="w-5 h-5" />} 
           isActive={location === "/agua"}
         >
-          Agua
+          {t('nav.water')}
         </SidebarItem>
         <SidebarItem 
           to="/economia-circular" 
           icon={<RotateCcw className="w-5 h-5" />} 
           isActive={location === "/economia-circular"}
         >
-          Economía Circular
+          {t('nav.circularEconomy')}
         </SidebarItem>
         
-        <div className="px-4 py-2 mt-4 text-xs uppercase tracking-wider text-gray-400">Administración</div>
+        <div className="px-4 py-2 mt-4 text-xs uppercase tracking-wider text-gray-400">{i18n.language === 'es' ? 'Administración' : 'Administration'}</div>
         <SidebarItem 
           to="/documents" 
           icon={<FileUp className="w-5 h-5" />} 
           isActive={location === "/documents"}
         >
-          Documentos
+          {t('nav.documents')}
         </SidebarItem>
       </nav>
       

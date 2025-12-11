@@ -275,35 +275,37 @@ export type LandfillEntry = typeof landfillEntries.$inferSelect;
 export type InsertLandfillEntry = z.infer<typeof insertLandfillEntrySchema>;
 
 // Constants for materials and categories
+// Materiales alineados con la hoja "Diversion Data" del Excel TRUE
 export const RECYCLING_MATERIALS = [
-  "Papel Mixto",
-  "Papel de oficina", 
-  "Revistas",
-  "Periódico",
-  "Cartón",
+  "Mixed Paper",
+  "Office paper",
+  "Magazines",
+  "Newspaper",
+  "Carboard",
   "PET",
-  "Plástico Duro",
+  "RIgid plastic",
   "HDPE",
   "Tin Can",
-  "Aluminio",
-  "Vidrio",
-  "Fierro",
-  "Residuo electrónico"
+  "Aluminium",
+  "Glass",
+  "Scrap metal",
+  "E Waste",
 ] as const;
 
 export const COMPOST_CATEGORIES = [
-  "Poda San Sebastián",
-  "Jardinería"
+  "Yarde Waste",
+  "Mulch tree brands",
+  "Food from the mess hall",
 ] as const;
 
 export const REUSE_CATEGORIES = [
-  "Vidrio donación",
-  "Comida a donacion"
+  "Glass",
+  "Food",
 ] as const;
 
 export const LANDFILL_WASTE_TYPES = [
-  "Orgánico",
-  "Inorgánico"
+  "Organic",
+  "Non organic",
 ] as const;
 
 export type RecyclingMaterial = typeof RECYCLING_MATERIALS[number];
