@@ -1069,24 +1069,24 @@ export default function ResiduosExcel() {
                   {/* Table Header */}
                   <thead>
                     <tr className="border-b-2 border-navy">
-                      <th className="text-left p-3 font-bold text-navy min-w-[180px] whitespace-nowrap">Material/Categoría</th>
+                      <th className="text-left p-1 font-bold text-navy text-xs w-[120px]">Material</th>
                       {(isTrueMode ? TRUE_MONTH_LABELS : MONTH_LABELS).map((month, index) => (
-                        <th key={index} className="text-center p-2 font-bold text-navy min-w-[70px] whitespace-nowrap">
+                        <th key={index} className="text-center p-1 font-bold text-navy text-[10px] w-[52px]">
                           {month}
                         </th>
                       ))}
-                      <th className="text-center p-3 font-bold text-navy min-w-[80px] whitespace-nowrap">Total</th>
+                      <th className="text-center p-1 font-bold text-navy text-xs w-[50px]">Total</th>
                     </tr>
                   </thead>
                   <tbody>
                     {/* RECICLAJE Section */}
                     <tr className="bg-green-50">
-                      <td colSpan={14} className="p-3">
+                      <td colSpan={14} className="p-1">
                         <button
                           onClick={() => setOpenSections(prev => ({ ...prev, recycling: !prev.recycling }))}
-                          className="flex items-center gap-2 font-bold text-green-700 text-lg w-full"
+                          className="flex items-center gap-1 font-bold text-green-700 text-xs w-full"
                         >
-                          {openSections.recycling ? <ChevronDown className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
+                          {openSections.recycling ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
                           {t('categories.recycling')}
                         </button>
                       </td>
@@ -1094,13 +1094,13 @@ export default function ResiduosExcel() {
                     
                     {openSections.recycling && wasteData?.materials.recycling.map((material) => (
                       <tr key={material} className="border-b hover:bg-gray-50">
-                        <td className="p-2 font-medium text-sm whitespace-nowrap">{material}</td>
+                        <td className="p-1 font-medium text-[11px] truncate max-w-[120px]" title={material}>{material}</td>
                         {MONTH_LABELS.map((_, monthIndex) => {
                           const editKey = `recycling-${material}-${monthIndex}`;
                           const value = getValue('recycling', material, monthIndex);
                           const displayValue = editedData[editKey] !== undefined ? editedData[editKey] : value;
                           return (
-                            <td key={monthIndex} className="p-1">
+                            <td key={monthIndex} className="p-0.5">
                               <Input
                                 type="number"
                                 value={displayValue === 0 ? '' : Math.round(displayValue)}
@@ -1108,7 +1108,7 @@ export default function ResiduosExcel() {
                                   const newValue = parseFloat(e.target.value) || 0;
                                   setEditedData(prev => ({ ...prev, [editKey]: newValue }));
                                 }}
-                                className="w-full text-center text-xs h-8 px-1"
+                                className="w-full text-center text-[10px] h-6 px-0.5"
                                 min="0"
                                 step="1"
                                 placeholder="0"
@@ -1116,20 +1116,20 @@ export default function ResiduosExcel() {
                             </td>
                           );
                         })}
-                        <td className="p-2 text-center font-bold bg-gray-100 text-sm whitespace-nowrap">
-                          {(getRowTotal('recycling', material) / 1000).toFixed(2)} t
+                        <td className="p-1 text-center font-bold bg-gray-100 text-[10px]">
+                          {(getRowTotal('recycling', material) / 1000).toFixed(1)}t
                         </td>
                       </tr>
                     ))}
 
                     {/* COMPOSTA Section */}
                     <tr className="bg-amber-50">
-                      <td colSpan={14} className="p-3">
+                      <td colSpan={14} className="p-1">
                         <button
                           onClick={() => setOpenSections(prev => ({ ...prev, compost: !prev.compost }))}
-                          className="flex items-center gap-2 font-bold text-amber-700 text-lg w-full"
+                          className="flex items-center gap-1 font-bold text-amber-700 text-xs w-full"
                         >
-                          {openSections.compost ? <ChevronDown className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
+                          {openSections.compost ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
                           {t('categories.compost')}
                         </button>
                       </td>
@@ -1137,13 +1137,13 @@ export default function ResiduosExcel() {
                     
                     {openSections.compost && wasteData?.materials.compost.map((category) => (
                       <tr key={category} className="border-b hover:bg-gray-50">
-                        <td className="p-2 font-medium text-sm whitespace-nowrap">{category}</td>
+                        <td className="p-1 font-medium text-[11px] truncate max-w-[120px]" title={category}>{category}</td>
                         {MONTH_LABELS.map((_, monthIndex) => {
                           const editKey = `compost-${category}-${monthIndex}`;
                           const value = getValue('compost', category, monthIndex);
                           const displayValue = editedData[editKey] !== undefined ? editedData[editKey] : value;
                           return (
-                            <td key={monthIndex} className="p-1">
+                            <td key={monthIndex} className="p-0.5">
                               <Input
                                 type="number"
                                 value={displayValue === 0 ? '' : Math.round(displayValue)}
@@ -1151,7 +1151,7 @@ export default function ResiduosExcel() {
                                   const newValue = parseFloat(e.target.value) || 0;
                                   setEditedData(prev => ({ ...prev, [editKey]: newValue }));
                                 }}
-                                className="w-full text-center text-xs h-8 px-1"
+                                className="w-full text-center text-[10px] h-6 px-0.5"
                                 min="0"
                                 step="1"
                                 placeholder="0"
@@ -1159,20 +1159,20 @@ export default function ResiduosExcel() {
                             </td>
                           );
                         })}
-                        <td className="p-2 text-center font-bold bg-gray-100 text-sm whitespace-nowrap">
-                          {(getRowTotal('compost', category) / 1000).toFixed(2)} t
+                        <td className="p-1 text-center font-bold bg-gray-100 text-[10px]">
+                          {(getRowTotal('compost', category) / 1000).toFixed(1)}t
                         </td>
                       </tr>
                     ))}
 
                     {/* REUSO Section */}
                     <tr className="bg-blue-50">
-                      <td colSpan={14} className="p-3">
+                      <td colSpan={14} className="p-1">
                         <button
                           onClick={() => setOpenSections(prev => ({ ...prev, reuse: !prev.reuse }))}
-                          className="flex items-center gap-2 font-bold text-blue-700 text-lg w-full"
+                          className="flex items-center gap-1 font-bold text-blue-700 text-xs w-full"
                         >
-                          {openSections.reuse ? <ChevronDown className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
+                          {openSections.reuse ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
                           {t('categories.reuse')}
                         </button>
                       </td>
@@ -1180,13 +1180,13 @@ export default function ResiduosExcel() {
                     
                     {openSections.reuse && wasteData?.materials.reuse.map((category) => (
                       <tr key={category} className="border-b hover:bg-gray-50">
-                        <td className="p-2 font-medium text-sm whitespace-nowrap">{category}</td>
+                        <td className="p-1 font-medium text-[11px] truncate max-w-[120px]" title={category}>{category}</td>
                         {MONTH_LABELS.map((_, monthIndex) => {
                           const editKey = `reuse-${category}-${monthIndex}`;
                           const value = getValue('reuse', category, monthIndex);
                           const displayValue = editedData[editKey] !== undefined ? editedData[editKey] : value;
                           return (
-                            <td key={monthIndex} className="p-1">
+                            <td key={monthIndex} className="p-0.5">
                               <Input
                                 type="number"
                                 value={displayValue === 0 ? '' : Math.round(displayValue)}
@@ -1194,7 +1194,7 @@ export default function ResiduosExcel() {
                                   const newValue = parseFloat(e.target.value) || 0;
                                   setEditedData(prev => ({ ...prev, [editKey]: newValue }));
                                 }}
-                                className="w-full text-center text-xs h-8 px-1"
+                                className="w-full text-center text-[10px] h-6 px-0.5"
                                 min="0"
                                 step="1"
                                 placeholder="0"
@@ -1202,20 +1202,20 @@ export default function ResiduosExcel() {
                             </td>
                           );
                         })}
-                        <td className="p-2 text-center font-bold bg-gray-100 text-sm whitespace-nowrap">
-                          {(getRowTotal('reuse', category) / 1000).toFixed(2)} t
+                        <td className="p-1 text-center font-bold bg-gray-100 text-[10px]">
+                          {(getRowTotal('reuse', category) / 1000).toFixed(1)}t
                         </td>
                       </tr>
                     ))}
 
                     {/* RELLENO SANITARIO Section */}
                     <tr className="bg-red-50">
-                      <td colSpan={14} className="p-3">
+                      <td colSpan={14} className="p-1">
                         <button
                           onClick={() => setOpenSections(prev => ({ ...prev, landfill: !prev.landfill }))}
-                          className="flex items-center gap-2 font-bold text-red-700 text-lg w-full"
+                          className="flex items-center gap-1 font-bold text-red-700 text-xs w-full"
                         >
-                          {openSections.landfill ? <ChevronDown className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
+                          {openSections.landfill ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
                           {t('categories.landfill')}
                         </button>
                       </td>
@@ -1223,13 +1223,13 @@ export default function ResiduosExcel() {
                     
                     {openSections.landfill && wasteData?.materials.landfill.map((wasteType) => (
                       <tr key={wasteType} className="border-b hover:bg-gray-50">
-                        <td className="p-2 font-medium text-sm whitespace-nowrap">{wasteType}</td>
+                        <td className="p-1 font-medium text-[11px] truncate max-w-[120px]" title={wasteType}>{wasteType}</td>
                         {MONTH_LABELS.map((_, monthIndex) => {
                           const editKey = `landfill-${wasteType}-${monthIndex}`;
                           const value = getValue('landfill', wasteType, monthIndex);
                           const displayValue = editedData[editKey] !== undefined ? editedData[editKey] : value;
                           return (
-                            <td key={monthIndex} className="p-1">
+                            <td key={monthIndex} className="p-0.5">
                               <Input
                                 type="number"
                                 value={displayValue === 0 ? '' : Math.round(displayValue)}
@@ -1237,7 +1237,7 @@ export default function ResiduosExcel() {
                                   const newValue = parseFloat(e.target.value) || 0;
                                   setEditedData(prev => ({ ...prev, [editKey]: newValue }));
                                 }}
-                                className="w-full text-center text-xs h-8 px-1"
+                                className="w-full text-center text-[10px] h-6 px-0.5"
                                 min="0"
                                 step="1"
                                 placeholder="0"
@@ -1245,28 +1245,28 @@ export default function ResiduosExcel() {
                             </td>
                           );
                         })}
-                        <td className="p-2 text-center font-bold bg-gray-100 text-sm whitespace-nowrap">
-                          {(getRowTotal('landfill', wasteType) / 1000).toFixed(2)} t
+                        <td className="p-1 text-center font-bold bg-gray-100 text-[10px]">
+                          {(getRowTotal('landfill', wasteType) / 1000).toFixed(1)}t
                         </td>
                       </tr>
                     ))}
 
                     {/* Totals Row */}
                     <tr className="bg-gray-100 border-t-2 border-navy font-bold">
-                      <td className="p-2 text-navy text-sm whitespace-nowrap">TOTALES POR MES</td>
+                      <td className="p-1 text-navy text-[10px]">TOTALES</td>
                       {MONTH_LABELS.map((_, monthIndex) => {
                         const monthTotal = getSectionTotal('recycling', monthIndex) + 
                                          getSectionTotal('compost', monthIndex) + 
                                          getSectionTotal('reuse', monthIndex) + 
                                          getSectionTotal('landfill', monthIndex);
                         return (
-                          <td key={monthIndex} className="p-2 text-center text-navy text-xs whitespace-nowrap">
-                            {(monthTotal / 1000).toFixed(1)} t
+                          <td key={monthIndex} className="p-1 text-center text-navy text-[9px]">
+                            {(monthTotal / 1000).toFixed(1)}t
                           </td>
                         );
                       })}
-                      <td className="p-2 text-center text-navy text-sm font-bold whitespace-nowrap">
-                        {(kpis.totalWeight / 1000).toFixed(1)} t
+                      <td className="p-1 text-center text-navy text-[10px] font-bold">
+                        {(kpis.totalWeight / 1000).toFixed(1)}t
                       </td>
                     </tr>
                   </tbody>
