@@ -1088,7 +1088,6 @@ export default function ResiduosExcel() {
               <div className="flex justify-between items-start">
                 <div>
                   <CardTitle className="text-navy">{t('traceability.interactiveTable')}</CardTitle>
-                  <p className="text-gray-600">{t('traceability.editableData')}</p>
                 </div>
                 <div className="flex gap-2">
                   <Button
