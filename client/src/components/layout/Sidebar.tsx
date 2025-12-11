@@ -1,3 +1,4 @@
+import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { useTranslation } from "react-i18next";
 import { 
@@ -17,7 +18,9 @@ import {
   Save,
   GitBranch,
   ClipboardCheck,
-  Languages
+  Languages,
+  ChevronDown,
+  ChevronRight
 } from "lucide-react";
 import logoEconova from "../../assets/Logo-ECONOVA-OF_Blanco.png";
 
@@ -44,11 +47,27 @@ const SidebarItem = ({ to, icon, children, isActive }: SidebarItemProps) => {
 export default function Sidebar() {
   const [location] = useLocation();
   const { t, i18n } = useTranslation();
+  const [modulesOpen, setModulesOpen] = useState(true);
   
   const toggleLanguage = () => {
     const newLang = i18n.language === 'es' ? 'en' : 'es';
     i18n.changeLanguage(newLang);
   };
+  
+  // Check if any module is active to keep dropdown open
+  const isModuleActive = location === "/trazabilidad-residuos" || 
+                         location === "/flujo-materiales" || 
+                         location === "/auditoria-zero-waste" || 
+                         location === "/energia" || 
+                         location === "/agua" || 
+                         location === "/economia-circular";
+  
+  // Auto-open modules if a module page is active
+  useEffect(() => {
+    if (isModuleActive) {
+      setModulesOpen(true);
+    }
+  }, [isModuleActive]);
   
   // User data
   const user = {
@@ -97,49 +116,65 @@ export default function Sidebar() {
           {t('nav.dailyRegister')}
         </SidebarItem>
         
-        <div className="px-4 py-2 mt-4 text-xs uppercase tracking-wider text-gray-400">{i18n.language === 'es' ? 'Módulos' : 'Modules'}</div>
-        <SidebarItem 
-          to="/trazabilidad-residuos" 
-          icon={<Table className="w-5 h-5" />} 
-          isActive={location === "/trazabilidad-residuos"}
+        {/* Modules Dropdown */}
+        <button
+          onClick={() => setModulesOpen(!modulesOpen)}
+          className="w-full flex items-center justify-between px-4 py-2 mt-4 text-xs uppercase tracking-wider text-gray-400 hover:text-white transition-colors"
         >
-          {t('nav.wasteTraceability')}
-        </SidebarItem>
-        <SidebarItem 
-          to="/flujo-materiales" 
-          icon={<GitBranch className="w-5 h-5" />} 
-          isActive={location === "/flujo-materiales"}
-        >
-          {t('nav.materialFlow')}
-        </SidebarItem>
-        <SidebarItem 
-          to="/auditoria-zero-waste" 
-          icon={<ClipboardCheck className="w-5 h-5" />} 
-          isActive={location === "/auditoria-zero-waste"}
-        >
-          {t('nav.zeroWasteAudit')}
-        </SidebarItem>
-        <SidebarItem 
-          to="/energia" 
-          icon={<Zap className="w-5 h-5" />} 
-          isActive={location === "/energia"}
-        >
-          {t('nav.energy')}
-        </SidebarItem>
-        <SidebarItem 
-          to="/agua" 
-          icon={<Droplets className="w-5 h-5" />} 
-          isActive={location === "/agua"}
-        >
-          {t('nav.water')}
-        </SidebarItem>
-        <SidebarItem 
-          to="/economia-circular" 
-          icon={<RotateCcw className="w-5 h-5" />} 
-          isActive={location === "/economia-circular"}
-        >
-          {t('nav.circularEconomy')}
-        </SidebarItem>
+          <span>{i18n.language === 'es' ? 'Módulos' : 'Modules'}</span>
+          {modulesOpen ? (
+            <ChevronDown className="w-4 h-4" />
+          ) : (
+            <ChevronRight className="w-4 h-4" />
+          )}
+        </button>
+        
+        {modulesOpen && (
+          <>
+            <SidebarItem 
+              to="/trazabilidad-residuos" 
+              icon={<Table className="w-5 h-5" />} 
+              isActive={location === "/trazabilidad-residuos"}
+            >
+              {t('nav.wasteTraceability')}
+            </SidebarItem>
+            <SidebarItem 
+              to="/flujo-materiales" 
+              icon={<GitBranch className="w-5 h-5" />} 
+              isActive={location === "/flujo-materiales"}
+            >
+              {t('nav.materialFlow')}
+            </SidebarItem>
+            <SidebarItem 
+              to="/auditoria-zero-waste" 
+              icon={<ClipboardCheck className="w-5 h-5" />} 
+              isActive={location === "/auditoria-zero-waste"}
+            >
+              {t('nav.zeroWasteAudit')}
+            </SidebarItem>
+            <SidebarItem 
+              to="/energia" 
+              icon={<Zap className="w-5 h-5" />} 
+              isActive={location === "/energia"}
+            >
+              {t('nav.energy')}
+            </SidebarItem>
+            <SidebarItem 
+              to="/agua" 
+              icon={<Droplets className="w-5 h-5" />} 
+              isActive={location === "/agua"}
+            >
+              {t('nav.water')}
+            </SidebarItem>
+            <SidebarItem 
+              to="/economia-circular" 
+              icon={<RotateCcw className="w-5 h-5" />} 
+              isActive={location === "/economia-circular"}
+            >
+              {t('nav.circularEconomy')}
+            </SidebarItem>
+          </>
+        )}
         
         <div className="px-4 py-2 mt-4 text-xs uppercase tracking-wider text-gray-400">{i18n.language === 'es' ? 'Administración' : 'Administration'}</div>
         <SidebarItem 
