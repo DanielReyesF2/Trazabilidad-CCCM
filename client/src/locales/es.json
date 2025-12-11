@@ -38,6 +38,12 @@
     "reuse": "REÚSO",
     "landfill": "RELLENO SANITARIO"
   },
+  "chart": {
+    "recycling": "Reciclaje",
+    "compost": "Composta",
+    "reuse": "Reuso",
+    "landfill": "Relleno sanitario"
+  },
   "materials": {
     "mixedPaper": "Papel Mixto",
     "officePaper": "Papel de oficina",

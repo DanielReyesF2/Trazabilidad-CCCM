@@ -38,6 +38,12 @@
     "reuse": "REUSE",
     "landfill": "LANDFILL"
   },
+  "chart": {
+    "recycling": "Recycling",
+    "compost": "Compost",
+    "reuse": "Reuse",
+    "landfill": "Landfill"
+  },
   "materials": {
     "mixedPaper": "Mixed Paper",
     "officePaper": "Office Paper",

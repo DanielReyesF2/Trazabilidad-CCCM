@@ -801,6 +801,14 @@ export default function ResiduosExcel() {
     generatePremiumPDF();
   };
 
+  // Chart labels based on current language
+  const chartLabels = useMemo(() => ({
+    recycling: t('chart.recycling'),
+    compost: t('chart.compost'),
+    reuse: t('chart.reuse'),
+    landfill: t('chart.landfill')
+  }), [t]);
+
   // Generate chart data for visualizations
   const generateChartData = useMemo(() => {
     if (!currentData) return [];
@@ -818,14 +826,14 @@ export default function ResiduosExcel() {
       
       return {
         month: monthName,
-        Reciclaje: recyclingTotal / 1000,
-        Composta: compostTotal / 1000,
-        Reuso: reuseTotal / 1000,
-        'Relleno sanitario': landfillTotal / 1000,
+        [chartLabels.recycling]: recyclingTotal / 1000,
+        [chartLabels.compost]: compostTotal / 1000,
+        [chartLabels.reuse]: reuseTotal / 1000,
+        [chartLabels.landfill]: landfillTotal / 1000,
         deviation: monthlyDeviation
       };
     });
-  }, [currentData, getSectionTotal, isTrueMode]);
+  }, [currentData, getSectionTotal, isTrueMode, chartLabels]);
 
   // Handle save function - uses existing updateMutation
   const handleSave = () => {
@@ -998,10 +1006,10 @@ export default function ResiduosExcel() {
                     <YAxis />
                     <Tooltip />
                     <Legend />
-                    <Bar dataKey="Reciclaje" fill="#16a34a" />
-                    <Bar dataKey="Composta" fill="#ca8a04" />
-                    <Bar dataKey="Reuso" fill="#2563eb" />
-                    <Bar dataKey="Relleno sanitario" fill="#dc2626" />
+                    <Bar dataKey={chartLabels.recycling} fill="#16a34a" />
+                    <Bar dataKey={chartLabels.compost} fill="#ca8a04" />
+                    <Bar dataKey={chartLabels.reuse} fill="#2563eb" />
+                    <Bar dataKey={chartLabels.landfill} fill="#dc2626" />
                   </BarChart>
                 </ResponsiveContainer>
               </CardContent>
