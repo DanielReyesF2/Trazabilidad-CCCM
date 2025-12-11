@@ -16,7 +16,6 @@ import {
   Table,
   Download,
   Save,
-  GitBranch,
   ClipboardCheck,
   Languages,
   ChevronDown,
@@ -56,7 +55,6 @@ export default function Sidebar() {
   
   // Check if any module is active to keep dropdown open
   const isModuleActive = location === "/trazabilidad-residuos" || 
-                         location === "/flujo-materiales" || 
                          location === "/auditoria-zero-waste" || 
                          location === "/energia" || 
                          location === "/agua" || 
@@ -137,13 +135,6 @@ export default function Sidebar() {
               isActive={location === "/trazabilidad-residuos"}
             >
               {t('nav.wasteTraceability')}
-            </SidebarItem>
-            <SidebarItem 
-              to="/flujo-materiales" 
-              icon={<GitBranch className="w-5 h-5" />} 
-              isActive={location === "/flujo-materiales"}
-            >
-              {t('nav.materialFlow')}
             </SidebarItem>
             <SidebarItem 
               to="/auditoria-zero-waste" 
