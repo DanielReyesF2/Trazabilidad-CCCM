@@ -554,7 +554,7 @@ export default function Dashboard() {
                 title="Flujo de Materiales"
                 subtitle="Trazabilidad por categoria y destino"
                 period="TRUE Year"
-                height={400}
+                height={500}
               />
             </motion.div>
           )}
