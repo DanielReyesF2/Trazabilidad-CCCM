@@ -29,15 +29,30 @@ interface Insight {
 
 interface AIInsightsProps {
   deviationRate: number;
+  totalDiverted: number; // kg
+  totalLandfill: number; // kg
+  totalRecycling: number; // kg
+  totalCompost: number; // kg
+  totalReuse: number; // kg
   monthlyData: Array<{
     month: string;
     recycling: number;
     compost: number;
+    reuse: number;
     landfill: number;
+    diversionRate: number;
   }>;
 }
 
-export function AIInsights({ deviationRate, monthlyData }: AIInsightsProps) {
+export function AIInsights({
+  deviationRate,
+  totalDiverted,
+  totalLandfill,
+  totalRecycling,
+  totalCompost,
+  totalReuse,
+  monthlyData,
+}: AIInsightsProps) {
   const [activeInsight, setActiveInsight] = useState(0);
   const [isAnalyzing, setIsAnalyzing] = useState(true);
 
@@ -49,68 +64,127 @@ export function AIInsights({ deviationRate, monthlyData }: AIInsightsProps) {
   const generateInsights = (): Insight[] => {
     const insights: Insight[] = [];
 
-    const lastThreeMonths = monthlyData.slice(-3);
-    const avgLandfill =
-      lastThreeMonths.reduce((sum, m) => sum + m.landfill, 0) / 3;
+    if (monthlyData.length === 0) return insights;
 
-    // CCCM ya supera 90% — proyección de mantener
-    const projectedDeviation = Math.min(deviationRate + 1.2, 99);
+    // Compute real trends from monthly data
+    const lastThree = monthlyData.slice(-3);
+    const firstThree = monthlyData.slice(0, 3);
+
+    const avgDeviationRecent =
+      lastThree.reduce((s, m) => s + m.diversionRate, 0) / lastThree.length;
+    const avgDeviationEarly =
+      firstThree.reduce((s, m) => s + m.diversionRate, 0) / firstThree.length;
+    const trendDelta = avgDeviationRecent - avgDeviationEarly;
+
+    // Best and worst months
+    const sortedByDeviation = [...monthlyData].sort(
+      (a, b) => b.diversionRate - a.diversionRate,
+    );
+    const bestMonth = sortedByDeviation[0];
+    const worstMonth = sortedByDeviation[sortedByDeviation.length - 1];
+
+    // Total monthly landfill trend
+    const avgLandfillRecent =
+      lastThree.reduce((s, m) => s + m.landfill, 0) / lastThree.length;
+    const avgLandfillEarly =
+      firstThree.reduce((s, m) => s + m.landfill, 0) / firstThree.length;
+    const landfillTrendPct =
+      avgLandfillEarly > 0
+        ? ((avgLandfillRecent - avgLandfillEarly) / avgLandfillEarly) * 100
+        : 0;
+
+    // Projected deviation (linear extrapolation)
+    const projectedDeviation = Math.min(
+      Math.max(deviationRate + trendDelta * 0.5, 0),
+      100,
+    );
+
+    // Material composition analysis
+    const totalProcessed = totalRecycling + totalCompost + totalReuse;
+    const recyclingPct =
+      totalProcessed > 0 ? (totalRecycling / totalProcessed) * 100 : 0;
+    const compostPct =
+      totalProcessed > 0 ? (totalCompost / totalProcessed) * 100 : 0;
+
+    // Cost savings from diversion (MXN)
+    const COSTO_RELLENO = 850; // $/ton
+    const ahorroAnual = (totalDiverted / 1000) * COSTO_RELLENO;
+
+    // ── Insight 1: Projection ──
     insights.push({
       id: '1',
       type: 'prediction',
-      title: 'Proyeccion Siguiente Trimestre',
-      description: `Con la tendencia actual del TRUE Year, se proyecta mantener ${projectedDeviation.toFixed(1)}% de desviacion. El club supera consistentemente la meta TRUE de 90%.`,
+      title: 'Proyeccion Proximo Trimestre',
+      description: `Basado en ${monthlyData.length} meses de datos, la tendencia ${trendDelta >= 0 ? 'positiva' : 'a la baja'} (${trendDelta >= 0 ? '+' : ''}${trendDelta.toFixed(1)}pp) proyecta ${projectedDeviation.toFixed(1)}% de desviacion.`,
       metric: `${projectedDeviation.toFixed(1)}%`,
-      trend: 'up',
-      confidence: 92,
+      trend: trendDelta >= 0 ? 'up' : 'down',
+      confidence: Math.round(85 + Math.min(monthlyData.length, 12)),
       priority: 'high',
     });
 
-    // Logro: TRUE certification
-    if (deviationRate > 90) {
+    // ── Insight 2: TRUE achievement or gap ──
+    if (deviationRate >= 90) {
       insights.push({
         id: '2',
         type: 'achievement',
-        title: 'Certificacion TRUE Alcanzada',
-        description: `Con ${deviationRate.toFixed(1)}% de desviacion, el CCCM supera el umbral de 90% requerido para la certificacion TRUE Zero Waste.`,
+        title: 'Meta TRUE Zero Waste Superada',
+        description: `Con ${deviationRate.toFixed(1)}% de desviacion, el CCCM supera el umbral de 90% por ${(deviationRate - 90).toFixed(1)} puntos. Mejor mes: ${bestMonth.month} con ${bestMonth.diversionRate.toFixed(1)}%.`,
         metric: `${deviationRate.toFixed(1)}%`,
+        priority: 'high',
+      });
+    } else {
+      insights.push({
+        id: '2',
+        type: 'alert',
+        title: `Faltan ${(90 - deviationRate).toFixed(1)} puntos para TRUE`,
+        description: `La desviacion actual es ${deviationRate.toFixed(1)}%. Se necesita llegar a 90% para certificacion TRUE Zero Waste.`,
+        metric: `${(90 - deviationRate).toFixed(1)} pts`,
+        trend: 'up',
         priority: 'high',
       });
     }
 
-    // Recomendación de optimización
+    // ── Insight 3: Landfill trend ──
     insights.push({
       id: '3',
-      type: 'recommendation',
-      title: 'Reducir relleno sanitario',
-      description: `El promedio mensual de relleno es ${(avgLandfill / 1000).toFixed(1)} ton. Mejorar separacion de inorganicos podria reducirlo un 15% adicional.`,
-      metric: '-15%',
-      trend: 'down',
-      priority: 'high',
-      actionable: 'Implementar programa de separacion reforzada',
+      type:
+        landfillTrendPct <= 0 ? 'recommendation' : 'alert',
+      title:
+        landfillTrendPct <= 0
+          ? 'Relleno sanitario en descenso'
+          : 'Aumento en relleno sanitario',
+      description:
+        landfillTrendPct <= 0
+          ? `El relleno sanitario bajo ${Math.abs(landfillTrendPct).toFixed(0)}% vs los primeros 3 meses. Promedio reciente: ${(avgLandfillRecent / 1000).toFixed(1)} ton/mes.`
+          : `El relleno sanitario subio ${landfillTrendPct.toFixed(0)}% vs los primeros 3 meses. Promedio reciente: ${(avgLandfillRecent / 1000).toFixed(1)} ton/mes. Revisar separacion.`,
+      metric: `${landfillTrendPct <= 0 ? '' : '+'}${landfillTrendPct.toFixed(0)}%`,
+      trend: landfillTrendPct <= 0 ? 'down' : 'up',
+      priority: landfillTrendPct > 10 ? 'high' : 'medium',
+      actionable:
+        landfillTrendPct > 0
+          ? 'Reforzar programa de separacion en fuente'
+          : undefined,
     });
 
-    // Alerta
+    // ── Insight 4: Composition balance ──
     insights.push({
       id: '4',
-      type: 'alert',
-      title: 'Variacion mensual detectada',
-      description:
-        'Se detectan meses con picos de generacion. Monitorear eventos especiales y temporadas altas para mantener la tasa de desviacion.',
-      trend: 'up',
+      type: 'recommendation',
+      title: 'Composicion de residuos desviados',
+      description: `Reciclaje representa ${recyclingPct.toFixed(0)}% y composta ${compostPct.toFixed(0)}% del material desviado. ${recyclingPct > compostPct ? 'El programa de reciclaje es el pilar principal.' : 'La composta es la mayor via de desviacion.'} Mes con menor desviacion: ${worstMonth.month} (${worstMonth.diversionRate.toFixed(1)}%).`,
+      metric: `${recyclingPct.toFixed(0)}% rec`,
       priority: 'medium',
     });
 
-    // Ahorro económico
+    // ── Insight 5: Economic savings ──
     insights.push({
       id: '5',
       type: 'recommendation',
-      title: 'Potencial de ingreso adicional',
-      description:
-        'Incrementar venta de reciclables y composta podria generar $15,000 MXN adicionales mensuales optimizando la cadena de valor.',
-      metric: '$15,000',
+      title: 'Ahorro acumulado en el periodo',
+      description: `Al desviar ${(totalDiverted / 1000).toFixed(1)} toneladas del relleno sanitario, el CCCM evito ~$${(ahorroAnual / 1000).toFixed(0)}K MXN en costos de disposicion. Cada tonelada adicional desviada ahorra $${COSTO_RELLENO} MXN.`,
+      metric: `$${(ahorroAnual / 1000).toFixed(0)}K`,
       priority: 'medium',
-      actionable: 'Ver analisis detallado de costos',
+      actionable: 'Reducir ${(totalLandfill / 1000).toFixed(0)} ton restantes en relleno',
     });
 
     return insights;
@@ -201,6 +275,8 @@ export function AIInsights({ deviationRate, monthlyData }: AIInsightsProps) {
     );
   }
 
+  if (insights.length === 0) return null;
+
   return (
     <div className="space-y-4">
       {/* Header */}
@@ -214,7 +290,7 @@ export function AIInsights({ deviationRate, monthlyData }: AIInsightsProps) {
               Insights Inteligentes
             </h2>
             <p className="text-sm text-gray-500">
-              Analisis predictivo impulsado por IA
+              Analisis basado en {monthlyData.length} meses de datos reales
             </p>
           </div>
         </div>
@@ -237,7 +313,6 @@ export function AIInsights({ deviationRate, monthlyData }: AIInsightsProps) {
               transition={{ duration: 0.3 }}
               className={`h-full rounded-2xl p-6 border ${getBgColor(insights[activeInsight].type)}`}
             >
-              {/* Badge */}
               <div
                 className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-white text-sm font-medium mb-4 bg-gradient-to-r ${getInsightColor(insights[activeInsight].type)}`}
               >
@@ -270,7 +345,9 @@ export function AIInsights({ deviationRate, monthlyData }: AIInsightsProps) {
                       className={`flex items-center gap-1 text-sm font-medium ${
                         insights[activeInsight].trend === 'up'
                           ? 'text-emerald-600'
-                          : 'text-red-600'
+                          : insights[activeInsight].trend === 'down'
+                            ? 'text-red-600'
+                            : 'text-gray-600'
                       }`}
                     >
                       {insights[activeInsight].trend === 'up' ? (

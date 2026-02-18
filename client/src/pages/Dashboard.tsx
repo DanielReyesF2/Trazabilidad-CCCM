@@ -188,11 +188,26 @@ export default function Dashboard() {
   const ingresosReuso = reuTon * PRECIO_REUSO;
   const ingresosTotales = ingresosReciclables + ingresosComposta + ingresosReuso;
 
-  // Impact equivalences (based on totalDiverted in kg)
-  const co2Avoided = totals.totalDiverted * 0.85; // kg CO2
-  const treesEquivalent = Math.round(co2Avoided / 21);
-  const waterSaved = totals.totalDiverted * 9.8; // liters
-  const energySaved = totals.totalDiverted * 2.16; // kWh
+  // Impact equivalences — per-category factors (EPA WARM model based)
+  // Recycling: mixed paper/plastic/metal/glass avg
+  // Composting: methane avoidance from organic diversion
+  // Reuse: highest impact — avoids both extraction and reprocessing
+  const co2Recycling = totals.totalRecycling * 1.1;  // kg CO2e per kg recycled
+  const co2Compost = totals.totalCompost * 0.5;      // kg CO2e per kg composted (methane avoidance)
+  const co2Reuse = totals.totalReuse * 1.5;          // kg CO2e per kg reused
+  const co2Avoided = co2Recycling + co2Compost + co2Reuse;
+
+  const treesEquivalent = Math.round(co2Avoided / 22); // 1 mature tree absorbs ~22 kg CO2/year
+
+  const waterRecycling = totals.totalRecycling * 7;    // liters saved per kg recycled
+  const waterCompost = totals.totalCompost * 2;        // liters saved per kg composted
+  const waterReuse = totals.totalReuse * 10;           // liters saved per kg reused
+  const waterSaved = waterRecycling + waterCompost + waterReuse;
+
+  const energyRecycling = totals.totalRecycling * 3;   // kWh saved per kg recycled
+  const energyCompost = totals.totalCompost * 0.5;     // kWh saved per kg composted
+  const energyReuse = totals.totalReuse * 4;           // kWh saved per kg reused
+  const energySaved = energyRecycling + energyCompost + energyReuse;
 
   // Hero metric cards
   const mainMetrics = [
@@ -234,13 +249,27 @@ export default function Dashboard() {
     },
   ];
 
-  // Impact equivalences cards
+  // Impact equivalences cards — use readable units
+  const co2Tons = co2Avoided / 1000; // convert kg to tons
+  const waterThousands = waterSaved / 1000; // convert liters to thousands
+  const energyMwh = energySaved / 1000; // convert kWh to MWh
+
   const impactCards = [
+    {
+      icon: Wind,
+      value: co2Tons,
+      label: 'ton CO2e',
+      description: 'emisiones evitadas',
+      decimals: 1,
+      color: 'from-teal-500 to-cyan-600',
+      bgColor: 'bg-teal-50',
+      iconColor: 'text-teal-600',
+    },
     {
       icon: TreePine,
       value: treesEquivalent,
       label: 'arboles',
-      description: 'equivalentes plantados',
+      description: 'equivalentes plantados por año',
       decimals: 0,
       color: 'from-green-500 to-emerald-600',
       bgColor: 'bg-green-50',
@@ -248,33 +277,23 @@ export default function Dashboard() {
     },
     {
       icon: Droplets,
-      value: Math.round(waterSaved),
-      label: 'litros',
+      value: waterThousands,
+      label: 'miles de litros',
       description: 'de agua ahorrados',
-      decimals: 0,
+      decimals: 1,
       color: 'from-sky-500 to-blue-600',
       bgColor: 'bg-sky-50',
       iconColor: 'text-sky-600',
     },
     {
       icon: Zap,
-      value: Math.round(energySaved),
-      label: 'kWh',
+      value: energyMwh,
+      label: 'MWh',
       description: 'de energia ahorrados',
-      decimals: 0,
+      decimals: 1,
       color: 'from-amber-500 to-orange-600',
       bgColor: 'bg-amber-50',
       iconColor: 'text-amber-600',
-    },
-    {
-      icon: Wind,
-      value: Math.round(co2Avoided),
-      label: 'kg CO2',
-      description: 'de emisiones evitadas',
-      decimals: 0,
-      color: 'from-teal-500 to-cyan-600',
-      bgColor: 'bg-teal-50',
-      iconColor: 'text-teal-600',
     },
   ];
 
@@ -292,12 +311,14 @@ export default function Dashboard() {
     landfill: m.totalLandfill,
   }));
 
-  // Data for AI Insights
+  // Data for AI Insights — includes diversionRate per month
   const monthlyInsightData = months.map((m) => ({
     month: monthLabelsES[m.monthNum] || m.label,
     recycling: m.totalRecycling,
     compost: m.totalCompost,
+    reuse: m.totalReuse,
     landfill: m.totalLandfill,
+    diversionRate: m.diversionRate,
   }));
 
   const sankeyData = useMemo(() => buildSankeyData(months), [months]);
@@ -846,6 +867,11 @@ export default function Dashboard() {
           >
             <AIInsights
               deviationRate={totals.diversionRate}
+              totalDiverted={totals.totalDiverted}
+              totalLandfill={totals.totalLandfill}
+              totalRecycling={totals.totalRecycling}
+              totalCompost={totals.totalCompost}
+              totalReuse={totals.totalReuse}
               monthlyData={monthlyInsightData}
             />
           </motion.div>
