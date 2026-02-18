@@ -157,12 +157,23 @@ function buildSankeyData(months: TrueYearMonthData[]): SankeyData {
   return { nodes, links };
 }
 
-/* ── Financial Constants (MXN) ── */
-const COSTO_RELLENO_SANITARIO = 850; // $/tonelada
-const PRECIO_RECICLABLES = 1200; // $/tonelada promedio
-const PRECIO_COMPOSTA = 400; // $/tonelada
-const PRECIO_REUSO = 800; // $/tonelada
-const COSTO_GESTION_TOTAL = 900; // $/tonelada (procesamiento, transporte)
+/* ── RECUPERA Real Market Prices (MXN per kg) — Jan & Mar 2025 bitácoras ── */
+const PRECIO_RECUPERA: Record<string, number> = {
+  'Mixed Paper': 1.50,
+  'Office paper': 1.50,
+  'Magazines': 1.50,
+  'Newspaper': 1.50,
+  'Carboard': 0.50,
+  'PET': 3.00,
+  'RIgid plastic': 0.80,
+  'HDPE': 0.80,
+  'Tin Can': 2.00,
+  'Aluminium': 12.00,
+  'Glass': 0.00,
+  'Scrap metal': 2.00,
+  'E Waste': 0.00,
+};
+const COSTO_RELLENO_SANITARIO = 850; // $/tonelada de disposición en relleno
 
 /* ── Dashboard ── */
 export default function Dashboard() {
@@ -176,17 +187,19 @@ export default function Dashboard() {
   const lanTon = totals.totalLandfill / 1000;
   const genTon = totals.totalGenerated / 1000;
 
-  const ahorroEconomico = divTon * COSTO_RELLENO_SANITARIO;
+  const ahorroRelleno = divTon * COSTO_RELLENO_SANITARIO; // ahorro por NO mandar a relleno
+  const costoRelleno = lanTon * COSTO_RELLENO_SANITARIO; // lo que SÍ se pagó de relleno
 
-  // Financial calculations
-  const costoRellenoSanitario = lanTon * COSTO_RELLENO_SANITARIO;
-  const costoGestionTotal = genTon * COSTO_GESTION_TOTAL;
-  const costoTotalManejo = costoRellenoSanitario + costoGestionTotal;
-
-  const ingresosReciclables = recTon * PRECIO_RECICLABLES;
-  const ingresosComposta = comTon * PRECIO_COMPOSTA;
-  const ingresosReuso = reuTon * PRECIO_REUSO;
-  const ingresosTotales = ingresosReciclables + ingresosComposta + ingresosReuso;
+  // Real income from RECUPERA — per-material prices
+  const ingresosReciclables = useMemo(() => {
+    let total = 0;
+    months.forEach((m) => {
+      m.recycling.forEach((item) => {
+        total += (item.kg || 0) * (PRECIO_RECUPERA[item.material] || 0);
+      });
+    });
+    return total;
+  }, [months]);
 
   // Impact equivalences — per-category factors (EPA WARM model based)
   // Recycling: mixed paper/plastic/metal/glass avg
@@ -467,7 +480,7 @@ export default function Dashboard() {
                   <div className="text-lg font-semibold text-gray-700">
                     Equivalente a{' '}
                     <span className="text-emerald-600 font-bold">
-                      ${(ahorroEconomico / 1000).toFixed(1)}K
+                      ${(ahorroRelleno / 1000).toFixed(1)}K
                     </span>{' '}
                     de ahorro economico
                   </div>
@@ -651,52 +664,55 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                {/* Costos */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                {/* Costos de relleno */}
                 <div className="bg-gradient-to-br from-red-50 to-rose-50 rounded-2xl p-6 border-2 border-red-200 shadow-lg">
                   <div className="flex items-center gap-3 mb-4">
                     <MinusCircle className="w-8 h-8 text-red-600" />
                     <div>
-                      <h4 className="text-lg font-bold text-gray-900">Costos en manejo de residuos</h4>
-                      <p className="text-sm text-gray-600">Mensual</p>
+                      <h4 className="text-lg font-bold text-gray-900">Costo Relleno Sanitario</h4>
+                      <p className="text-sm text-gray-600">{lanTon.toFixed(1)} toneladas enviadas</p>
                     </div>
                   </div>
                   <div className="text-5xl font-bold text-red-600 mb-4">
-                    ${(costoTotalManejo / 1000).toFixed(1)}K
+                    ${costoRelleno.toLocaleString('es-MX', { maximumFractionDigits: 0 })}
                   </div>
-                  <div className="space-y-2 text-sm bg-white/50 rounded-lg p-3 border border-red-100">
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-700">Gestion operativa:</span>
-                      <span className="font-bold text-red-700">${(costoGestionTotal / 1000).toFixed(1)}K</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-700">Relleno sanitario:</span>
-                      <span className="font-bold text-red-700">${(costoRellenoSanitario / 1000).toFixed(1)}K</span>
-                    </div>
+                  <div className="text-xs text-gray-500 bg-white/50 rounded-lg p-3 border border-red-100">
+                    ${COSTO_RELLENO_SANITARIO}/ton × {lanTon.toFixed(1)} ton
                   </div>
                 </div>
 
-                {/* Ingresos */}
+                {/* Ingresos RECUPERA */}
                 <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-6 border-2 border-green-200 shadow-lg">
                   <div className="flex items-center gap-3 mb-4">
                     <PlusCircle className="w-8 h-8 text-green-600" />
                     <div>
-                      <h4 className="text-lg font-bold text-gray-900">Ingresos actuales</h4>
-                      <p className="text-sm text-gray-600">Por reciclables vendidos</p>
+                      <h4 className="text-lg font-bold text-gray-900">Ingresos RECUPERA</h4>
+                      <p className="text-sm text-gray-600">Venta de reciclables</p>
                     </div>
                   </div>
                   <div className="text-5xl font-bold text-green-600 mb-4">
-                    ${(ingresosTotales / 1000).toFixed(1)}K
+                    ${ingresosReciclables.toLocaleString('es-MX', { maximumFractionDigits: 0 })}
                   </div>
-                  <div className="space-y-2 text-sm bg-white/50 rounded-lg p-3 border border-green-100">
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-700">Reciclables:</span>
-                      <span className="font-bold text-green-700">${(ingresosReciclables / 1000).toFixed(1)}K</span>
+                  <div className="text-xs text-gray-500 bg-white/50 rounded-lg p-3 border border-green-100">
+                    Precios reales: Aluminio $12/kg, PET $3/kg, Papel $1.50/kg, Carton $0.50/kg
+                  </div>
+                </div>
+
+                {/* Ahorro por desviación */}
+                <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 border-2 border-blue-200 shadow-lg">
+                  <div className="flex items-center gap-3 mb-4">
+                    <TrendingUp className="w-8 h-8 text-blue-600" />
+                    <div>
+                      <h4 className="text-lg font-bold text-gray-900">Ahorro por Desviacion</h4>
+                      <p className="text-sm text-gray-600">Relleno sanitario evitado</p>
                     </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-700">Composta y reuso:</span>
-                      <span className="font-bold text-green-700">${((ingresosComposta + ingresosReuso) / 1000).toFixed(1)}K</span>
-                    </div>
+                  </div>
+                  <div className="text-5xl font-bold text-blue-600 mb-4">
+                    ${ahorroRelleno.toLocaleString('es-MX', { maximumFractionDigits: 0 })}
+                  </div>
+                  <div className="text-xs text-gray-500 bg-white/50 rounded-lg p-3 border border-blue-100">
+                    {divTon.toFixed(1)} ton desviadas × ${COSTO_RELLENO_SANITARIO}/ton
                   </div>
                 </div>
               </div>
