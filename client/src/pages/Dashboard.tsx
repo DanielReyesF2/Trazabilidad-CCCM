@@ -173,7 +173,11 @@ const PRECIO_RECUPERA: Record<string, number> = {
   'Scrap metal': 2.00,
   'E Waste': 0.00,
 };
-const COSTO_RELLENO_SANITARIO = 850; // $/tonelada de disposición en relleno
+/* ── TDI Recolección RSU — Real invoice data (Jan–Oct 2024, Feb 2025) ── */
+// $1,312.50/servicio semanal × 4-5 servicios/mes
+// Promedio mensual (10 facturas): $5,775 subtotal sin IVA
+const COSTO_SERVICIO_TDI = 1312.50; // MXN por servicio semanal
+const COSTO_MENSUAL_TDI = 5775;     // MXN promedio mensual (subtotal)
 
 /* ── Dashboard ── */
 export default function Dashboard() {
@@ -187,8 +191,10 @@ export default function Dashboard() {
   const lanTon = totals.totalLandfill / 1000;
   const genTon = totals.totalGenerated / 1000;
 
-  const ahorroRelleno = divTon * COSTO_RELLENO_SANITARIO; // ahorro por NO mandar a relleno
-  const costoRelleno = lanTon * COSTO_RELLENO_SANITARIO; // lo que SÍ se pagó de relleno
+  // TRUE Year = 12 months of TDI service
+  const numMeses = months.length || 12;
+  const costoRellenoAnual = numMeses * COSTO_MENSUAL_TDI;
+  const costoRellenoMensual = COSTO_MENSUAL_TDI;
 
   // Real income from RECUPERA — per-material prices
   const ingresosReciclables = useMemo(() => {
@@ -478,14 +484,14 @@ export default function Dashboard() {
                   className="mt-3 text-center"
                 >
                   <div className="text-lg font-semibold text-gray-700">
-                    Equivalente a{' '}
+                    Costo actual TDI:{' '}
                     <span className="text-emerald-600 font-bold">
-                      ${(ahorroRelleno / 1000).toFixed(1)}K
+                      ${costoRellenoMensual.toLocaleString('es-MX')}/mes
                     </span>{' '}
-                    de ahorro economico
+                    por recoleccion
                   </div>
                   <div className="text-xs text-gray-500 mt-1">
-                    Gastos evitados por no usar servicios de relleno sanitario
+                    ${COSTO_SERVICIO_TDI.toLocaleString('es-MX')}/servicio semanal — Facturas TDI reales
                   </div>
                 </motion.div>
                 <motion.div
@@ -665,20 +671,20 @@ export default function Dashboard() {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                {/* Costos de relleno */}
+                {/* Costos TDI recolección */}
                 <div className="bg-gradient-to-br from-red-50 to-rose-50 rounded-2xl p-6 border-2 border-red-200 shadow-lg">
                   <div className="flex items-center gap-3 mb-4">
                     <MinusCircle className="w-8 h-8 text-red-600" />
                     <div>
-                      <h4 className="text-lg font-bold text-gray-900">Costo Relleno Sanitario</h4>
-                      <p className="text-sm text-gray-600">{lanTon.toFixed(1)} toneladas enviadas</p>
+                      <h4 className="text-lg font-bold text-gray-900">Costo Recoleccion TDI</h4>
+                      <p className="text-sm text-gray-600">{numMeses} meses de servicio</p>
                     </div>
                   </div>
                   <div className="text-5xl font-bold text-red-600 mb-4">
-                    ${costoRelleno.toLocaleString('es-MX', { maximumFractionDigits: 0 })}
+                    ${costoRellenoAnual.toLocaleString('es-MX', { maximumFractionDigits: 0 })}
                   </div>
                   <div className="text-xs text-gray-500 bg-white/50 rounded-lg p-3 border border-red-100">
-                    ${COSTO_RELLENO_SANITARIO}/ton × {lanTon.toFixed(1)} ton
+                    ${COSTO_SERVICIO_TDI.toLocaleString('es-MX')}/servicio × ~4.4/mes — Facturas TDI reales
                   </div>
                 </div>
 
@@ -699,20 +705,20 @@ export default function Dashboard() {
                   </div>
                 </div>
 
-                {/* Ahorro por desviación */}
+                {/* Balance neto */}
                 <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 border-2 border-blue-200 shadow-lg">
                   <div className="flex items-center gap-3 mb-4">
                     <TrendingUp className="w-8 h-8 text-blue-600" />
                     <div>
-                      <h4 className="text-lg font-bold text-gray-900">Ahorro por Desviacion</h4>
-                      <p className="text-sm text-gray-600">Relleno sanitario evitado</p>
+                      <h4 className="text-lg font-bold text-gray-900">Balance Neto</h4>
+                      <p className="text-sm text-gray-600">Ingresos reciclaje − costo TDI</p>
                     </div>
                   </div>
-                  <div className="text-5xl font-bold text-blue-600 mb-4">
-                    ${ahorroRelleno.toLocaleString('es-MX', { maximumFractionDigits: 0 })}
+                  <div className={`text-5xl font-bold mb-4 ${ingresosReciclables - costoRellenoAnual >= 0 ? 'text-blue-600' : 'text-red-500'}`}>
+                    {ingresosReciclables - costoRellenoAnual >= 0 ? '' : '-'}${Math.abs(ingresosReciclables - costoRellenoAnual).toLocaleString('es-MX', { maximumFractionDigits: 0 })}
                   </div>
                   <div className="text-xs text-gray-500 bg-white/50 rounded-lg p-3 border border-blue-100">
-                    {divTon.toFixed(1)} ton desviadas × ${COSTO_RELLENO_SANITARIO}/ton
+                    Recuperacion de {((ingresosReciclables / costoRellenoAnual) * 100).toFixed(0)}% del costo de recoleccion
                   </div>
                 </div>
               </div>
