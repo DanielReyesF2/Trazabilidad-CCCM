@@ -107,7 +107,7 @@ export function SankeyDiagram({
       0,
     );
     const landfillLink = sourceLinks.find(
-      (link) => link.target === 'landfill',
+      (link) => link.target === 'landfill' || link.target === 'relleno',
     );
     const landfillValue = landfillLink?.value || 0;
     const diverted = totalGenerated - landfillValue;
@@ -274,9 +274,7 @@ export function SankeyDiagram({
           labelOrientation="horizontal"
           labelPadding={18}
           labelTextColor="#374151"
-          label={(node: any) => {
-            return SHORT_LABELS[node.id] || node.label || node.id;
-          }}
+          label={(node: any) => node.label || node.id}
           animate={true}
           motionConfig="gentle"
           onClick={handleNodeClick}
