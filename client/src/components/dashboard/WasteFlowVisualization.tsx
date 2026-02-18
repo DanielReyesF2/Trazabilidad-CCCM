@@ -99,7 +99,7 @@ export function WasteFlowVisualization({ months }: WasteFlowVisualizationProps) 
   const sankeyRef = useRef<HTMLDivElement>(null);
 
   // Build Sankey data from real monthly data
-  const { sankeyData, totals } = useMemo(() => {
+  const { sankeyData, realLinks, totals } = useMemo(() => {
     const rm = new Map<string, number>();
     const cm = new Map<string, number>();
     const um = new Map<string, number>();
@@ -186,8 +186,16 @@ export function WasteFlowVisualization({ months }: WasteFlowVisualizationProps) 
     const totalDiverted = tR + tC;
     const diversionRate = totalGenerated > 0 ? (totalDiverted / totalGenerated) * 100 : 0;
 
+    // Visual compression: apply power transform so small flows are visible
+    // (organics can be 10-80x larger than recycling, crushing everything visually)
+    const visualLinks = links.map((link) => ({
+      ...link,
+      value: Math.pow(link.value, 0.4),
+    }));
+
     return {
-      sankeyData: { nodes, links },
+      sankeyData: { nodes, links: visualLinks },
+      realLinks: links, // keep originals for CSV export
       totals: { totalGenerated, totalDiverted, totalLandfill: tL, diversionRate },
     };
   }, [months]);
@@ -227,12 +235,12 @@ export function WasteFlowVisualization({ months }: WasteFlowVisualizationProps) 
     }
   };
 
-  // Export CSV
+  // Export CSV — uses real values, not visual-compressed ones
   const exportToCSV = () => {
-    const totalValue = sankeyData.links.reduce((sum, link) => sum + link.value, 0);
+    const totalValue = realLinks.reduce((sum, link) => sum + link.value, 0);
     const csvContent = [
       ['Origen', 'Destino', 'Volumen (kg)', 'Porcentaje (%)'],
-      ...sankeyData.links.map((link) => [
+      ...realLinks.map((link) => [
         NODE_LABELS[link.source] || link.source,
         NODE_LABELS[link.target] || link.target,
         link.value.toFixed(2),
