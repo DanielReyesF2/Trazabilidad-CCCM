@@ -1,12 +1,12 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'wouter';
 import AppLayout from '@/components/layout/AppLayout';
 
-import { WasteFlowVisualization } from '@/components/dashboard/WasteFlowVisualization';
 import { AnimatedCounter } from '@/components/dashboard/AnimatedCounter';
 import { MonthlyDeviationChart } from '@/components/dashboard/MonthlyDeviationChart';
-import { useTrueYearData } from '@/hooks/useTrueYearData';
+import { SankeyDiagram, SankeyData } from '@/components/SankeyDiagram';
+import { useTrueYearData, TrueYearMonthData } from '@/hooks/useTrueYearData';
 import {
   Trash2,
   Zap,
@@ -18,6 +18,84 @@ import {
   ArrowRight,
   CheckCircle2,
 } from 'lucide-react';
+
+// Material name translations
+const MATERIAL_LABELS: Record<string, string> = {
+  'Mixed Paper': 'Papel Mixto',
+  'Office paper': 'Papel Oficina',
+  'Magazines': 'Revistas',
+  'Newspaper': 'Periódico',
+  'Carboard': 'Cartón',
+  'PET': 'PET',
+  'RIgid plastic': 'Plástico Rígido',
+  'HDPE': 'HDPE',
+  'Tin Can': 'Lata',
+  'Aluminium': 'Aluminio',
+  'Glass': 'Vidrio',
+  'Scrap metal': 'Metal',
+  'E Waste': 'E-Waste',
+  'Yarde Waste': 'Poda y Jardín',
+  'Mulch tree brands': 'Mulch / Ramas',
+  'Food from the mess hall': 'Alimentos Cocina',
+  'Food': 'Alimentos',
+  'Organic': 'Orgánico',
+  'Non organic': 'No Orgánico',
+};
+
+function buildSankeyData(months: TrueYearMonthData[]): SankeyData {
+  // Aggregate kg by material across all months
+  const recyclingMap = new Map<string, number>();
+  const compostMap = new Map<string, number>();
+  const reuseMap = new Map<string, number>();
+  const landfillMap = new Map<string, number>();
+
+  months.forEach((m) => {
+    m.recycling.forEach((e) => recyclingMap.set(e.material, (recyclingMap.get(e.material) || 0) + (e.kg || 0)));
+    m.compost.forEach((e) => compostMap.set(e.category, (compostMap.get(e.category) || 0) + (e.kg || 0)));
+    m.reuse.forEach((e) => reuseMap.set(e.category, (reuseMap.get(e.category) || 0) + (e.kg || 0)));
+    m.landfill.forEach((e) => landfillMap.set(e.wasteType, (landfillMap.get(e.wasteType) || 0) + (e.kg || 0)));
+  });
+
+  // Build nodes
+  const nodes: SankeyData['nodes'] = [
+    { id: 'total', label: 'Residuos Generados', category: 'source' },
+    { id: 'recycling', label: 'Reciclaje', category: 'process' },
+    { id: 'compost', label: 'Composta', category: 'process' },
+    { id: 'reuse', label: 'Reuso', category: 'process' },
+    { id: 'landfill', label: 'Relleno Sanitario', category: 'process' },
+  ];
+
+  const links: SankeyData['links'] = [];
+
+  // Helper to add material nodes + links
+  const addMaterials = (map: Map<string, number>, processId: string) => {
+    map.forEach((kg, name) => {
+      if (kg <= 0) return;
+      const nodeId = `${processId}_${name}`;
+      nodes.push({ id: nodeId, label: MATERIAL_LABELS[name] || name, category: 'destination' });
+      links.push({ source: processId, target: nodeId, value: kg });
+    });
+  };
+
+  // Source → process links
+  const totalRecycling = Array.from(recyclingMap.values()).reduce((a, b) => a + b, 0);
+  const totalCompost = Array.from(compostMap.values()).reduce((a, b) => a + b, 0);
+  const totalReuse = Array.from(reuseMap.values()).reduce((a, b) => a + b, 0);
+  const totalLandfill = Array.from(landfillMap.values()).reduce((a, b) => a + b, 0);
+
+  if (totalRecycling > 0) links.push({ source: 'total', target: 'recycling', value: totalRecycling });
+  if (totalCompost > 0) links.push({ source: 'total', target: 'compost', value: totalCompost });
+  if (totalReuse > 0) links.push({ source: 'total', target: 'reuse', value: totalReuse });
+  if (totalLandfill > 0) links.push({ source: 'total', target: 'landfill', value: totalLandfill });
+
+  // Process → material links
+  addMaterials(recyclingMap, 'recycling');
+  addMaterials(compostMap, 'compost');
+  addMaterials(reuseMap, 'reuse');
+  addMaterials(landfillMap, 'landfill');
+
+  return { nodes, links };
+}
 
 export default function Dashboard() {
   const { t } = useTranslation();
@@ -42,6 +120,8 @@ export default function Dashboard() {
     energy: Math.round(totalDivertedTons * 2160),
     co2: Math.round(totalDivertedTons * 0.85 * 1000),
   };
+
+  const sankeyData = useMemo(() => buildSankeyData(months), [months]);
 
   return (
     <AppLayout>
@@ -98,10 +178,18 @@ export default function Dashboard() {
             </div>
           </section>
 
-          {/* ─── ROW 3: Waste Flow ─── */}
-          <section className="mb-12">
-            <WasteFlowVisualization totalWasteDiverted={totalDivertedTons} />
-          </section>
+          {/* ─── ROW 3: Sankey — Flujo de materiales ─── */}
+          {sankeyData.links.length > 0 && (
+            <section className="mb-12">
+              <SankeyDiagram
+                data={sankeyData}
+                title="Flujo de Materiales"
+                subtitle="Trazabilidad completa de residuos por categoría y destino"
+                period="TRUE Year Oct 2024 – Sep 2025"
+                height={420}
+              />
+            </section>
+          )}
 
           {/* ─── ROW 4: Impact + Modules side by side ─── */}
           <section className="grid grid-cols-1 lg:grid-cols-[1fr_240px] gap-4 mb-12">
