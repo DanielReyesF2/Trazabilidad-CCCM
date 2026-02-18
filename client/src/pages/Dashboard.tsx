@@ -5,6 +5,7 @@ import { GlassCard } from '@/components/ui/glass-card';
 import { AnimatedCounter } from '@/components/dashboard/AnimatedCounter';
 import { MonthlyDeviationChart } from '@/components/dashboard/MonthlyDeviationChart';
 import { SankeyDiagram, SankeyData } from '@/components/SankeyDiagram';
+import { AIInsights } from '@/components/dashboard/AIInsights';
 import { useTrueYearData, TrueYearMonthData } from '@/hooks/useTrueYearData';
 import {
   BarChart,
@@ -28,6 +29,9 @@ import {
   Zap,
   Wind,
   Calendar,
+  DollarSign,
+  MinusCircle,
+  PlusCircle,
 } from 'lucide-react';
 
 /* ── Material translations ── */
@@ -111,8 +115,12 @@ function buildSankeyData(months: TrueYearMonthData[]): SankeyData {
   return { nodes, links };
 }
 
-/* ── Constants ── */
+/* ── Financial Constants (MXN) ── */
 const COSTO_RELLENO_SANITARIO = 850; // $/tonelada
+const PRECIO_RECICLABLES = 1200; // $/tonelada promedio
+const PRECIO_COMPOSTA = 400; // $/tonelada
+const PRECIO_REUSO = 800; // $/tonelada
+const COSTO_GESTION_TOTAL = 900; // $/tonelada (procesamiento, transporte)
 
 /* ── Dashboard ── */
 export default function Dashboard() {
@@ -123,7 +131,20 @@ export default function Dashboard() {
   const comTon = totals.totalCompost / 1000;
   const reuTon = totals.totalReuse / 1000;
 
+  const lanTon = totals.totalLandfill / 1000;
+  const genTon = totals.totalGenerated / 1000;
+
   const ahorroEconomico = divTon * COSTO_RELLENO_SANITARIO;
+
+  // Financial calculations
+  const costoRellenoSanitario = lanTon * COSTO_RELLENO_SANITARIO;
+  const costoGestionTotal = genTon * COSTO_GESTION_TOTAL;
+  const costoTotalManejo = costoRellenoSanitario + costoGestionTotal;
+
+  const ingresosReciclables = recTon * PRECIO_RECICLABLES;
+  const ingresosComposta = comTon * PRECIO_COMPOSTA;
+  const ingresosReuso = reuTon * PRECIO_REUSO;
+  const ingresosTotales = ingresosReciclables + ingresosComposta + ingresosReuso;
 
   // Impact equivalences (based on totalDiverted in kg)
   const co2Avoided = totals.totalDiverted * 0.85; // kg CO2
@@ -226,6 +247,14 @@ export default function Dashboard() {
     recycling: m.totalRecycling,
     compost: m.totalCompost,
     reuse: m.totalReuse,
+    landfill: m.totalLandfill,
+  }));
+
+  // Data for AI Insights
+  const monthlyInsightData = months.map((m) => ({
+    month: monthLabelsES[m.monthNum] || m.label,
+    recycling: m.totalRecycling,
+    compost: m.totalCompost,
     landfill: m.totalLandfill,
   }));
 
@@ -542,7 +571,76 @@ export default function Dashboard() {
             </div>
           </motion.div>
 
-          {/* ═══ 3. SANKEY DIAGRAM ═══ */}
+          {/* ═══ 3. FINANCIAL ANALYSIS ═══ */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.35 }}
+          >
+            <GlassCard variant="default" hover={false}>
+              <div className="flex items-center gap-3 mb-8">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 flex items-center justify-center">
+                  <DollarSign className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-gray-900">Analisis Financiero de Residuos</h3>
+                  <p className="text-sm text-gray-500">Impacto economico de tu gestion actual</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                {/* Costos */}
+                <div className="bg-gradient-to-br from-red-50 to-rose-50 rounded-2xl p-6 border-2 border-red-200 shadow-lg">
+                  <div className="flex items-center gap-3 mb-4">
+                    <MinusCircle className="w-8 h-8 text-red-600" />
+                    <div>
+                      <h4 className="text-lg font-bold text-gray-900">Costos en manejo de residuos</h4>
+                      <p className="text-sm text-gray-600">Mensual</p>
+                    </div>
+                  </div>
+                  <div className="text-5xl font-bold text-red-600 mb-4">
+                    ${(costoTotalManejo / 1000).toFixed(1)}K
+                  </div>
+                  <div className="space-y-2 text-sm bg-white/50 rounded-lg p-3 border border-red-100">
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-700">Gestion operativa:</span>
+                      <span className="font-bold text-red-700">${(costoGestionTotal / 1000).toFixed(1)}K</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-700">Relleno sanitario:</span>
+                      <span className="font-bold text-red-700">${(costoRellenoSanitario / 1000).toFixed(1)}K</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Ingresos */}
+                <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-6 border-2 border-green-200 shadow-lg">
+                  <div className="flex items-center gap-3 mb-4">
+                    <PlusCircle className="w-8 h-8 text-green-600" />
+                    <div>
+                      <h4 className="text-lg font-bold text-gray-900">Ingresos actuales</h4>
+                      <p className="text-sm text-gray-600">Por reciclables vendidos</p>
+                    </div>
+                  </div>
+                  <div className="text-5xl font-bold text-green-600 mb-4">
+                    ${(ingresosTotales / 1000).toFixed(1)}K
+                  </div>
+                  <div className="space-y-2 text-sm bg-white/50 rounded-lg p-3 border border-green-100">
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-700">Reciclables:</span>
+                      <span className="font-bold text-green-700">${(ingresosReciclables / 1000).toFixed(1)}K</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-700">Composta y reuso:</span>
+                      <span className="font-bold text-green-700">${((ingresosComposta + ingresosReuso) / 1000).toFixed(1)}K</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </GlassCard>
+          </motion.div>
+
+          {/* ═══ 4. SANKEY DIAGRAM ═══ */}
           {sankeyData.links.length > 0 && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -698,7 +796,19 @@ export default function Dashboard() {
             </motion.div>
           </div>
 
-          {/* ═══ 5. FOOTER ═══ */}
+          {/* ═══ 6. AI INSIGHTS ═══ */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.7 }}
+          >
+            <AIInsights
+              deviationRate={totals.diversionRate}
+              monthlyData={monthlyInsightData}
+            />
+          </motion.div>
+
+          {/* ═══ 7. FOOTER ═══ */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
