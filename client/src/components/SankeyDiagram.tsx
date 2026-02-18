@@ -31,59 +31,36 @@ interface SankeyDiagramProps {
   onNodeClick?: (node: SankeyNode) => void;
 }
 
-// Color map for known node IDs
+// Color map — 3 column layout: Sources (left) → Categories (middle) → Destinations (right)
 const NODE_COLORS: Record<string, string> = {
-  // Source
-  total: '#273949',
-  // Processes
-  recycling: '#10b981',
-  compost: '#22c55e',
-  reuse: '#3b82f6',
-  landfill: '#64748b',
-  // Recycling materials
-  recycling_Mixed_Paper: '#3b82f6',
-  'recycling_Mixed Paper': '#3b82f6',
-  'recycling_Office paper': '#1d4ed8',
-  recycling_Magazines: '#6366f1',
-  recycling_Newspaper: '#8b5cf6',
-  recycling_Carboard: '#f97316',
-  'recycling_Carboard': '#f97316',
-  recycling_PET: '#0ea5e9',
-  'recycling_RIgid plastic': '#06b6d4',
-  recycling_HDPE: '#14b8a6',
-  'recycling_Tin Can': '#d97706',
-  recycling_Aluminium: '#9333ea',
-  recycling_Glass: '#059669',
-  'recycling_Scrap metal': '#64748b',
-  'recycling_E Waste': '#dc2626',
-  // Compost materials
-  'compost_Yarde Waste': '#16a34a',
-  'compost_Mulch tree brands': '#15803d',
-  'compost_Food from the mess hall': '#22c55e',
-  // Reuse materials
-  reuse_Glass: '#2563eb',
-  reuse_Food: '#0ea5e9',
-  // Landfill
-  landfill_Organic: '#94a3b8',
-  'landfill_Non organic': '#64748b',
-};
+  // LEFT: Source groups (recycling)
+  src_papel: '#f97316',      // Orange
+  src_plasticos: '#8b5cf6',  // Purple
+  src_metales: '#6366f1',    // Indigo
+  src_vidrio_rec: '#059669', // Green
+  src_ewaste: '#dc2626',     // Red
 
-// Short labels for cleaner display
-const SHORT_LABELS: Record<string, string> = {
-  total: 'Total Generado',
-  recycling: 'Reciclaje',
-  compost: 'Composta',
-  reuse: 'Reuso',
-  landfill: 'Relleno',
+  // MIDDLE: Waste categories
+  reciclaje: '#3b82f6',      // Blue
+  composta: '#22c55e',       // Green
+  reuso: '#0ea5e9',          // Cyan
+  relleno: '#6b7280',        // Gray
+
+  // RIGHT: Final destinations
+  dest_reciclaje: '#2563eb', // Dark blue
+  dest_composta: '#16a34a',  // Dark green
+  dest_reuso: '#0ea5e9',     // Cyan
+  dest_relleno: '#64748b',   // Slate
 };
 
 function getNodeColor(node: { id: string }): string {
   if (NODE_COLORS[node.id]) return NODE_COLORS[node.id];
   // Fallback by prefix
-  if (node.id.startsWith('recycling_')) return '#10b981';
-  if (node.id.startsWith('compost_')) return '#22c55e';
-  if (node.id.startsWith('reuse_')) return '#3b82f6';
-  if (node.id.startsWith('landfill_')) return '#64748b';
+  if (node.id.startsWith('src_com_')) return '#22c55e';
+  if (node.id.startsWith('src_reu_')) return '#0ea5e9';
+  if (node.id.startsWith('src_lan_')) return '#94a3b8';
+  if (node.id.startsWith('src_')) return '#3b82f6';
+  if (node.id.startsWith('dest_')) return '#64748b';
   return '#6b7280';
 }
 

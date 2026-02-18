@@ -57,60 +57,102 @@ const ML: Record<string, string> = {
   'Non organic': 'No Organico',
 };
 
+/*
+ * 3-column Sankey like Avandaro:
+ * LEFT (sources/materials) → MIDDLE (waste categories) → RIGHT (final destinations)
+ */
+
+// Group recycling materials into broader source categories
+const RECYCLING_GROUPS: Record<string, { materials: string[]; label: string }> = {
+  papel: { materials: ['Mixed Paper', 'Office paper', 'Magazines', 'Newspaper', 'Carboard'], label: 'Papel y Carton' },
+  plasticos: { materials: ['PET', 'RIgid plastic', 'HDPE'], label: 'Plasticos' },
+  metales: { materials: ['Tin Can', 'Aluminium', 'Scrap metal'], label: 'Metales' },
+  vidrio_rec: { materials: ['Glass'], label: 'Vidrio' },
+  ewaste: { materials: ['E Waste'], label: 'E-Waste' },
+};
+
 function buildSankeyData(months: TrueYearMonthData[]): SankeyData {
+  // Aggregate all months
   const rm = new Map<string, number>();
   const cm = new Map<string, number>();
   const um = new Map<string, number>();
   const lm = new Map<string, number>();
   months.forEach((m) => {
-    m.recycling.forEach((e) =>
-      rm.set(e.material, (rm.get(e.material) || 0) + (e.kg || 0)),
-    );
-    m.compost.forEach((e) =>
-      cm.set(e.category, (cm.get(e.category) || 0) + (e.kg || 0)),
-    );
-    m.reuse.forEach((e) =>
-      um.set(e.category, (um.get(e.category) || 0) + (e.kg || 0)),
-    );
-    m.landfill.forEach((e) =>
-      lm.set(e.wasteType, (lm.get(e.wasteType) || 0) + (e.kg || 0)),
-    );
+    m.recycling.forEach((e) => rm.set(e.material, (rm.get(e.material) || 0) + (e.kg || 0)));
+    m.compost.forEach((e) => cm.set(e.category, (cm.get(e.category) || 0) + (e.kg || 0)));
+    m.reuse.forEach((e) => um.set(e.category, (um.get(e.category) || 0) + (e.kg || 0)));
+    m.landfill.forEach((e) => lm.set(e.wasteType, (lm.get(e.wasteType) || 0) + (e.kg || 0)));
   });
 
-  const nodes: SankeyData['nodes'] = [
-    { id: 'total', label: 'Residuos Generados', category: 'source' },
-    { id: 'recycling', label: 'Reciclaje', category: 'process' },
-    { id: 'compost', label: 'Composta', category: 'process' },
-    { id: 'reuse', label: 'Reuso', category: 'process' },
-    { id: 'landfill', label: 'Relleno Sanitario', category: 'process' },
-  ];
+  const nodes: SankeyData['nodes'] = [];
   const links: SankeyData['links'] = [];
 
-  const add = (map: Map<string, number>, pid: string) => {
-    map.forEach((kg, name) => {
-      if (kg <= 0) return;
-      const nid = `${pid}_${name}`;
-      nodes.push({
-        id: nid,
-        label: ML[name] || name,
-        category: 'destination',
-      });
-      links.push({ source: pid, target: nid, value: kg });
-    });
-  };
+  // ── LEFT COLUMN: Source nodes (grouped materials) ──
 
+  // Recycling groups
+  for (const [groupId, group] of Object.entries(RECYCLING_GROUPS)) {
+    const total = group.materials.reduce((sum, mat) => sum + (rm.get(mat) || 0), 0);
+    if (total > 0) {
+      nodes.push({ id: `src_${groupId}`, label: group.label, category: 'source' });
+      links.push({ source: `src_${groupId}`, target: 'reciclaje', value: total });
+    }
+  }
+
+  // Compost sources
+  cm.forEach((kg, name) => {
+    if (kg > 0) {
+      const id = `src_com_${name}`;
+      nodes.push({ id, label: ML[name] || name, category: 'source' });
+      links.push({ source: id, target: 'composta', value: kg });
+    }
+  });
+
+  // Reuse sources
+  um.forEach((kg, name) => {
+    if (kg > 0) {
+      const id = `src_reu_${name}`;
+      nodes.push({ id, label: `${ML[name] || name} (Reuso)`, category: 'source' });
+      links.push({ source: id, target: 'reuso', value: kg });
+    }
+  });
+
+  // Landfill sources
+  lm.forEach((kg, name) => {
+    if (kg > 0) {
+      const id = `src_lan_${name}`;
+      nodes.push({ id, label: ML[name] || name, category: 'source' });
+      links.push({ source: id, target: 'relleno', value: kg });
+    }
+  });
+
+  // ── MIDDLE COLUMN: Waste categories ──
   const tR = [...rm.values()].reduce((a, b) => a + b, 0);
   const tC = [...cm.values()].reduce((a, b) => a + b, 0);
   const tU = [...um.values()].reduce((a, b) => a + b, 0);
   const tL = [...lm.values()].reduce((a, b) => a + b, 0);
-  if (tR > 0) links.push({ source: 'total', target: 'recycling', value: tR });
-  if (tC > 0) links.push({ source: 'total', target: 'compost', value: tC });
-  if (tU > 0) links.push({ source: 'total', target: 'reuse', value: tU });
-  if (tL > 0) links.push({ source: 'total', target: 'landfill', value: tL });
-  add(rm, 'recycling');
-  add(cm, 'compost');
-  add(um, 'reuse');
-  add(lm, 'landfill');
+
+  if (tR > 0) nodes.push({ id: 'reciclaje', label: 'Reciclables', category: 'process' });
+  if (tC > 0) nodes.push({ id: 'composta', label: 'Organicos', category: 'process' });
+  if (tU > 0) nodes.push({ id: 'reuso', label: 'Reutilizacion', category: 'process' });
+  if (tL > 0) nodes.push({ id: 'relleno', label: 'Inorganicos', category: 'process' });
+
+  // ── RIGHT COLUMN: Final destinations ──
+  if (tR > 0) {
+    nodes.push({ id: 'dest_reciclaje', label: 'Centro de Reciclaje', category: 'destination' });
+    links.push({ source: 'reciclaje', target: 'dest_reciclaje', value: tR });
+  }
+  if (tC > 0) {
+    nodes.push({ id: 'dest_composta', label: 'Planta de Composta', category: 'destination' });
+    links.push({ source: 'composta', target: 'dest_composta', value: tC });
+  }
+  if (tU > 0) {
+    nodes.push({ id: 'dest_reuso', label: 'Reuso Interno', category: 'destination' });
+    links.push({ source: 'reuso', target: 'dest_reuso', value: tU });
+  }
+  if (tL > 0) {
+    nodes.push({ id: 'dest_relleno', label: 'Disposicion Controlada', category: 'destination' });
+    links.push({ source: 'relleno', target: 'dest_relleno', value: tL });
+  }
 
   return { nodes, links };
 }
