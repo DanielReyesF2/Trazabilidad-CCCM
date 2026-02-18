@@ -1,459 +1,369 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  ArrowRight, 
-  ArrowDown,
-  Recycle, 
-  Leaf, 
-  Trash2, 
-  Factory,
-  TreePine,
-  Droplets,
-  Zap,
-  Package,
-  Coffee,
-  Utensils,
-  Newspaper,
-  Wine,
-  Battery,
-  Building2,
-  ChefHat,
-  Users,
-  MapPin,
-  MoveRight
+import { useState, useRef, useMemo } from 'react';
+import { ResponsiveSankey } from '@nivo/sankey';
+import html2canvas from 'html2canvas';
+import {
+  FileImage,
+  FileText,
+  ArrowLeft,
 } from 'lucide-react';
+import { TrueYearMonthData } from '@/hooks/useTrueYearData';
 
-interface WasteFlow {
+// ── Interfaces ──
+interface SankeyNode {
   id: string;
-  name: string;
-  category: 'organico' | 'inorganico' | 'reciclable';
-  icon: React.ReactNode;
-  color: string;
-  bgColor: string;
-  destination: string;
-  partner: string;
-  volume: number; // toneladas mensuales promedio
-  description: string;
-  origins: string[]; // puntos de origen específicos
+  nodeColor?: string;
 }
 
-const wasteFlows: WasteFlow[] = [
-  // ORGÁNICOS - Basado en la imagen detallada del Club
-  {
-    id: 'aceite-residual',
-    name: 'Aceite Residual',
-    category: 'organico',
-    icon: <Droplets className="w-5 h-5" />,
-    color: 'text-amber-600',
-    bgColor: 'bg-amber-100',
-    destination: 'Revalorización (Insumo para biodiesel)',
-    partner: 'Reoil',
-    volume: 0.8,
-    description: 'Aceite usado de cocinas convertido a biodiesel sostenible',
-    origins: ['Restaurante', 'Casa Club', 'Cocinas de eventos', 'Campo', 'Canchas de Tennis', 'Canchas de Padel']
-  },
-  {
-    id: 'grasa-cascaras',
-    name: 'Grasa y Cáscaras de Fruta',
-    category: 'organico',
-    icon: <Utensils className="w-5 h-5" />,
-    color: 'text-green-600',
-    bgColor: 'bg-green-100',
-    destination: 'Recolección y disposición de grasa cocinas',
-    partner: 'TEDISD Innovative Group',
-    volume: 3.2,
-    description: 'Grasas de cocina y cáscaras de frutas procesadas sustainably',
-    origins: ['Restaurante principal', 'Cocina Casa Club', 'Área de preparación', 'Campo', 'Canchas de Tennis', 'Canchas de Padel']
-  },
-  {
-    id: 'organicos-complejos',
-    name: 'Orgánicos Diversos',
-    category: 'organico',
-    icon: <TreePine className="w-5 h-5" />,
-    color: 'text-green-700',
-    bgColor: 'bg-green-200',
-    destination: 'Biodegradación mediante biodigestor ORKA',
-    partner: 'ORKA',
-    volume: 17.6,
-    description: 'Pan, pescados, carne, huevo, queso, pollo, pasta, arroz, frutas, azúcar, salsas, papa, caña, conchas, aceites, café',
-    origins: ['Restaurante', 'Casa Club', 'Eventos especiales', 'Cocinas auxiliares', 'Campo', 'Canchas de Tennis', 'Canchas de Padel']
-  },
+interface SankeyLink {
+  source: string;
+  target: string;
+  value: number;
+}
 
-  // RECICLABLES - Clasificación profesional detallada
-  {
-    id: 'papel-carton-periodico',
-    name: 'Papel y Cartón',
-    category: 'reciclable',
-    icon: <Newspaper className="w-5 h-5" />,
-    color: 'text-blue-600',
-    bgColor: 'bg-blue-100',
-    destination: 'Revalorización Reciclado Refabricación',
-    partner: 'Recupera (Centros de Reciclaje)',
-    volume: 2.1,
-    description: 'Papel, periódico, revistas, cartón - proceso completo de refabricación',
-    origins: ['Oficinas administrativas', 'Casa Club', 'Recepción', 'Campo', 'Canchas de Tennis', 'Canchas de Padel']
-  },
-  {
-    id: 'vidrio-sat-timbrado',
-    name: 'Vidrio (Timbrado SAT)',
-    category: 'reciclable',
-    icon: <Wine className="w-5 h-5" />,
-    color: 'text-blue-700',
-    bgColor: 'bg-blue-200',
-    destination: 'Revalorización Proceso Refabricación',
-    partner: 'Cerrando el Ciclo',
-    volume: 1.2,
-    description: 'Vidrio certificado SAT para proceso de refabricación industrial',
-    origins: ['Bar y restaurante', 'Eventos especiales', 'Áreas VIP', 'Campo', 'Canchas de Tennis', 'Canchas de Padel']
-  },
-  {
-    id: 'plasticos-polipropileno',
-    name: 'Plásticos PET/HDPE',
-    category: 'reciclable',
-    icon: <Package className="w-5 h-5" />,
-    color: 'text-emerald-600',
-    bgColor: 'bg-emerald-100',
-    destination: 'Donación para revalorización',
-    partner: 'Verde Ciudad',
-    volume: 1.9,
-    description: 'Vidrio PET HDPE, plástico duro, aluminio, tapas de polipropileno',
-    origins: ['Casa Club', 'Restaurante', 'Áreas comunes', 'Eventos', 'Campo', 'Canchas de Tennis', 'Canchas de Padel']
-  },
+interface SankeyData {
+  nodes: SankeyNode[];
+  links: SankeyLink[];
+}
 
-  // INORGÁNICOS - Sistema completo de manejo
-  {
-    id: 'residuos-electronicos-complejos',
-    name: 'Residuos Electrónicos',
-    category: 'inorganico',
-    icon: <Battery className="w-5 h-5" />,
-    color: 'text-purple-600',
-    bgColor: 'bg-purple-100',
-    destination: 'Recuperación Revalorización Reciclaje',
-    partner: 'eWaste Group',
-    volume: 0.3,
-    description: 'Blancos, losa, objetos perdidos, mobiliario, equipos electrónicos',
-    origins: ['Oficinas administrativas', 'Sistemas Casa Club', 'Mantenimiento', 'Campo', 'Canchas de Tennis', 'Canchas de Padel']
-  },
-  {
-    id: 'cartuchos-nikken-especializados',
-    name: 'Cartuchos Nikken',
-    category: 'inorganico',
-    icon: <Factory className="w-5 h-5" />,
-    color: 'text-indigo-600',
-    bgColor: 'bg-indigo-100',
-    destination: 'Donación para revalorización',
-    partner: 'NIKKEN',
-    volume: 0.1,
-    description: 'Cartuchos de tinta y tóner para remanufactura especializada',
-    origins: ['Oficinas', 'Centros de impresión', 'Administración', 'Campo', 'Canchas de Tennis', 'Canchas de Padel']
-  },
-  {
-    id: 'residuos-generales-controlados',
-    name: 'Residuos Generales',
-    category: 'inorganico',
-    icon: <Trash2 className="w-5 h-5" />,
-    color: 'text-gray-600',
-    bgColor: 'bg-gray-100',
-    destination: 'Donaciones o Defensa SGA',
-    partner: 'Amistad Cristiano / KREY',
-    volume: 5.8,
-    description: 'Reprocesamiento y Compostaje cuando es iniciado - disposición controlada',
-    origins: ['Casa Club general', 'Mantenimiento', 'Áreas comunes', 'Campo', 'Canchas de Tennis', 'Canchas de Padel']
-  }
-];
+// ── Recycling material groups ──
+const RECYCLING_GROUPS: Record<string, { materials: string[]; label: string }> = {
+  papel: { materials: ['Mixed Paper', 'Office paper', 'Magazines', 'Newspaper', 'Carboard'], label: 'Papel y Carton' },
+  plasticos: { materials: ['PET', 'RIgid plastic', 'HDPE'], label: 'Plasticos' },
+  metales: { materials: ['Tin Can', 'Aluminium', 'Scrap metal'], label: 'Metales' },
+  vidrio: { materials: ['Glass'], label: 'Vidrio' },
+  ewaste: { materials: ['E Waste'], label: 'E-Waste' },
+};
+
+// ── Emoji labels (same style as Avandaro) ──
+const nodeEmojis: Record<string, string> = {
+  src_papel: '📄',
+  src_plasticos: '🧴',
+  src_metales: '🥫',
+  src_vidrio: '🍾',
+  src_ewaste: '💻',
+  src_com_food: '🍽️',
+  src_com_yard: '🌿',
+  src_reuso: '♻️',
+  src_relleno: '🗑️',
+};
+
+// ── Node colors (matching Avandaro palette) ──
+const NODE_COLORS: Record<string, string> = {
+  // Sources (LEFT)
+  src_papel: '#f97316',
+  src_plasticos: '#7c3aed',
+  src_metales: '#1d4ed8',
+  src_vidrio: '#059669',
+  src_ewaste: '#dc2626',
+  src_com_food: '#f97316',
+  src_com_yard: '#16a34a',
+  src_reuso: '#0ea5e9',
+  src_relleno: '#6b7280',
+  // Categories (MIDDLE)
+  reciclables: '#3b82f6',
+  organicos: '#22c55e',
+  inorganicos: '#6b7280',
+  // Destinations (RIGHT)
+  dest_recupera: '#2563eb',
+  dest_composta: '#16a34a',
+  dest_reuso: '#0ea5e9',
+  dest_tdi: '#64748b',
+};
+
+// ── Short labels ──
+const NODE_LABELS: Record<string, string> = {
+  src_papel: 'Papel y Carton',
+  src_plasticos: 'Plasticos',
+  src_metales: 'Metales',
+  src_vidrio: 'Vidrio',
+  src_ewaste: 'E-Waste',
+  src_com_food: 'Alimentos',
+  src_com_yard: 'Jardineria',
+  src_reuso: 'Materiales Reuso',
+  src_relleno: 'No Reciclable',
+  reciclables: 'Reciclables',
+  organicos: 'Organicos',
+  inorganicos: 'Inorganicos',
+  dest_recupera: 'Reciclaje RECUPERA',
+  dest_composta: 'Composta CCCM',
+  dest_reuso: 'Reuso Interno',
+  dest_tdi: 'Disposicion Controlada',
+};
 
 interface WasteFlowVisualizationProps {
-  totalWasteDiverted: number;
+  months: TrueYearMonthData[];
 }
 
-export function WasteFlowVisualization({ totalWasteDiverted }: WasteFlowVisualizationProps) {
-  const [selectedFlow, setSelectedFlow] = useState<string | null>(null);
-  const [animatingParticles, setAnimatingParticles] = useState(true);
+export function WasteFlowVisualization({ months }: WasteFlowVisualizationProps) {
+  const [selectedNode, setSelectedNode] = useState<string | null>(null);
+  const sankeyRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setAnimatingParticles(prev => !prev);
-    }, 2000);
+  // Build Sankey data from real monthly data
+  const { sankeyData, totals } = useMemo(() => {
+    const rm = new Map<string, number>();
+    const cm = new Map<string, number>();
+    const um = new Map<string, number>();
+    const lm = new Map<string, number>();
 
-    return () => clearInterval(interval);
-  }, []);
+    months.forEach((m) => {
+      m.recycling.forEach((e) => rm.set(e.material, (rm.get(e.material) || 0) + (e.kg || 0)));
+      m.compost.forEach((e) => cm.set(e.category, (cm.get(e.category) || 0) + (e.kg || 0)));
+      m.reuse.forEach((e) => um.set(e.category, (um.get(e.category) || 0) + (e.kg || 0)));
+      m.landfill.forEach((e) => lm.set(e.wasteType, (lm.get(e.wasteType) || 0) + (e.kg || 0)));
+    });
 
-  const organicFlows = wasteFlows.filter(flow => flow.category === 'organico');
-  const recyclableFlows = wasteFlows.filter(flow => flow.category === 'reciclable');
-  const inorganicFlows = wasteFlows.filter(flow => flow.category === 'inorganico');
+    const nodes: SankeyNode[] = [];
+    const links: SankeyLink[] = [];
 
-  const totalVolume = wasteFlows.reduce((sum, flow) => sum + flow.volume, 0);
-  const diversionRate = ((totalVolume - inorganicFlows.reduce((sum, flow) => sum + flow.volume, 0)) / totalVolume * 100);
+    // ── LEFT COLUMN: Source nodes ──
+
+    // Recycling source groups
+    for (const [groupId, group] of Object.entries(RECYCLING_GROUPS)) {
+      const total = group.materials.reduce((sum, mat) => sum + (rm.get(mat) || 0), 0);
+      if (total > 0) {
+        nodes.push({ id: `src_${groupId}`, nodeColor: NODE_COLORS[`src_${groupId}`] });
+        links.push({ source: `src_${groupId}`, target: 'reciclables', value: total });
+      }
+    }
+
+    // Compost sources — group food and yard waste
+    let foodTotal = 0;
+    let yardTotal = 0;
+    cm.forEach((kg, name) => {
+      if (name.toLowerCase().includes('food') || name.toLowerCase().includes('mess')) {
+        foodTotal += kg;
+      } else {
+        yardTotal += kg;
+      }
+    });
+    if (foodTotal > 0) {
+      nodes.push({ id: 'src_com_food', nodeColor: NODE_COLORS.src_com_food });
+      links.push({ source: 'src_com_food', target: 'organicos', value: foodTotal });
+    }
+    if (yardTotal > 0) {
+      nodes.push({ id: 'src_com_yard', nodeColor: NODE_COLORS.src_com_yard });
+      links.push({ source: 'src_com_yard', target: 'organicos', value: yardTotal });
+    }
+
+    // Reuse sources — consolidated
+    const totalReuse = [...um.values()].reduce((a, b) => a + b, 0);
+    if (totalReuse > 0) {
+      nodes.push({ id: 'src_reuso', nodeColor: NODE_COLORS.src_reuso });
+      links.push({ source: 'src_reuso', target: 'reciclables', value: totalReuse });
+    }
+
+    // Landfill sources — consolidated
+    const totalLandfill = [...lm.values()].reduce((a, b) => a + b, 0);
+    if (totalLandfill > 0) {
+      nodes.push({ id: 'src_relleno', nodeColor: NODE_COLORS.src_relleno });
+      links.push({ source: 'src_relleno', target: 'inorganicos', value: totalLandfill });
+    }
+
+    // ── MIDDLE COLUMN: Categories ──
+    const tR = [...rm.values()].reduce((a, b) => a + b, 0) + totalReuse;
+    const tC = foodTotal + yardTotal;
+    const tL = totalLandfill;
+
+    if (tR > 0) nodes.push({ id: 'reciclables', nodeColor: NODE_COLORS.reciclables });
+    if (tC > 0) nodes.push({ id: 'organicos', nodeColor: NODE_COLORS.organicos });
+    if (tL > 0) nodes.push({ id: 'inorganicos', nodeColor: NODE_COLORS.inorganicos });
+
+    // ── RIGHT COLUMN: Final destinations ──
+    if (tR > 0) {
+      nodes.push({ id: 'dest_recupera', nodeColor: NODE_COLORS.dest_recupera });
+      links.push({ source: 'reciclables', target: 'dest_recupera', value: tR });
+    }
+    if (tC > 0) {
+      nodes.push({ id: 'dest_composta', nodeColor: NODE_COLORS.dest_composta });
+      links.push({ source: 'organicos', target: 'dest_composta', value: tC });
+    }
+    if (tL > 0) {
+      nodes.push({ id: 'dest_tdi', nodeColor: NODE_COLORS.dest_tdi });
+      links.push({ source: 'inorganicos', target: 'dest_tdi', value: tL });
+    }
+
+    const totalGenerated = tR + tC + tL;
+    const totalDiverted = tR + tC;
+    const diversionRate = totalGenerated > 0 ? (totalDiverted / totalGenerated) * 100 : 0;
+
+    return {
+      sankeyData: { nodes, links },
+      totals: { totalGenerated, totalDiverted, totalLandfill: tL, diversionRate },
+    };
+  }, [months]);
+
+  // Filter data by selected node
+  const filteredData = useMemo(() => {
+    if (!selectedNode) return sankeyData;
+    const filteredLinks = sankeyData.links.filter(
+      (link) => link.source === selectedNode || link.target === selectedNode,
+    );
+    const relevantNodes = new Set<string>();
+    filteredLinks.forEach((link) => {
+      relevantNodes.add(link.source);
+      relevantNodes.add(link.target);
+    });
+    return {
+      nodes: sankeyData.nodes.filter((node) => relevantNodes.has(node.id)),
+      links: filteredLinks,
+    };
+  }, [sankeyData, selectedNode]);
+
+  // Export PNG (html2canvas like Avandaro)
+  const exportToPNG = async () => {
+    if (!sankeyRef.current) return;
+    try {
+      const canvas = await html2canvas(sankeyRef.current, {
+        scale: 2,
+        backgroundColor: '#ffffff',
+        useCORS: true,
+      });
+      const link = document.createElement('a');
+      link.download = 'flujos-materiales-cccm-2x.png';
+      link.href = canvas.toDataURL();
+      link.click();
+    } catch (error) {
+      console.error('Error exporting PNG:', error);
+    }
+  };
+
+  // Export CSV
+  const exportToCSV = () => {
+    const totalValue = sankeyData.links.reduce((sum, link) => sum + link.value, 0);
+    const csvContent = [
+      ['Origen', 'Destino', 'Volumen (kg)', 'Porcentaje (%)'],
+      ...sankeyData.links.map((link) => [
+        NODE_LABELS[link.source] || link.source,
+        NODE_LABELS[link.target] || link.target,
+        link.value.toFixed(2),
+        ((link.value / totalValue) * 100).toFixed(1),
+      ]),
+    ]
+      .map((row) => row.join(','))
+      .join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.download = 'flujos-materiales-cccm.csv';
+    link.href = URL.createObjectURL(blob);
+    link.click();
+  };
+
+  const resetFilter = () => setSelectedNode(null);
+
+  if (sankeyData.links.length === 0) return null;
 
   return (
-    <div className="bg-gradient-to-br from-white to-gray-50 rounded-3xl p-8 shadow-xl border border-gray-200">
-      {/* Header */}
-      <div className="text-center mb-8">
-        <h2 className="text-3xl font-anton uppercase tracking-wide mb-3 text-[#b5e951]">Flujos de  Materiales</h2>
-        <p className="text-lg text-gray-600 mb-6">
-          Visualización interactiva del sistema integral de gestión de residuos
-        </p>
-      </div>
-      {/* Flow Visualization */}
-      <div className="relative">
-        {/* Points of Origin */}
-        <div className="flex items-center justify-center mb-4">
-          <MapPin className="w-4 h-4 text-gray-600 mr-2" />
-          <span className="text-sm font-medium text-gray-700 uppercase tracking-wide">Puntos de Origen</span>
+    <div className="bg-white rounded-xl border border-subtle p-8 shadow-premium-md animate-fade-in">
+      {/* Header y Controles — exact same as Avandaro */}
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h2 className="text-2xl font-semibold text-gray-900 mb-2 tracking-tight">
+            Flujos de Materiales
+          </h2>
+          <p className="text-sm text-gray-600 leading-relaxed">
+            Visualizacion del flujo de residuos desde puntos de generacion hasta destino final
+          </p>
         </div>
 
-        <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6 mb-8 max-w-6xl mx-auto">
-          <div className="text-center">
-            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center shadow-lg mb-2 mx-auto">
-              <Building2 className="w-6 h-6 text-white" />
-            </div>
-            <div className="text-sm font-medium text-gray-800">Casa Club</div>
-            <div className="text-xs text-gray-500">Oficinas & Servicios</div>
-          </div>
-
-          <div className="text-center">
-            <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 rounded-full flex items-center justify-center shadow-lg mb-2 mx-auto">
-              <ChefHat className="w-6 h-6 text-white" />
-            </div>
-            <div className="text-sm font-medium text-gray-800">Restaurante</div>
-            <div className="text-xs text-gray-500">Cocina & Bar</div>
-          </div>
-
-          <div className="text-center">
-            <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center shadow-lg mb-2 mx-auto">
-              <Users className="w-6 h-6 text-white" />
-            </div>
-            <div className="text-sm font-medium text-gray-800">Eventos</div>
-            <div className="text-xs text-gray-500">Áreas Comunes</div>
-          </div>
-
-          <div className="text-center">
-            <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-full flex items-center justify-center shadow-lg mb-2 mx-auto">
-              <TreePine className="w-6 h-6 text-white" />
-            </div>
-            <div className="text-sm font-medium text-gray-800">Campo</div>
-            <div className="text-xs text-gray-500">Golf & Jardines</div>
-          </div>
-
-          <div className="text-center">
-            <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg mb-2 mx-auto">
-              <Zap className="w-6 h-6 text-white" />
-            </div>
-            <div className="text-sm font-medium text-gray-800">Canchas Tennis</div>
-            <div className="text-xs text-gray-500">Deportivo</div>
-          </div>
-
-          <div className="text-center">
-            <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-full flex items-center justify-center shadow-lg mb-2 mx-auto">
-              <Package className="w-6 h-6 text-white" />
-            </div>
-            <div className="text-sm font-medium text-gray-800">Canchas Padel</div>
-            <div className="text-xs text-gray-500">Deportivo</div>
-          </div>
-        </div>
-
-        {/* Flow Connections */}
-        <div className="relative z-0 mb-4">
-          <div className="flex justify-center items-center h-24">
-            <div className="flex items-center space-x-4">
-              {/* Visual flow indicators */}
-              <div className={`flex items-center space-x-2 transition-all duration-1000 ${
-                animatingParticles ? 'opacity-100' : 'opacity-60'
-              }`}>
-                <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                <div className="w-1 h-1 bg-green-500 rounded-full animate-pulse" style={{ animationDelay: '0.2s' }}></div>
-                <div className="w-1 h-1 bg-blue-400 rounded-full animate-pulse" style={{ animationDelay: '0.4s' }}></div>
-                <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" style={{ animationDelay: '0.6s' }}></div>
-                <div className="w-1 h-1 bg-gray-400 rounded-full animate-pulse" style={{ animationDelay: '0.8s' }}></div>
-                <div className="w-2 h-2 bg-gray-500 rounded-full animate-pulse" style={{ animationDelay: '1s' }}></div>
-              </div>
-            </div>
-          </div>
-
-          {/* Simple animated arrows */}
-          <div className="flex justify-center mb-6">
-            <div className={`flex items-center space-x-8 transition-all duration-1000 ${
-              animatingParticles ? 'opacity-100 translate-y-0' : 'opacity-60 translate-y-1'
-            }`}>
-              <ArrowDown className="w-6 h-6 text-green-500 animate-bounce" style={{ animationDelay: '0s' }} />
-              <ArrowDown className="w-6 h-6 text-blue-500 animate-bounce" style={{ animationDelay: '0.5s' }} />
-              <ArrowDown className="w-6 h-6 text-gray-500 animate-bounce" style={{ animationDelay: '1s' }} />
-            </div>
-          </div>
-        </div>
-
-        {/* Category Containers */}
-        <div className="flex justify-center space-x-16 relative z-10 mb-8">
-          <div className="text-center bg-white rounded-2xl p-6 shadow-lg border-2 border-green-200">
-            <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl flex items-center justify-center shadow-lg mb-4 mx-auto">
-              <Leaf className="w-8 h-8 text-white" />
-            </div>
-            <div className="text-xl font-anton text-green-700 uppercase tracking-wide mb-1">Orgánicos</div>
-            <div className="text-sm text-gray-600">{organicFlows.reduce((sum, flow) => sum + flow.volume, 0).toFixed(1)} ton/mes</div>
-          </div>
-
-          <div className="text-center bg-white rounded-2xl p-6 shadow-lg border-2 border-blue-200">
-            <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-lg mb-4 mx-auto">
-              <Recycle className="w-8 h-8 text-white" />
-            </div>
-            <div className="text-xl font-anton text-blue-700 uppercase tracking-wide mb-1">Reciclables</div>
-            <div className="text-sm text-gray-600">{recyclableFlows.reduce((sum, flow) => sum + flow.volume, 0).toFixed(1)} ton/mes</div>
-          </div>
-
-          <div className="text-center bg-white rounded-2xl p-6 shadow-lg border-2 border-gray-200">
-            <div className="w-16 h-16 bg-gradient-to-br from-gray-500 to-gray-600 rounded-2xl flex items-center justify-center shadow-lg mb-4 mx-auto">
-              <Trash2 className="w-8 h-8 text-white" />
-            </div>
-            <div className="text-xl font-anton text-gray-700 uppercase tracking-wide mb-1">Inorgánicos</div>
-            <div className="text-sm text-gray-600">{inorganicFlows.reduce((sum, flow) => sum + flow.volume, 0).toFixed(1)} ton/mes</div>
-          </div>
-        </div>
-
-        
-      </div>
-      {/* Detailed Flow Items */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        {/* Orgánicos */}
-        <div className="space-y-3">
-          {organicFlows.map((flow, index) => (
-            <div
-              key={flow.id}
-              className={`group cursor-pointer p-4 rounded-xl bg-white border border-gray-200 hover:border-green-300 hover:shadow-md transition-all duration-300 ${
-                selectedFlow === flow.id ? 'border-green-400 shadow-lg bg-green-50' : ''
-              }`}
-              onClick={() => setSelectedFlow(selectedFlow === flow.id ? null : flow.id)}
+        <div className="flex items-center gap-2">
+          {selectedNode && (
+            <button
+              onClick={resetFilter}
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors shadow-md"
             >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <div className={`w-8 h-8 ${flow.bgColor} rounded-lg flex items-center justify-center`}>
-                    <span className={flow.color}>{flow.icon}</span>
-                  </div>
-                  <div>
-                    <div className="font-medium text-gray-800 text-sm">{flow.name}</div>
-                    <div className="text-xs text-gray-500">{flow.volume} ton/mes</div>
-                  </div>
-                </div>
-                
-                <div className="flex items-center space-x-1">
-                  <div className={`w-1 h-1 bg-green-400 rounded-full transition-all duration-500 ${
-                    animatingParticles ? 'opacity-100' : 'opacity-50'
-                  }`}></div>
-                  <div className={`w-1 h-1 bg-green-500 rounded-full transition-all duration-500 delay-200 ${
-                    animatingParticles ? 'opacity-100' : 'opacity-50'
-                  }`}></div>
-                  <ArrowRight className={`w-3 h-3 text-green-500 transition-all duration-300 ${
-                    animatingParticles ? 'translate-x-0.5 opacity-100' : 'translate-x-0 opacity-70'
-                  }`} />
-                </div>
-              </div>
+              <ArrowLeft className="w-4 h-4" />
+              <span>Vista Completa</span>
+            </button>
+          )}
 
-              {selectedFlow === flow.id && (
-                <div className="mt-3 pt-3 border-t border-green-200">
-                  <div className="text-xs text-gray-600 mb-2">{flow.description}</div>
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-green-600 font-medium">{flow.destination}</span>
-                    <span className="text-gray-500">{flow.partner}</span>
-                  </div>
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
+          <button
+            onClick={exportToPNG}
+            className="flex items-center gap-2 px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white rounded-lg transition-colors text-sm"
+          >
+            <FileImage className="w-4 h-4" />
+            <span>PNG</span>
+          </button>
 
-        {/* Reciclables */}
-        <div className="space-y-3">
-          {recyclableFlows.map((flow, index) => (
-            <div
-              key={flow.id}
-              className={`group cursor-pointer p-4 rounded-xl bg-white border border-gray-200 hover:border-blue-300 hover:shadow-md transition-all duration-300 ${
-                selectedFlow === flow.id ? 'border-blue-400 shadow-lg bg-blue-50' : ''
-              }`}
-              onClick={() => setSelectedFlow(selectedFlow === flow.id ? null : flow.id)}
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <div className={`w-8 h-8 ${flow.bgColor} rounded-lg flex items-center justify-center`}>
-                    <span className={flow.color}>{flow.icon}</span>
-                  </div>
-                  <div>
-                    <div className="font-medium text-gray-800 text-sm">{flow.name}</div>
-                    <div className="text-xs text-gray-500">{flow.volume} ton/mes</div>
-                  </div>
-                </div>
-                
-                <div className="flex items-center space-x-1">
-                  <div className={`w-1 h-1 bg-blue-400 rounded-full transition-all duration-500 ${
-                    animatingParticles ? 'opacity-100' : 'opacity-50'
-                  }`}></div>
-                  <div className={`w-1 h-1 bg-blue-500 rounded-full transition-all duration-500 delay-200 ${
-                    animatingParticles ? 'opacity-100' : 'opacity-50'
-                  }`}></div>
-                  <ArrowRight className={`w-3 h-3 text-blue-500 transition-all duration-300 ${
-                    animatingParticles ? 'translate-x-0.5 opacity-100' : 'translate-x-0 opacity-70'
-                  }`} />
-                </div>
-              </div>
-
-              {selectedFlow === flow.id && (
-                <div className="mt-3 pt-3 border-t border-blue-200">
-                  <div className="text-xs text-gray-600 mb-2">{flow.description}</div>
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-blue-600 font-medium">{flow.destination}</span>
-                    <span className="text-gray-500">{flow.partner}</span>
-                  </div>
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-
-        {/* Inorgánicos */}
-        <div className="space-y-3">
-          {inorganicFlows.map((flow, index) => (
-            <div
-              key={flow.id}
-              className={`group cursor-pointer p-4 rounded-xl bg-white border border-gray-200 hover:border-gray-300 hover:shadow-md transition-all duration-300 ${
-                selectedFlow === flow.id ? 'border-gray-400 shadow-lg bg-gray-50' : ''
-              }`}
-              onClick={() => setSelectedFlow(selectedFlow === flow.id ? null : flow.id)}
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <div className={`w-8 h-8 ${flow.bgColor} rounded-lg flex items-center justify-center`}>
-                    <span className={flow.color}>{flow.icon}</span>
-                  </div>
-                  <div>
-                    <div className="font-medium text-gray-800 text-sm">{flow.name}</div>
-                    <div className="text-xs text-gray-500">{flow.volume} ton/mes</div>
-                  </div>
-                </div>
-                
-                <div className="flex items-center space-x-1">
-                  <div className={`w-1 h-1 bg-gray-400 rounded-full transition-all duration-500 ${
-                    animatingParticles ? 'opacity-100' : 'opacity-50'
-                  }`}></div>
-                  <div className={`w-1 h-1 bg-gray-500 rounded-full transition-all duration-500 delay-200 ${
-                    animatingParticles ? 'opacity-100' : 'opacity-50'
-                  }`}></div>
-                  <ArrowRight className={`w-3 h-3 text-gray-500 transition-all duration-300 ${
-                    animatingParticles ? 'translate-x-0.5 opacity-100' : 'translate-x-0 opacity-70'
-                  }`} />
-                </div>
-              </div>
-
-              {selectedFlow === flow.id && (
-                <div className="mt-3 pt-3 border-t border-gray-200">
-                  <div className="text-xs text-gray-600 mb-2">{flow.description}</div>
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-gray-600 font-medium">{flow.destination}</span>
-                    <span className="text-gray-500">{flow.partner}</span>
-                  </div>
-                </div>
-              )}
-            </div>
-          ))}
+          <button
+            onClick={exportToCSV}
+            className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors text-sm"
+          >
+            <FileText className="w-4 h-4" />
+            <span>CSV</span>
+          </button>
         </div>
       </div>
-      
+
+      {/* Diagrama Sankey — EXACT same props as Avandaro */}
+      <div
+        ref={sankeyRef}
+        className="h-[500px] bg-gradient-to-br from-gray-50 to-white rounded-xl border border-subtle p-6 shadow-premium-sm"
+      >
+        <ResponsiveSankey
+          data={filteredData}
+          margin={{ top: 20, right: 160, bottom: 20, left: 160 }}
+          align="justify"
+          colors={(node: any) => NODE_COLORS[node.id] || '#64748b'}
+          nodeOpacity={1}
+          nodeHoverOpacity={0.9}
+          nodeThickness={20}
+          nodeSpacing={12}
+          nodeBorderWidth={2}
+          nodeBorderColor={{ from: 'color', modifiers: [['darker', 0.3]] }}
+          linkOpacity={0.6}
+          linkHoverOpacity={0.9}
+          linkContract={0}
+          enableLinkGradient={true}
+          labelPosition="outside"
+          labelOrientation="horizontal"
+          labelPadding={18}
+          labelTextColor="#374151"
+          label={(node: any) => {
+            const emoji = nodeEmojis[node.id] || '';
+            const shortLabel = NODE_LABELS[node.id] || node.id;
+            return emoji ? `${emoji} ${shortLabel}` : shortLabel;
+          }}
+          animate={true}
+          motionConfig="gentle"
+          onClick={(data: any) => {
+            if (data.id) {
+              setSelectedNode(selectedNode === data.id ? null : data.id);
+            }
+          }}
+        />
+      </div>
+
+      {/* Metricas de Resumen — same layout as Avandaro */}
+      <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="bg-gradient-to-br from-white to-gray-50 rounded-xl p-5 border border-subtle shadow-premium-sm">
+          <div className="text-xs font-medium text-gray-600 mb-2 uppercase tracking-wide">
+            Total Generado
+          </div>
+          <div className="text-3xl font-bold text-gray-900 tracking-tight">
+            {(totals.totalGenerated / 1000).toFixed(1)}
+          </div>
+          <div className="text-sm text-gray-500 mt-1">toneladas</div>
+        </div>
+        <div className="bg-gradient-to-br from-white to-emerald-50 rounded-xl p-5 border border-emerald-200/50 shadow-premium-sm">
+          <div className="text-xs font-medium text-gray-600 mb-2 uppercase tracking-wide">
+            Desviacion
+          </div>
+          <div className="text-3xl font-bold text-emerald-600 tracking-tight">
+            {totals.diversionRate.toFixed(1)}%
+          </div>
+          <div className="text-sm text-gray-500 mt-1">TRUE Zero Waste</div>
+        </div>
+        <div className="bg-gradient-to-br from-white to-teal-50 rounded-xl p-5 border border-teal-200/50 shadow-premium-sm">
+          <div className="text-xs font-medium text-gray-600 mb-2 uppercase tracking-wide">
+            Desviados del Relleno
+          </div>
+          <div className="text-3xl font-bold text-teal-600 tracking-tight">
+            {(totals.totalDiverted / 1000).toFixed(1)}
+          </div>
+          <div className="text-sm text-gray-500 mt-1">toneladas</div>
+        </div>
+      </div>
     </div>
   );
 }
