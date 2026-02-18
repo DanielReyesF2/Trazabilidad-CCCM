@@ -1,25 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { Link, useLocation } from "wouter";
 import { useTranslation } from "react-i18next";
-import { 
-  LayoutDashboard, 
-  BarChart2, 
-  FileText, 
-  FileUp, 
-  Users, 
-  Settings, 
+import {
+  LayoutDashboard,
   LogOut,
-  Trash2,
-  Zap,
-  Droplets,
-  RotateCcw,
   Table,
-  Download,
-  Save,
-  ClipboardCheck,
   Languages,
-  ChevronDown,
-  ChevronRight
 } from "lucide-react";
 import logoEconova from "../../assets/Logo-ECONOVA-OF_Blanco.png";
 
@@ -46,26 +32,11 @@ const SidebarItem = ({ to, icon, children, isActive }: SidebarItemProps) => {
 export default function Sidebar() {
   const [location] = useLocation();
   const { t, i18n } = useTranslation();
-  const [modulesOpen, setModulesOpen] = useState(true);
-  
+
   const toggleLanguage = () => {
     const newLang = i18n.language === 'es' ? 'en' : 'es';
     i18n.changeLanguage(newLang);
   };
-  
-  // Check if any module is active to keep dropdown open
-  const isModuleActive = location === "/trazabilidad-residuos" || 
-                         location === "/auditoria-zero-waste" || 
-                         location === "/energia" || 
-                         location === "/agua" || 
-                         location === "/economia-circular";
-  
-  // Auto-open modules if a module page is active
-  useEffect(() => {
-    if (isModuleActive) {
-      setModulesOpen(true);
-    }
-  }, [isModuleActive]);
   
   // User data
   const user = {
@@ -97,83 +68,19 @@ export default function Sidebar() {
       {/* Navigation */}
       <nav className="flex-1 pt-4 pb-4">
         <div className="px-4 py-2 text-xs uppercase tracking-wider text-gray-400">{i18n.language === 'es' ? 'Sistema Ambiental' : 'Environmental System'}</div>
-        <SidebarItem 
-          to="/" 
-          icon={<LayoutDashboard className="w-5 h-5" />} 
+        <SidebarItem
+          to="/"
+          icon={<LayoutDashboard className="w-5 h-5" />}
           isActive={location === "/"}
         >
           {t('nav.dashboard')}
         </SidebarItem>
-        
-        <div className="px-4 py-2 mt-4 text-xs uppercase tracking-wider text-gray-400">{i18n.language === 'es' ? 'Registro' : 'Registry'}</div>
-        <SidebarItem 
-          to="/registro-diario" 
-          icon={<Save className="w-5 h-5" />} 
-          isActive={location === "/registro-diario"}
+        <SidebarItem
+          to="/trazabilidad-residuos"
+          icon={<Table className="w-5 h-5" />}
+          isActive={location === "/trazabilidad-residuos"}
         >
-          {t('nav.dailyRegister')}
-        </SidebarItem>
-        
-        {/* Modules Dropdown */}
-        <button
-          onClick={() => setModulesOpen(!modulesOpen)}
-          className="w-full flex items-center justify-between px-4 py-2 mt-4 text-xs uppercase tracking-wider text-gray-400 hover:text-white transition-colors"
-        >
-          <span>{i18n.language === 'es' ? 'Módulos' : 'Modules'}</span>
-          {modulesOpen ? (
-            <ChevronDown className="w-4 h-4" />
-          ) : (
-            <ChevronRight className="w-4 h-4" />
-          )}
-        </button>
-        
-        {modulesOpen && (
-          <>
-            <SidebarItem 
-              to="/trazabilidad-residuos" 
-              icon={<Table className="w-5 h-5" />} 
-              isActive={location === "/trazabilidad-residuos"}
-            >
-              {t('nav.wasteTraceability')}
-            </SidebarItem>
-            <SidebarItem 
-              to="/auditoria-zero-waste" 
-              icon={<ClipboardCheck className="w-5 h-5" />} 
-              isActive={location === "/auditoria-zero-waste"}
-            >
-              {t('nav.zeroWasteAudit')}
-            </SidebarItem>
-            <SidebarItem 
-              to="/energia" 
-              icon={<Zap className="w-5 h-5" />} 
-              isActive={location === "/energia"}
-            >
-              {t('nav.energy')}
-            </SidebarItem>
-            <SidebarItem 
-              to="/agua" 
-              icon={<Droplets className="w-5 h-5" />} 
-              isActive={location === "/agua"}
-            >
-              {t('nav.water')}
-            </SidebarItem>
-            <SidebarItem 
-              to="/economia-circular" 
-              icon={<RotateCcw className="w-5 h-5" />} 
-              isActive={location === "/economia-circular"}
-            >
-              {t('nav.circularEconomy')}
-            </SidebarItem>
-          </>
-        )}
-        
-        <div className="px-4 py-2 mt-4 text-xs uppercase tracking-wider text-gray-400">{i18n.language === 'es' ? 'Administración' : 'Administration'}</div>
-        <SidebarItem 
-          to="/documents" 
-          icon={<FileUp className="w-5 h-5" />} 
-          isActive={location === "/documents"}
-        >
-          {t('nav.documents')}
+          {t('nav.wasteTraceability')}
         </SidebarItem>
       </nav>
       
