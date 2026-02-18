@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Sidebar from "./Sidebar";
 import { Menu } from "lucide-react";
+import { NovaAssistant } from "../NovaAssistant";
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -58,6 +59,9 @@ export default function AppLayout({ children }: AppLayoutProps) {
           {children}
         </main>
       </div>
+
+      {/* Nova AI floating chat */}
+      <NovaAssistant />
     </div>
   );
 }

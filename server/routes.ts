@@ -1089,6 +1089,102 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ── Nova AI Chat Proxy (SSE) ──
+  app.post("/api/nova/chat", async (req: Request, res: Response) => {
+    const NOVA_GATEWAY_URL = process.env.NOVA_GATEWAY_URL || "https://econova-ai-platform-production.up.railway.app";
+    const NOVA_API_KEY = process.env.NOVA_API_KEY || "";
+
+    const { message, conversationHistory, conversationId } = req.body;
+
+    if (!message || typeof message !== "string" || !message.trim()) {
+      res.setHeader("Content-Type", "text/event-stream");
+      res.status(400).write(`event: error\ndata: ${JSON.stringify({ message: "Mensaje requerido" })}\n\n`);
+      res.end();
+      return;
+    }
+
+    const gatewayPayload: Record<string, unknown> = {
+      message: message.trim(),
+      conversation_id: conversationId || `cccm-${Date.now()}`,
+      tenant_id: "cccm-trazabilidad",
+      stream: true,
+      context: {
+        source: "cccm-trazabilidad-widget",
+        client: "Club Campestre de la Ciudad de México",
+      },
+    };
+
+    if (conversationHistory && Array.isArray(conversationHistory)) {
+      gatewayPayload.conversation_history = conversationHistory
+        .filter((m: any) => m && (m.role === "user" || m.role === "assistant") && typeof m.content === "string")
+        .slice(-10)
+        .map((m: any) => ({ role: m.role, content: m.content }));
+    }
+
+    try {
+      const gatewayResponse = await fetch(`${NOVA_GATEWAY_URL}/chat`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-API-Key": NOVA_API_KEY,
+          "X-Tenant-ID": "cccm-trazabilidad",
+        },
+        body: JSON.stringify(gatewayPayload),
+      });
+
+      if (!gatewayResponse.ok) {
+        const errText = await gatewayResponse.text().catch(() => "");
+        console.error(`[Nova Proxy] Gateway error ${gatewayResponse.status}:`, errText.slice(0, 500));
+        res.setHeader("Content-Type", "text/event-stream");
+        res.status(502).write(`event: error\ndata: ${JSON.stringify({ message: "Error al conectar con Nova AI" })}\n\n`);
+        res.end();
+        return;
+      }
+
+      const contentType = gatewayResponse.headers.get("content-type") || "";
+
+      if (contentType.includes("text/event-stream") && gatewayResponse.body) {
+        res.setHeader("Content-Type", "text/event-stream");
+        res.setHeader("Cache-Control", "no-cache");
+        res.setHeader("Connection", "keep-alive");
+        res.setHeader("X-Accel-Buffering", "no");
+
+        const reader = (gatewayResponse.body as any).getReader();
+        const pump = async () => {
+          try {
+            while (true) {
+              const { done, value } = await reader.read();
+              if (done) break;
+              res.write(Buffer.from(value));
+            }
+          } catch (err) {
+            console.error("[Nova Proxy] Stream error:", err);
+          } finally {
+            res.end();
+          }
+        };
+        pump();
+        return;
+      }
+
+      // Non-streaming JSON response — convert to SSE
+      const jsonData = await gatewayResponse.json().catch(() => ({}));
+      const answer = jsonData.response || jsonData.answer || jsonData.message || "Sin respuesta";
+      const convId = jsonData.conversation_id || jsonData.conversationId || conversationId;
+
+      res.setHeader("Content-Type", "text/event-stream");
+      res.setHeader("Cache-Control", "no-cache");
+      res.write(`event: token\ndata: ${JSON.stringify({ text: answer })}\n\n`);
+      res.write(`event: done\ndata: ${JSON.stringify({ answer, conversationId: convId, toolsUsed: jsonData.tools_used || [] })}\n\n`);
+      res.end();
+    } catch (err) {
+      console.error("[Nova Proxy] Fetch error:", err);
+      res.setHeader("Content-Type", "text/event-stream");
+      res.status(502).write(`event: error\ndata: ${JSON.stringify({ message: "Error de conexion con Nova AI" })}\n\n`);
+      res.end();
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

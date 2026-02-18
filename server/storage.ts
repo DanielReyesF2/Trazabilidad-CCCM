@@ -926,16 +926,8 @@ async function initializeDatabase() {
     if (existingClients.length === 0) {
       await db.insert(clients).values([
         {
-          name: "Empresa Sustentable S.A.",
-          description: "Empresa líder en gestión sustentable de recursos y residuos industriales."
-        },
-        {
-          name: "EcoServicios SpA",
-          description: "Servicios de reciclaje y manejo de residuos para empresas e instituciones."
-        },
-        {
-          name: "Constructora Verde Ltda.",
-          description: "Construcción sustentable con enfoque en minimización y gestión de residuos."
+          name: "Club Campestre de la Ciudad de México",
+          description: "Primer club de golf certificado TRUE Platinum en el mundo. Sistema integral de gestión ambiental y trazabilidad de residuos."
         }
       ]);
       console.log("Base de datos inicializada con datos de muestra");
