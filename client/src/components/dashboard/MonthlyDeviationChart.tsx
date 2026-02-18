@@ -3,7 +3,6 @@ import {
   Area,
   XAxis,
   YAxis,
-  CartesianGrid,
   Tooltip,
   ReferenceLine,
   ResponsiveContainer,
@@ -23,87 +22,93 @@ function CustomTooltip({ active, payload, label }: any) {
   if (!active || !payload?.length) return null;
   const value = payload[0].value as number;
   return (
-    <div className="bg-[#273949] text-white px-4 py-3 rounded-lg shadow-xl border border-white/10">
-      <p className="text-xs text-gray-300 mb-1">{label}</p>
-      <p className="text-lg font-mono font-bold">
-        {value.toFixed(1)}%
-        {value >= 90 && <span className="ml-2 text-[#b5e951] text-xs">✓ Meta</span>}
+    <div className="bg-white/95 backdrop-blur-xl px-5 py-4 rounded-2xl shadow-lg border border-gray-100/80">
+      <p className="text-[11px] text-gray-400 font-medium uppercase tracking-wider mb-1">{label}</p>
+      <p className="text-2xl font-light text-gray-900 tracking-tight">
+        {value.toFixed(1)}
+        <span className="text-base text-gray-400 ml-0.5">%</span>
       </p>
+      {value >= 90 && (
+        <p className="text-[11px] text-emerald-500 font-medium mt-1">Cumple meta TRUE</p>
+      )}
     </div>
   );
 }
 
 export function MonthlyDeviationChart({ months }: MonthlyDeviationChartProps) {
   const chartData = months.map((m) => ({
-    name: `${monthLabelsES[m.monthNum] || m.label} ${String(m.year).slice(2)}`,
-    desviación: parseFloat(m.diversionRate.toFixed(1)),
+    name: monthLabelsES[m.monthNum] || m.label,
+    value: parseFloat(m.diversionRate.toFixed(1)),
   }));
 
   return (
-    <div className="bg-white rounded-2xl p-8 shadow-xl border border-gray-200">
-      <div className="flex items-center justify-between mb-6">
+    <div>
+      <div className="flex items-end justify-between mb-10">
         <div>
-          <h3 className="text-xl font-bold text-gray-900 tracking-tight">
-            Desviación Mensual TRUE Year
-          </h3>
-          <p className="text-sm text-gray-500 mt-1">Oct 2024 – Sep 2025 · Meta TRUE ≥ 90%</p>
+          <h2 className="text-2xl font-semibold text-gray-900 tracking-tight">
+            Tendencia mensual
+          </h2>
+          <p className="text-sm text-gray-400 mt-1">Octubre 2024 — Septiembre 2025</p>
         </div>
-        <div className="flex items-center gap-4 text-xs">
-          <span className="flex items-center gap-1.5">
-            <span className="w-3 h-3 rounded-full bg-[#b5e951]" />
+        <div className="flex items-center gap-5 text-[11px] text-gray-400 font-medium uppercase tracking-wider">
+          <span className="flex items-center gap-2">
+            <span className="w-6 h-[2px] bg-emerald-400 rounded-full" />
             Desviación
           </span>
-          <span className="flex items-center gap-1.5">
-            <span className="w-8 border-t-2 border-dashed border-red-400" />
+          <span className="flex items-center gap-2">
+            <span className="w-6 border-t border-dashed border-gray-300" />
             Meta 90%
           </span>
         </div>
       </div>
 
-      <ResponsiveContainer width="100%" height={320}>
-        <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+      <ResponsiveContainer width="100%" height={340}>
+        <AreaChart data={chartData} margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>
           <defs>
-            <linearGradient id="limeGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#b5e951" stopOpacity={0.4} />
-              <stop offset="95%" stopColor="#b5e951" stopOpacity={0.02} />
+            <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#34d399" stopOpacity={0.12} />
+              <stop offset="100%" stopColor="#34d399" stopOpacity={0} />
             </linearGradient>
           </defs>
-          <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" vertical={false} />
           <XAxis
             dataKey="name"
-            tick={{ fontSize: 11, fill: '#6b7280' }}
+            tick={{ fontSize: 12, fill: '#9ca3af', fontWeight: 500 }}
             axisLine={false}
             tickLine={false}
+            dy={8}
           />
           <YAxis
-            domain={[60, 100]}
-            tick={{ fontSize: 11, fill: '#6b7280' }}
+            domain={[70, 100]}
+            ticks={[70, 80, 90, 100]}
+            tick={{ fontSize: 11, fill: '#d1d5db' }}
             axisLine={false}
             tickLine={false}
-            tickFormatter={(v: number) => `${v}%`}
+            tickFormatter={(v: number) => `${v}`}
+            dx={-4}
           />
-          <Tooltip content={<CustomTooltip />} />
+          <Tooltip content={<CustomTooltip />} cursor={false} />
           <ReferenceLine
             y={90}
-            stroke="#ef4444"
-            strokeDasharray="6 4"
-            strokeWidth={1.5}
+            stroke="#d1d5db"
+            strokeDasharray="4 4"
+            strokeWidth={1}
             label={{
-              value: 'Meta TRUE 90%',
-              position: 'insideTopRight',
-              fill: '#ef4444',
-              fontSize: 11,
-              fontWeight: 600,
+              value: '90%',
+              position: 'insideTopLeft',
+              fill: '#9ca3af',
+              fontSize: 10,
+              fontWeight: 500,
+              offset: 8,
             }}
           />
           <Area
-            type="monotone"
-            dataKey="desviación"
-            stroke="#b5e951"
-            strokeWidth={3}
-            fill="url(#limeGrad)"
-            dot={{ r: 4, fill: '#b5e951', stroke: '#fff', strokeWidth: 2 }}
-            activeDot={{ r: 6, fill: '#b5e951', stroke: '#273949', strokeWidth: 2 }}
+            type="natural"
+            dataKey="value"
+            stroke="#34d399"
+            strokeWidth={2.5}
+            fill="url(#areaGrad)"
+            dot={{ r: 3.5, fill: '#fff', stroke: '#34d399', strokeWidth: 2 }}
+            activeDot={{ r: 5, fill: '#34d399', stroke: '#fff', strokeWidth: 2.5 }}
           />
         </AreaChart>
       </ResponsiveContainer>
